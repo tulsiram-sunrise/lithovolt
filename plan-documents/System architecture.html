@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture Diagram</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .layer-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .layer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #94a3b8;
+        }
+        .arrow-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: -0.5rem 0;
+            position: relative;
+            z-index: 10;
+        }
+        .arrow-line {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, #94a3b8, #cbd5e1);
+        }
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #94a3b8;
+        }
+        .arrow-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            border: 1px solid #e2e8f0;
+            margin: -20px 0;
+            z-index: 20;
+        }
+        .tree-line {
+            border-left: 2px solid #334155;
+            border-bottom: 2px solid #334155;
+            width: 20px;
+            height: 10px;
+            margin-right: 12px;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto pb-20">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">System Architecture</h1>
+            <p class="text-slate-500">Enterprise Battery Management Platform</p>
+        </header>
+
+        <!-- CLIENT LAYER -->
+        <div class="layer-card bg-white rounded-xl p-6 shadow-sm mb-4">
+            <div class="flex items-center gap-3 mb-4 border-b pb-3 border-slate-100">
+                <div class="bg-blue-100 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor-smartphone"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M10 19v-3.96 3.15"/><path d="M7 19h5"/><rect width="6" height="10" x="16" y="12" rx="2"/></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-700">Client Layer</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <h3 class="font-semibold text-blue-700 flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        ReactJS Web App
+                    </h3>
+                    <ul class="text-sm text-slate-600 space-y-1 ml-4 list-disc">
+                        <li>Admin Control Panel</li>
+                        <li>Wholesaler Dashboard</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <h3 class="font-semibold text-indigo-700 flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                        React Native Mobile
+                    </h3>
+                    <ul class="text-sm text-slate-600 space-y-1 ml-4 list-disc">
+                        <li>Wholesaler Inventory App</li>
+                        <li>Consumer App (Verification)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONNECTOR 1 -->
+        <div class="arrow-connector">
+            <div class="arrow-line"></div>
+            <div class="arrow-label">HTTPS (REST / JSON / JWT)</div>
+            <div class="arrow-head"></div>
+        </div>
+
+        <!-- API LAYER -->
+        <div class="layer-card bg-white rounded-xl p-6 shadow-sm mb-4">
+            <div class="flex items-center gap-3 mb-4 border-b pb-3 border-slate-100">
+                <div class="bg-green-100 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-server-cog"><circle cx="12" cy="12" r="3"/><path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5"/><path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5"/><path d="M12 8V7"/><path d="M12 17v-1"/><path d="M8 12H7"/><path d="M17 12h-1"/><path d="m15 15-.7-.7"/><path d="m9.7 9.7-.7-.7"/><path d="m15 9 .7-.7"/><path d="m9.7 14.3-.7-.7"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700">API Layer</h2>
+                    <p class="text-xs text-slate-400 font-mono">Django + Django REST Framework</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Core Modules</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="bg-green-50 px-3 py-2 rounded border border-green-100 text-sm text-green-800">Authentication & Roles</div>
+                        <div class="bg-green-50 px-3 py-2 rounded border border-green-100 text-sm text-green-800">Inventory Management</div>
+                        <div class="bg-green-50 px-3 py-2 rounded border border-green-100 text-sm text-green-800">Order & Warranty Tracking</div>
+                        <div class="bg-green-50 px-3 py-2 rounded border border-green-100 text-sm text-green-800">Warranty Management</div>
+                        <div class="bg-green-50 px-3 py-2 rounded border border-green-100 text-sm text-green-800">Consumer Verification</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Cross-cutting</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-slate-100 px-2 py-1 rounded text-xs text-slate-600 border border-slate-200">JWT Auth</span>
+                        <span class="bg-slate-100 px-2 py-1 rounded text-xs text-slate-600 border border-slate-200">Permissions</span>
+                        <span class="bg-slate-100 px-2 py-1 rounded text-xs text-slate-600 border border-slate-200">Validation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONNECTOR 2 -->
+        <div class="arrow-connector">
+            <div class="arrow-line"></div>
+            <div class="arrow-label">Django ORM / SQL</div>
+            <div class="arrow-head"></div>
+        </div>
+
+        <!-- DATA LAYER -->
+        <div class="layer-card bg-white rounded-xl p-6 shadow-sm mb-4">
+            <div class="flex items-center gap-3 mb-4 border-b pb-3 border-slate-100">
+                <div class="bg-orange-100 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700">Data Layer</h2>
+                    <p class="text-xs text-slate-400 font-mono">PostgreSQL</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Users & Roles</div>
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Battery Models</div>
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Serials/Batteries</div>
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Allocations</div>
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Orders</div>
+                <div class="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm text-orange-800 font-medium">Warranties</div>
+            </div>
+        </div>
+
+        <!-- INFRASTRUCTURE & SUPPORTING SERVICES -->
+        <div class="mt-8 pt-8 border-t border-slate-200">
+            <h2 class="text-center text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Supporting Services & Infrastructure</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2 text-slate-700 font-bold text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-upload"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+                        Storage
+                    </div>
+                    <p class="text-xs text-slate-500 mb-2">Cloud / S3 Compatible</p>
+                    <ul class="text-[11px] text-slate-600 space-y-1">
+                        <li class="flex items-center gap-1"><span>•</span> Warranty PDFs</li>
+                        <li class="flex items-center gap-1"><span>•</span> Generated QR Codes</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2 text-slate-700 font-bold text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell-ring"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        Notifications
+                    </div>
+                    <p class="text-xs text-slate-500 mb-2">Service Integration</p>
+                    <ul class="text-[11px] text-slate-600 space-y-1">
+                        <li class="flex items-center gap-1"><span>•</span> Transactional Emails</li>
+                        <li class="flex items-center gap-1"><span>•</span> SMS (Verification/Alerts)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2 text-slate-700 font-bold text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-container"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+                        Infrastructure
+                    </div>
+                    <p class="text-xs text-slate-500 mb-2">Deployment Stack</p>
+                    <ul class="text-[11px] text-slate-600 space-y-1">
+                        <li class="flex items-center gap-1"><span>•</span> Single Ubuntu VPS</li>
+                        <li class="flex items-center gap-1"><span>•</span> Nginx + Gunicorn</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW GUIDES SECTION -->
+        <div class="mt-12 bg-slate-900 rounded-2xl p-8 text-slate-200 shadow-xl">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="text-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold tracking-tight text-white">Why This Architecture Is Correct for You</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Solo Developer -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        Solo-developer friendly
+                    </div>
+                    <ul class="space-y-3 text-slate-400 text-sm">
+                        <li class="flex gap-2"><span>•</span> One backend</li>
+                        <li class="flex gap-2"><span>•</span> One DB</li>
+                        <li class="flex gap-2"><span>•</span> One deployment</li>
+                        <li class="flex gap-2"><span>•</span> No DevOps madness</li>
+                    </ul>
+                </div>
+
+                <!-- Scales Cleanly -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        Scales cleanly
+                    </div>
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Later you can split:</div>
+                    <ul class="space-y-3 text-slate-400 text-sm">
+                        <li class="flex gap-2"><span>•</span> Auth → separate service</li>
+                        <li class="flex gap-2"><span>•</span> Warranty → separate service</li>
+                        <li class="flex gap-2"><span>•</span> Analytics → async jobs</li>
+                    </ul>
+                </div>
+
+                <!-- Reuse -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        React + React Native reuse
+                    </div>
+                    <ul class="space-y-3 text-slate-400 text-sm">
+                        <li class="flex gap-2"><span>•</span> Same API</li>
+                        <li class="flex gap-2"><span>•</span> Same auth</li>
+                        <li class="flex gap-2) "><span>•</span> Same data contracts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- FUTURE MICROSERVICES SPLIT -->
+            <div class="mt-12 pt-12 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers-2"><path d="m16.02 12 5.48 3.13a1 1 0 0 1 0 1.74L13 21.74a2 2 0 0 1-2 0l-8.5-4.87a1 1 0 0 1 0-1.74L7.98 12"/><path d="m16.02 4.13 5.48 3.13a1 1 0 0 1 0 1.74L13 13.87a2 2 0 0 1-2 0L2.5 9a1 1 0 0 1 0-1.74L7.98 4.13a2 2 0 0 1 2.02 0l3 1.72Z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Future Microservices Split <span class="text-slate-500 font-normal text-sm ml-2">(When Needed)</span></h3>
+                </div>
+
+                <div class="bg-black/40 rounded-xl p-6 border border-slate-800 font-mono">
+                    <div class="text-slate-300 font-bold mb-4">API Gateway</div>
+                    
+                    <div class="space-y-3 ml-4">
+                        <div class="flex items-start">
+                            <div class="tree-line"></div>
+                            <div class="text-slate-400">Auth Service</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="tree-line"></div>
+                            <div class="text-slate-400">Inventory Service</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="tree-line"></div>
+                            <div class="text-slate-400">Warranty Service</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="tree-line"></div>
+                            <div class="text-emerald-400 font-bold">Order Service</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="tree-line"></div>
+                            <div class="text-slate-400">Analytics Service</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
