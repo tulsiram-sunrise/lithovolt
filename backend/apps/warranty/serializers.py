@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from .models import Warranty, WarrantyClaim
+from .models import Warranty, WarrantyClaim, WarrantyClaimAttachment
 from apps.inventory.models import SerialNumber
 from core.utils import format_phone_number
 
@@ -111,15 +111,30 @@ class WarrantyClaimCreateSerializer(serializers.Serializer):
 class WarrantyClaimDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for warranty claims."""
 
+    attachments = serializers.SerializerMethodField()
     warranty_number = serializers.CharField(source='warranty.warranty_number', read_only=True)
     serial_number = serializers.CharField(source='warranty.serial_number.serial_number', read_only=True)
     consumer_name = serializers.CharField(source='consumer.get_full_name', read_only=True)
+
+    def get_attachments(self, obj):
+        request = self.context.get('request')
+        items = []
+        for attachment in obj.attachments.all():
+            file_url = attachment.file.url if attachment.file else ''
+            if request and file_url:
+                file_url = request.build_absolute_uri(file_url)
+            items.append({
+                'id': attachment.id,
+                'file': file_url,
+                'created_at': attachment.created_at,
+            })
+        return items
 
     class Meta:
         model = WarrantyClaim
         fields = [
             'id', 'warranty', 'warranty_number', 'serial_number', 'consumer',
-            'consumer_name', 'description', 'status', 'created_at'
+            'consumer_name', 'description', 'status', 'created_at', 'attachments'
         ]
         read_only_fields = ['created_at']
 

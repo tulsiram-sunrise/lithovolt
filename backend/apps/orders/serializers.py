@@ -28,13 +28,18 @@ class OrderSerializer(serializers.ModelSerializer):
 
     items = OrderItemSerializer(many=True, read_only=True)
     consumer_name = serializers.CharField(source='consumer.get_full_name', read_only=True)
+    consumer_email = serializers.EmailField(source='consumer.email', read_only=True)
+    consumer_phone = serializers.CharField(source='consumer.phone', read_only=True)
+    consumer_first_name = serializers.CharField(source='consumer.first_name', read_only=True)
+    consumer_last_name = serializers.CharField(source='consumer.last_name', read_only=True)
     wholesaler_name = serializers.CharField(source='wholesaler.get_full_name', read_only=True)
     total_items = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Order
         fields = [
-            'id', 'consumer', 'consumer_name', 'wholesaler', 'wholesaler_name',
+            'id', 'consumer', 'consumer_name', 'consumer_email', 'consumer_phone',
+            'consumer_first_name', 'consumer_last_name', 'wholesaler', 'wholesaler_name',
             'status', 'notes', 'accepted_at', 'fulfilled_at',
             'total_items', 'items', 'created_at'
         ]

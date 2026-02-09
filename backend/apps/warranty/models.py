@@ -152,3 +152,17 @@ class WarrantyClaim(TimeStampedModel):
 
 	def __str__(self):
 		return f'Claim {self.id} ({self.status})'
+
+
+class WarrantyClaimAttachment(TimeStampedModel):
+	"""Attachments for warranty claims."""
+
+	claim = models.ForeignKey(WarrantyClaim, on_delete=models.CASCADE, related_name='attachments')
+	file = models.FileField(upload_to='warranties/claims/')
+
+	class Meta:
+		db_table = 'warranty_claim_attachments'
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return f'ClaimAttachment {self.id} (claim {self.claim_id})'

@@ -21,7 +21,7 @@ from core.utils import format_phone_number
 from apps.inventory.models import SerialNumber
 from django.contrib.auth import get_user_model
 
-from .models import Warranty, WarrantyClaim
+from .models import Warranty, WarrantyClaim, WarrantyClaimAttachment
 from .serializers import (
     WarrantySerializer,
     WarrantyIssueSerializer,
@@ -257,7 +257,7 @@ class WarrantyViewSet(viewsets.ReadOnlyModelViewSet):
 class WarrantyClaimViewSet(viewsets.ModelViewSet):
     """Warranty claim workflow APIs."""
 
-    queryset = WarrantyClaim.objects.select_related('warranty', 'consumer', 'warranty__serial_number')
+    queryset = WarrantyClaim.objects.select_related('warranty', 'consumer', 'warranty__serial_number').prefetch_related('attachments')
     serializer_class = WarrantyClaimDetailSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -300,7 +300,13 @@ class WarrantyClaimViewSet(viewsets.ModelViewSet):
             description=description
         )
 
-        return Response(WarrantyClaimDetailSerializer(claim).data, status=status.HTTP_201_CREATED)
+        for attachment in request.FILES.getlist('attachments'):
+            WarrantyClaimAttachment.objects.create(claim=claim, file=attachment)
+
+        return Response(
+            WarrantyClaimDetailSerializer(claim, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def approve(self, request, pk=None):
