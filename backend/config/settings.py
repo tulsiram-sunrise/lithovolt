@@ -131,6 +131,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': config('REST_THROTTLE_ANON', default='60/min'),
+        'user': config('REST_THROTTLE_USER', default='600/min'),
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': (
@@ -172,6 +180,13 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@lithovolt.com')
+
+# Notification Settings
+NOTIFICATIONS_EMAIL_ENABLED = config('NOTIFICATIONS_EMAIL_ENABLED', default=True, cast=bool)
+NOTIFICATIONS_SMS_ENABLED = config('NOTIFICATIONS_SMS_ENABLED', default=False, cast=bool)
+NOTIFICATIONS_FROM_EMAIL = config('NOTIFICATIONS_FROM_EMAIL', default=DEFAULT_FROM_EMAIL)
+NOTIFICATIONS_SMS_PROVIDER = config('NOTIFICATIONS_SMS_PROVIDER', default='none')
+ASYNC_TASKS_ENABLED = config('ASYNC_TASKS_ENABLED', default=False, cast=bool)
 
 # Celery Settings
 CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
@@ -235,6 +250,11 @@ LOGGING = {
     },
     'loggers': {
         'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'lithovolt.request': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
             'propagate': False,

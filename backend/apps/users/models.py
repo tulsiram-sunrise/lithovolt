@@ -4,16 +4,26 @@ User models for the Lithovolt platform.
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from core.models import TimeStampedModel
+from core.utils import format_phone_number
 
 
 class UserManager(BaseUserManager):
     """Custom user manager."""
     
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email=None, password=None, **extra_fields):
         """Create and return a regular user."""
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
+        phone = extra_fields.get('phone')
+        role = extra_fields.get('role') or 'CONSUMER'
+
+        if not email and role != 'CONSUMER':
+            raise ValueError('Email is required for non-consumer users')
+        if not email and not phone:
+            raise ValueError('Either email or phone must be set')
+
+        email = self.normalize_email(email) if email else None
+        if phone:
+            extra_fields['phone'] = format_phone_number(phone)
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -42,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ('CONSUMER', 'Consumer'),
     )
     
-    email = models.EmailField(unique=True, db_index=True)
+    email = models.EmailField(unique=True, db_index=True, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True, db_index=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, blank=True)
@@ -72,7 +82,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f'{self.email} ({self.role})'
+        identifier = self.email or self.phone or 'Unknown'
+        return f'{identifier} ({self.role})'
     
     def get_full_name(self):
         """Return the full name of the user."""

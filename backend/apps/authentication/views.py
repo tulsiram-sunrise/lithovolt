@@ -1,4 +1,5 @@
 """Authentication views."""
+from django.conf import settings
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -12,6 +13,10 @@ from .serializers import (
     PasswordResetSerializer, PasswordResetConfirmSerializer
 )
 from .models import OTP
+from core.utils import format_phone_number
+from apps.notifications.models import NotificationLog
+from apps.notifications.services import log_and_send
+from apps.notifications.tasks import send_notification_task
 
 User = get_user_model()
 
@@ -38,6 +43,11 @@ def send_otp(request):
     email = serializer.validated_data.get('email')
     phone = serializer.validated_data.get('phone')
     otp_type = serializer.validated_data.get('otp_type', 'LOGIN')
+
+    if email:
+        email = email.strip().lower()
+    if phone:
+        phone = format_phone_number(phone)
     
     # Get or create user
     user = None
@@ -55,7 +65,50 @@ def send_otp(request):
     # Create OTP
     otp = OTP.create_otp(user, otp_type)
     
-    # TODO: Send OTP via email/SMS
+    message = f'Your OTP code is {otp.otp_code}. It expires in 10 minutes.'
+    if email:
+        if getattr(settings, 'ASYNC_TASKS_ENABLED', False):
+            send_notification_task.delay(
+                channel=NotificationLog.Channel.EMAIL,
+                recipient_email=email,
+                recipient_phone=None,
+                subject='OTP Code',
+                message=message,
+                created_by_id=request.user.id if request.user.is_authenticated else None,
+                metadata={'otp_type': otp_type}
+            )
+        else:
+            log_and_send(
+                channel=NotificationLog.Channel.EMAIL,
+                recipient_email=email,
+                recipient_phone=None,
+                subject='OTP Code',
+                message=message,
+                created_by=request.user if request.user.is_authenticated else None,
+                metadata={'otp_type': otp_type}
+            )
+    if phone:
+        if getattr(settings, 'ASYNC_TASKS_ENABLED', False):
+            send_notification_task.delay(
+                channel=NotificationLog.Channel.SMS,
+                recipient_email=None,
+                recipient_phone=phone,
+                subject='OTP',
+                message=message,
+                created_by_id=request.user.id if request.user.is_authenticated else None,
+                metadata={'otp_type': otp_type}
+            )
+        else:
+            log_and_send(
+                channel=NotificationLog.Channel.SMS,
+                recipient_email=None,
+                recipient_phone=phone,
+                subject='OTP',
+                message=message,
+                created_by=request.user if request.user.is_authenticated else None,
+                metadata={'otp_type': otp_type}
+            )
+
     # For development, return OTP in response
     return Response({
         'message': 'OTP sent successfully',
@@ -74,6 +127,11 @@ def verify_otp(request):
     email = serializer.validated_data.get('email')
     phone = serializer.validated_data.get('phone')
     otp_code = serializer.validated_data.get('otp_code')
+
+    if email:
+        email = email.strip().lower()
+    if phone:
+        phone = format_phone_number(phone)
     
     # Find user
     user = None
@@ -98,6 +156,20 @@ def verify_otp(request):
     # Mark OTP as used
     otp.is_used = True
     otp.save()
+
+    # Mark user as verified and fill missing contact fields
+    updated_fields = []
+    if not user.is_verified:
+        user.is_verified = True
+        updated_fields.append('is_verified')
+    if email and not user.email:
+        user.email = email
+        updated_fields.append('email')
+    if phone and not user.phone:
+        user.phone = phone
+        updated_fields.append('phone')
+    if updated_fields:
+        user.save(update_fields=updated_fields)
     
     # Generate JWT tokens
     from rest_framework_simplejwt.tokens import RefreshToken
@@ -109,8 +181,11 @@ def verify_otp(request):
         'user': {
             'id': user.id,
             'email': user.email,
+            'phone': user.phone,
             'role': user.role,
-            'first_name': user.first_name
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'is_verified': user.is_verified
         }
     })
 
@@ -132,7 +207,27 @@ def password_reset_request(request):
     # Create OTP
     otp = OTP.create_otp(user, 'PASSWORD_RESET')
     
-    # TODO: Send OTP via email
+    message = f'Your password reset OTP is {otp.otp_code}. It expires in 10 minutes.'
+    if getattr(settings, 'ASYNC_TASKS_ENABLED', False):
+        send_notification_task.delay(
+            channel=NotificationLog.Channel.EMAIL,
+            recipient_email=email,
+            recipient_phone=None,
+            subject='Password Reset OTP',
+            message=message,
+            created_by_id=None,
+            metadata={'otp_type': 'PASSWORD_RESET'}
+        )
+    else:
+        log_and_send(
+            channel=NotificationLog.Channel.EMAIL,
+            recipient_email=email,
+            recipient_phone=None,
+            subject='Password Reset OTP',
+            message=message,
+            created_by=None,
+            metadata={'otp_type': 'PASSWORD_RESET'}
+        )
     
     return Response({'message': 'Password reset OTP sent successfully'})
 

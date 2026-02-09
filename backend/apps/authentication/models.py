@@ -27,7 +27,8 @@ class OTP(TimeStampedModel):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f'OTP for {self.user.email}'
+        identifier = self.user.email or self.user.phone or 'Unknown'
+        return f'OTP for {identifier}'
     
     @classmethod
     def create_otp(cls, user, otp_type='LOGIN', validity_minutes=10):

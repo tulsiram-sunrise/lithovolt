@@ -2,6 +2,7 @@
 Serializers for User models.
 """
 from rest_framework import serializers
+from core.utils import format_phone_number
 from .models import User, UserProfile
 
 
@@ -50,10 +51,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
         user.save()
-        
-        # Create profile
-        UserProfile.objects.create(user=user)
-        
+
         return user
 
 
@@ -63,9 +61,19 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'phone', 'first_name', 'last_name', 'company_name', 'gst_number',
+            'email', 'phone', 'first_name', 'last_name', 'company_name', 'gst_number',
             'address', 'city', 'state', 'pincode'
         ]
+
+    def validate_phone(self, value):
+        if value:
+            return format_phone_number(value)
+        return value
+
+    def validate_email(self, value):
+        if value and User.objects.filter(email=value).exclude(id=self.instance.id).exists():
+            raise serializers.ValidationError('Email is already in use')
+        return value
 
 
 class WholesalerListSerializer(serializers.ModelSerializer):

@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from core.utils import format_phone_number
 
 User = get_user_model()
 
@@ -16,8 +17,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user'] = {
             'id': self.user.id,
             'email': self.user.email,
+            'phone': self.user.phone,
             'role': self.user.role,
             'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
             'is_verified': self.user.is_verified
         }
         
@@ -61,6 +64,8 @@ class OTPSendSerializer(serializers.Serializer):
     def validate(self, attrs):
         if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
+        if attrs.get('phone'):
+            attrs['phone'] = format_phone_number(attrs['phone'])
         return attrs
 
 
@@ -74,6 +79,8 @@ class OTPVerifySerializer(serializers.Serializer):
     def validate(self, attrs):
         if not attrs.get('email') and not attrs.get('phone'):
             raise serializers.ValidationError("Either email or phone is required")
+        if attrs.get('phone'):
+            attrs['phone'] = format_phone_number(attrs['phone'])
         return attrs
 
 
