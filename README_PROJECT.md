@@ -46,6 +46,64 @@ lithovolt/
 - ✅ Wholesaler portal (web + mobile)
 - ✅ Consumer mobile app
 
+### Phase 1 (MVP) - Revised Consumer Scope
+**Authentication & Users**
+- Admin login (email + password)
+- Wholesaler login
+- Consumer OTP login (mobile/email)
+- Role-based access control
+- JWT auth for all clients
+
+**Consumer Features (Included)**
+- OTP-based signup/login
+- Consumer profile (name, phone, email)
+- Auto-create account on first warranty claim
+- View owned warranties
+- Claim warranty via QR / serial
+- Download warranty certificate
+- Warranty expiry status
+- Browse battery models and accessories
+- Place order request
+- View order status (Pending / Accepted)
+- No online payment (Phase 1 rule)
+
+**Wholesaler Features**
+- Login (web + mobile)
+- View allocated inventory
+- Fulfill consumer orders
+- Sell battery -> generate warranty
+- Assign warranty to consumer
+- Sales history
+
+**Admin Features**
+- User management (all roles)
+- Battery & accessory catalog
+- Inventory allocation
+- Order oversight
+- Warranty monitoring
+- Basic analytics dashboard
+
+**Warranty System (Core Asset)**
+- Auto warranty creation on sale
+- QR code generation
+- PDF certificate generation
+- Public verification endpoint
+- Consumer ownership mapping
+
+**Mobile Apps (Business Critical)**
+- Consumer app (OTP + warranty + order)
+- Wholesaler app
+- Shared API client
+- App icons and splash screens
+- Store-ready builds (Play Store / App Store)
+
+**Infra & Launch**
+- VPS deployment
+- Media storage
+- Backups
+- Production config
+- Logging and error tracking
+
 ### Phase 2 (Future)
 - Payment gateway integration
 - Advanced analytics & reports
