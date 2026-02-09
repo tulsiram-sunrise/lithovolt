@@ -2,36 +2,35 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { authAPI } from '../../services/api';
 
-export default function RegisterScreen({ navigation }) {
-  const [form, setForm] = useState({
-    email: '',
-    phone: '',
-    first_name: '',
-    last_name: '',
-    password: '',
-    password_confirm: '',
-  });
+export default function PasswordResetConfirmScreen({ navigation, route }) {
+  const [email, setEmail] = useState(route.params?.email || '');
+  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [info, setInfo] = useState('');
 
-  const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  const handleRegister = async () => {
-    if (!form.email || !form.password || !form.password_confirm) {
-      setError('Email and password are required.');
+  const handleConfirm = async () => {
+    if (!email || !otp || !password || !passwordConfirm) {
+      setError('All fields are required.');
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      setSuccess('');
-      await authAPI.register(form);
-      setSuccess('Account created. You can now login.');
-      setTimeout(() => navigation.navigate('Login'), 600);
+      setInfo('');
+      await authAPI.passwordResetConfirm({
+        email,
+        otp_code: otp,
+        new_password: password,
+        new_password_confirm: passwordConfirm,
+      });
+      setInfo('Password updated. Please login.');
+      navigation.navigate('Login');
     } catch (err) {
-      const message = err.response?.data?.detail || 'Registration failed. Please check the form.';
+      const message = err.response?.data?.detail || err.response?.data?.error || 'Password reset failed.';
       setError(message);
     } finally {
       setLoading(false);
@@ -40,62 +39,49 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.title}>Confirm Reset</Text>
+      <Text style={styles.subtitle}>Enter the OTP and new password.</Text>
 
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="First Name"
-          placeholderTextColor="#94a3b8"
-          value={form.first_name}
-          onChangeText={(value) => updateField('first_name', value)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          placeholderTextColor="#94a3b8"
-          value={form.last_name}
-          onChangeText={(value) => updateField('last_name', value)}
-        />
-        <TextInput
-          style={styles.input}
           placeholder="Email"
           placeholderTextColor="#94a3b8"
-          keyboardType="email-address"
           autoCapitalize="none"
-          value={form.email}
-          onChangeText={(value) => updateField('email', value)}
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
         />
         <TextInput
           style={styles.input}
-          placeholder="Phone (optional)"
+          placeholder="OTP code"
           placeholderTextColor="#94a3b8"
-          keyboardType="phone-pad"
-          value={form.phone}
-          onChangeText={(value) => updateField('phone', value)}
+          keyboardType="number-pad"
+          value={otp}
+          onChangeText={setOtp}
         />
         <TextInput
           style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#94a3b8"
-          secureTextEntry
-          value={form.password}
-          onChangeText={(value) => updateField('password', value)}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
+          placeholder="New password"
           placeholderTextColor="#94a3b8"
           secureTextEntry
-          value={form.password_confirm}
-          onChangeText={(value) => updateField('password_confirm', value)}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm new password"
+          placeholderTextColor="#94a3b8"
+          secureTextEntry
+          value={passwordConfirm}
+          onChangeText={setPasswordConfirm}
         />
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        {success ? <Text style={styles.successText}>{success}</Text> : null}
+        {info ? <Text style={styles.infoText}>{info}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Register</Text>}
+        <TouchableOpacity style={styles.button} onPress={handleConfirm} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Update Password</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
@@ -112,13 +98,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#e2e8f0',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#0f172a',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#475569',
     marginBottom: 16,
+    textAlign: 'center',
   },
   form: {
     width: '100%',
@@ -166,8 +158,8 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     marginBottom: 10,
   },
-  successText: {
-    color: '#16a34a',
+  infoText: {
+    color: '#0f172a',
     marginBottom: 10,
   },
 });

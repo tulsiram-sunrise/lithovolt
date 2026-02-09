@@ -7,12 +7,14 @@ export const useAuthStore = create(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
 
-      setAuth: (user, token) => {
+      setAuth: (user, token, refreshToken = null) => {
         set({
           user,
           token,
+          refreshToken,
           isAuthenticated: true,
         });
       },
@@ -21,8 +23,16 @@ export const useAuthStore = create(
         set({
           user: null,
           token: null,
+          refreshToken: null,
           isAuthenticated: false,
         });
+      },
+
+      setUser: (user) => {
+        set((state) => ({
+          user,
+          isAuthenticated: Boolean(state.token),
+        }));
       },
     }),
     {
