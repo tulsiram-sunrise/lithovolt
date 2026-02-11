@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
 import { authAPI } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { NeonBackground } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function LoginScreen({ navigation }) {
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -31,9 +33,9 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <NeonBackground style={styles.container} testID="login-screen">
       <Image
-        source={require('../../../assets/Lithovolt-logo.png')}
+        source={require('../../../assets/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -49,6 +51,7 @@ export default function LoginScreen({ navigation }) {
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
+          testID="login-email"
         />
         <TextInput
           style={styles.input}
@@ -57,10 +60,11 @@ export default function LoginScreen({ navigation }) {
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+          testID="login-password"
         />
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading} testID="login-submit">
           {loading ? <ActivityIndicator color="#0284c7" /> : <Text style={styles.buttonText}>Login</Text>}
         </TouchableOpacity>
 
@@ -87,7 +91,7 @@ export default function LoginScreen({ navigation }) {
           <Text style={styles.outlineButtonText}>Create Account</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </NeonBackground>
   );
 }
 
@@ -97,78 +101,90 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#0284c7',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.display,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
+    color: neonTheme.colors.muted,
+    fontFamily: neonTheme.fonts.body,
     marginBottom: 40,
   },
   form: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: '#f8fafc',
+    backgroundColor: neonTheme.colors.card,
     borderRadius: 16,
     padding: 20,
+    borderWidth: 1,
+    borderColor: neonTheme.colors.border,
   },
   input: {
-    backgroundColor: '#fff',
-    borderColor: '#e2e8f0',
+    backgroundColor: neonTheme.colors.surface,
+    borderColor: neonTheme.colors.border,
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#0f172a',
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.body,
     marginBottom: 12,
   },
   errorText: {
-    color: '#dc2626',
+    color: neonTheme.colors.danger,
     marginBottom: 12,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: neonTheme.colors.accent,
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    shadowColor: neonTheme.colors.accentGlow,
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
   buttonText: {
-    color: '#0284c7',
+    color: '#07110b',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   linkButton: {
     marginTop: 16,
     alignItems: 'center',
   },
   linkText: {
-    color: '#0284c7',
+    color: neonTheme.colors.accent,
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: neonTheme.colors.border,
     marginVertical: 16,
   },
   outlineButton: {
     borderWidth: 1,
-    borderColor: '#0284c7',
+    borderColor: neonTheme.colors.accent,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
   },
   outlineButtonText: {
-    color: '#0284c7',
+    color: neonTheme.colors.accent,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   logo: {
     width: 120,

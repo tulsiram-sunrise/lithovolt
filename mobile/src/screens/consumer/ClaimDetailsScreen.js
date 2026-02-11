@@ -1,19 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function ClaimDetailsScreen({ navigation, route }) {
   const claim = route.params?.claim;
 
   if (!claim) {
     return (
-      <View style={styles.centered}>
+      <NeonScroll contentContainerStyle={styles.centered}>
         <Text style={styles.errorText}>No claim data available.</Text>
-      </View>
+      </NeonScroll>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <NeonScroll contentContainerStyle={styles.container} testID="claim-details">
       <Text style={styles.title}>Claim Details</Text>
 
       <View style={styles.card}>
@@ -70,10 +72,10 @@ export default function ClaimDetailsScreen({ navigation, route }) {
         ) : null}
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()} testID="claim-back">
         <Text style={styles.buttonText}>Back to Claims</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </NeonScroll>
   );
 }
 
@@ -92,43 +94,49 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flexGrow: 1,
-    backgroundColor: '#f1f5f9',
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.heading,
     marginBottom: 16,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: neonTheme.colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: neonTheme.colors.border,
   },
   label: {
     fontSize: 12,
-    color: '#64748b',
+    color: neonTheme.colors.muted,
+    fontFamily: neonTheme.fonts.body,
     marginTop: 12,
   },
   value: {
     fontSize: 16,
-    color: '#0f172a',
+    color: neonTheme.colors.text,
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   button: {
-    backgroundColor: '#0284c7',
+    backgroundColor: neonTheme.colors.accent,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
+    shadowColor: neonTheme.colors.accentGlow,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
   buttonText: {
-    color: '#fff',
+    color: '#07110b',
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   centered: {
     flex: 1,
@@ -151,10 +159,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: neonTheme.colors.border,
     borderRadius: 10,
     padding: 6,
-    backgroundColor: '#f8fafc',
+    backgroundColor: neonTheme.colors.surface,
   },
   attachmentPreview: {
     width: 96,
@@ -166,12 +174,12 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 8,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: neonTheme.colors.surfaceAlt,
     marginBottom: 6,
   },
   attachmentLink: {
     fontSize: 12,
-    color: '#0284c7',
+    color: neonTheme.colors.accent,
     fontWeight: '600',
   },
 });

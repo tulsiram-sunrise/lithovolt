@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, TextInput, RefreshControl } from 'react-native';
 import { warrantyAPI } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function HomeScreen({ navigation }) {
 	const user = useAuthStore((state) => state.user);
@@ -17,7 +19,9 @@ export default function HomeScreen({ navigation }) {
 			setLoading(true);
 			setError('');
 			const response = await warrantyAPI.getWarranties();
-			setWarranties(response.data || []);
+			const payload = response.data;
+			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			setWarranties(list);
 		} catch (err) {
 			setError('Failed to load warranties.');
 		} finally {
@@ -51,13 +55,14 @@ export default function HomeScreen({ navigation }) {
 	}, []);
 
 	return (
-		<ScrollView
+		<NeonScroll
+			testID="consumer-home"
 			contentContainerStyle={styles.container}
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
 		>
 			<View style={styles.header}>
 				<Image
-					source={require('../../../assets/Lithovolt-logo.png')}
+					source={require('../../../assets/logo.png')}
 					style={styles.logo}
 					resizeMode="contain"
 				/>
@@ -66,19 +71,19 @@ export default function HomeScreen({ navigation }) {
 			</View>
 
 			<View style={styles.actions}>
-				<TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('ScanQR')}>
+				<TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('ScanQR')} testID="home-scan-qr">
 					<Text style={styles.primaryButtonText}>Scan Warranty QR</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('WarrantyActivate')}>
+				<TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('WarrantyActivate')} testID="home-activate">
 					<Text style={styles.primaryButtonText}>Activate Warranty</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Claims')}>
+				<TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Claims')} testID="home-claims">
 					<Text style={styles.secondaryButtonText}>My Claims</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.secondaryButton} onPress={fetchWarranties}>
+				<TouchableOpacity style={styles.secondaryButton} onPress={fetchWarranties} testID="home-refresh">
 					<Text style={styles.secondaryButtonText}>Refresh Warranties</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Settings')}>
+				<TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Settings')} testID="home-settings">
 					<Text style={styles.secondaryButtonText}>Settings</Text>
 				</TouchableOpacity>
 			</View>
@@ -92,6 +97,7 @@ export default function HomeScreen({ navigation }) {
 					placeholderTextColor="#94a3b8"
 					value={search}
 					onChangeText={setSearch}
+					testID="home-search"
 				/>
 
 				<View style={styles.filterRow}>
@@ -128,6 +134,7 @@ export default function HomeScreen({ navigation }) {
 						key={item.id}
 						style={styles.card}
 						onPress={() => navigation.navigate('WarrantyDetails', { warranty: item })}
+						testID={`warranty-card-${item.id}`}
 					>
 						<Text style={styles.cardTitle}>{item.serial}</Text>
 						<Text style={styles.cardSubtitle}>{item.battery_model_name || item.battery_model}</Text>
@@ -143,40 +150,39 @@ export default function HomeScreen({ navigation }) {
 					</TouchableOpacity>
 				))}
 			</View>
-		</ScrollView>
+			</NeonScroll>
 	);
 }
 
-	const formatDate = (value) => {
-		if (!value) {
-			return 'N/A';
-		}
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) {
-			return value;
-		}
-		return date.toLocaleDateString();
-	};
+const formatDate = (value) => {
+	if (!value) {
+		return 'N/A';
+	}
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return value;
+	}
+	return date.toLocaleDateString();
+};
 
-	const statusBadge = (status) => {
-		const normalized = (status || '').toUpperCase();
-		if (normalized === 'ACTIVE') {
-			return { backgroundColor: '#dcfce7' };
-		}
-		if (normalized === 'EXPIRED') {
-			return { backgroundColor: '#fee2e2' };
-		}
-		if (normalized === 'VOID') {
-			return { backgroundColor: '#e2e8f0' };
-		}
-		return { backgroundColor: '#fef3c7' };
-	};
+const statusBadge = (status) => {
+	const normalized = (status || '').toUpperCase();
+	if (normalized === 'ACTIVE') {
+		return { backgroundColor: neonTheme.colors.accent };
+	}
+	if (normalized === 'EXPIRED') {
+		return { backgroundColor: '#2a1518' };
+	}
+	if (normalized === 'VOID') {
+		return { backgroundColor: neonTheme.colors.surfaceAlt };
+	}
+	return { backgroundColor: '#fef3c7' };
+};
 
 const styles = StyleSheet.create({
 	container: {
 		padding: 20,
 		paddingBottom: 40,
-		backgroundColor: '#f1f5f9',
 	},
 	header: {
 		alignItems: 'center',
@@ -189,12 +195,12 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		fontSize: 24,
-		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 	},
 	subtitle: {
-		fontSize: 14,
-		color: '#475569',
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 		marginTop: 6,
 		textAlign: 'center',
 	},
@@ -202,92 +208,56 @@ const styles = StyleSheet.create({
 		marginBottom: 24,
 	},
 	primaryButton: {
-		backgroundColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
 		paddingVertical: 14,
 		borderRadius: 12,
 		alignItems: 'center',
+		shadowColor: neonTheme.colors.accentGlow,
+		shadowOpacity: 0.3,
+		shadowRadius: 16,
+		shadowOffset: { width: 0, height: 8 },
+		elevation: 6,
 		marginBottom: 12,
 	},
 	primaryButtonText: {
-		color: '#fff',
+		color: '#07110b',
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 		fontSize: 16,
 	},
 	secondaryButton: {
-		backgroundColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
 		paddingVertical: 12,
 		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
 		alignItems: 'center',
+		marginBottom: 10,
 	},
 	secondaryButtonText: {
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
 		fontWeight: '600',
 	},
 	section: {
-		backgroundColor: '#fff',
-		borderRadius: 16,
-		padding: 16,
-		shadowColor: '#0f172a',
-		shadowOpacity: 0.06,
-		shadowRadius: 12,
-		elevation: 2,
+		marginTop: 10,
 	},
 	sectionTitle: {
 		fontSize: 16,
-		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 		marginBottom: 12,
-	},
-	card: {
-		borderWidth: 1,
-		borderColor: '#e2e8f0',
-		borderRadius: 12,
-		padding: 12,
-		marginBottom: 12,
-	},
-	cardTitle: {
-		fontSize: 15,
-		fontWeight: '700',
-		color: '#0f172a',
-	},
-	cardSubtitle: {
-		fontSize: 13,
-		color: '#475569',
-		marginTop: 4,
-	},
-	cardMeta: {
-		fontSize: 12,
-		color: '#64748b',
-		marginTop: 6,
-	},
-	badge: {
-		alignSelf: 'flex-start',
-		paddingHorizontal: 10,
-		paddingVertical: 4,
-		borderRadius: 999,
-		marginTop: 6,
-	},
-	badgeText: {
-		fontSize: 12,
-		fontWeight: '600',
-		color: '#0f172a',
-	},
-	errorText: {
-		color: '#dc2626',
-		marginBottom: 10,
-	},
-	emptyText: {
-		color: '#64748b',
 	},
 	searchInput: {
-		backgroundColor: '#f8fafc',
-		borderColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
+		borderColor: neonTheme.colors.border,
 		borderWidth: 1,
 		borderRadius: 10,
 		paddingHorizontal: 14,
 		paddingVertical: 10,
 		fontSize: 14,
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.body,
 		marginBottom: 12,
 	},
 	filterRow: {
@@ -297,24 +267,71 @@ const styles = StyleSheet.create({
 	},
 	filterChip: {
 		borderWidth: 1,
-		borderColor: '#cbd5f5',
+		borderColor: neonTheme.colors.border,
 		borderRadius: 999,
 		paddingVertical: 6,
 		paddingHorizontal: 12,
 		marginRight: 8,
 		marginBottom: 8,
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.surface,
 	},
 	filterChipActive: {
-		backgroundColor: '#0284c7',
-		borderColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
+		borderColor: neonTheme.colors.accent,
 	},
 	filterChipText: {
-		color: '#0f172a',
+		color: neonTheme.colors.text,
 		fontSize: 12,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	filterChipTextActive: {
-		color: '#fff',
+		color: '#07110b',
+	},
+	card: {
+		backgroundColor: neonTheme.colors.card,
+		borderRadius: 16,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
+		padding: 14,
+		marginBottom: 12,
+	},
+	cardTitle: {
+		fontSize: 15,
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
+	},
+	cardSubtitle: {
+		fontSize: 13,
+		color: neonTheme.colors.muted,
+		marginTop: 4,
+		fontFamily: neonTheme.fonts.body,
+	},
+	badge: {
+		alignSelf: 'flex-start',
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 999,
+		marginTop: 6,
+	},
+	badgeText: {
+		fontWeight: '600',
+		color: '#07110b',
+		fontFamily: neonTheme.fonts.bodyStrong,
+	},
+	cardMeta: {
+		fontSize: 12,
+		color: neonTheme.colors.muted,
+		marginTop: 6,
+		fontFamily: neonTheme.fonts.body,
+	},
+	errorText: {
+		color: neonTheme.colors.danger,
+		marginBottom: 10,
+		fontFamily: neonTheme.fonts.bodyStrong,
+	},
+	emptyText: {
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 	},
 });

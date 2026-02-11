@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
 import { warrantyAPI } from '../../services/api';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function ConsumerClaimsScreen({ navigation }) {
   const [claims, setClaims] = useState([]);
@@ -15,7 +17,9 @@ export default function ConsumerClaimsScreen({ navigation }) {
       setLoading(true);
       setError('');
       const response = await warrantyAPI.getClaims();
-      setClaims(response.data || []);
+      const payload = response.data;
+      const list = Array.isArray(payload) ? payload : payload?.results || [];
+      setClaims(list);
     } catch (err) {
       setError('Failed to load claims.');
     } finally {
@@ -49,9 +53,10 @@ export default function ConsumerClaimsScreen({ navigation }) {
   }, []);
 
   return (
-    <ScrollView
+    <NeonScroll
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      testID="consumer-claims"
     >
       <Text style={styles.title}>My Claims</Text>
 
@@ -61,6 +66,7 @@ export default function ConsumerClaimsScreen({ navigation }) {
         placeholderTextColor="#94a3b8"
         value={search}
         onChangeText={setSearch}
+        testID="claims-search"
       />
 
       <View style={styles.filterRow}>
@@ -90,6 +96,7 @@ export default function ConsumerClaimsScreen({ navigation }) {
           key={claim.id}
           style={styles.card}
           onPress={() => navigation.navigate('ClaimDetails', { claim })}
+          testID={`claim-card-${claim.id}`}
         >
           <Text style={styles.cardTitle}>Claim #{claim.id}</Text>
           <View style={[styles.badge, statusBadge(claim.status)]}>
@@ -106,7 +113,7 @@ export default function ConsumerClaimsScreen({ navigation }) {
           ) : null}
         </TouchableOpacity>
       ))}
-    </ScrollView>
+    </NeonScroll>
   );
 }
 
@@ -114,23 +121,24 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#f1f5f9',
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.heading,
     marginBottom: 16,
   },
   searchInput: {
-    backgroundColor: '#f8fafc',
-    borderColor: '#e2e8f0',
+    backgroundColor: neonTheme.colors.surface,
+    borderColor: neonTheme.colors.border,
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#0f172a',
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.body,
     marginBottom: 12,
   },
   filterRow: {
@@ -140,43 +148,39 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     borderWidth: 1,
-    borderColor: '#cbd5f5',
+    borderColor: neonTheme.colors.border,
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
     marginRight: 8,
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: neonTheme.colors.surface,
   },
   filterChipActive: {
-    backgroundColor: '#0284c7',
-    borderColor: '#0284c7',
+    backgroundColor: neonTheme.colors.accent,
+    borderColor: neonTheme.colors.accent,
   },
   filterChipText: {
-    color: '#0f172a',
+    color: neonTheme.colors.text,
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   filterChipTextActive: {
-    color: '#fff',
+    color: '#07110b',
   },
   card: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: neonTheme.colors.border,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    backgroundColor: '#fff',
+    backgroundColor: neonTheme.colors.surface,
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: '#475569',
-    marginTop: 4,
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   badge: {
     alignSelf: 'flex-start',
@@ -188,19 +192,22 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#0f172a',
+    color: '#07110b',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   cardMeta: {
     fontSize: 12,
-    color: '#64748b',
+    color: neonTheme.colors.muted,
     marginTop: 6,
   },
   errorText: {
-    color: '#dc2626',
+    color: neonTheme.colors.danger,
     marginBottom: 10,
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   emptyText: {
-    color: '#64748b',
+    color: neonTheme.colors.muted,
+    fontFamily: neonTheme.fonts.body,
   },
 });
 

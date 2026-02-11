@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
 import { ordersAPI } from '../../services/api';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function OrdersScreen({ navigation }) {
 	const [orders, setOrders] = useState([]);
@@ -15,7 +17,9 @@ export default function OrdersScreen({ navigation }) {
 			setLoading(true);
 			setError('');
 			const response = await ordersAPI.getOrders();
-			setOrders(response.data || []);
+			const payload = response.data;
+			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			setOrders(list);
 		} catch (err) {
 			setError('Failed to load orders.');
 		} finally {
@@ -62,9 +66,10 @@ export default function OrdersScreen({ navigation }) {
 	}, []);
 
 	return (
-		<ScrollView
+		<NeonScroll
 			contentContainerStyle={styles.container}
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+			testID="wholesaler-orders"
 		>
 			<Text style={styles.title}>Orders</Text>
 
@@ -74,6 +79,7 @@ export default function OrdersScreen({ navigation }) {
 				placeholderTextColor="#94a3b8"
 				value={search}
 				onChangeText={setSearch}
+				testID="orders-search"
 			/>
 
 			<View style={styles.filterRow}>
@@ -98,7 +104,7 @@ export default function OrdersScreen({ navigation }) {
 
 			{filteredOrders.map((order) => (
 				<View key={order.id} style={styles.card}>
-					<TouchableOpacity onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}>
+					<TouchableOpacity onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })} testID={`order-card-${order.id}`}>
 						<Text style={styles.cardTitle}>Order #{order.id}</Text>
 						<View style={[styles.badge, statusBadge(order.status)]}>
 							<Text style={styles.badgeText}>{order.status}</Text>
@@ -112,21 +118,22 @@ export default function OrdersScreen({ navigation }) {
 						<TouchableOpacity
 							style={styles.secondaryButton}
 							onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
+							testID={`order-details-${order.id}`}
 						>
 							<Text style={styles.secondaryButtonText}>Details</Text>
 						</TouchableOpacity>
 						{order.status === 'PENDING' ? (
 							<>
-								<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'ACCEPT')}>
+								<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'ACCEPT')} testID={`order-accept-${order.id}`}>
 									<Text style={styles.secondaryButtonText}>Accept</Text>
 								</TouchableOpacity>
-								<TouchableOpacity style={styles.rejectButton} onPress={() => handleAction(order.id, 'REJECT')}>
+								<TouchableOpacity style={styles.rejectButton} onPress={() => handleAction(order.id, 'REJECT')} testID={`order-reject-${order.id}`}>
 									<Text style={styles.rejectButtonText}>Reject</Text>
 								</TouchableOpacity>
 							</>
 						) : null}
 						{order.status === 'ACCEPTED' ? (
-							<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'FULFILL')}>
+							<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'FULFILL')} testID={`order-fulfill-${order.id}`}>
 								<Text style={styles.secondaryButtonText}>Fulfill</Text>
 							</TouchableOpacity>
 						) : null}
@@ -134,6 +141,7 @@ export default function OrdersScreen({ navigation }) {
 							<TouchableOpacity
 								style={styles.secondaryButton}
 								onPress={() => navigation.navigate('IssueWarranty', { orderId: order.id })}
+								testID={`order-issue-warranty-${order.id}`}
 							>
 								<Text style={styles.secondaryButtonText}>Issue Warranty</Text>
 							</TouchableOpacity>
@@ -141,7 +149,7 @@ export default function OrdersScreen({ navigation }) {
 					</View>
 				</View>
 			))}
-		</ScrollView>
+		</NeonScroll>
 	);
 }
 
@@ -159,44 +167,45 @@ const formatDate = (value) => {
 const statusBadge = (status) => {
 	const normalized = (status || '').toUpperCase();
 	if (normalized === 'PENDING') {
-		return { backgroundColor: '#fef3c7' };
+		return { backgroundColor: neonTheme.colors.surfaceAlt };
 	}
 	if (normalized === 'ACCEPTED') {
-		return { backgroundColor: '#e0f2fe' };
+		return { backgroundColor: neonTheme.colors.accent };
 	}
 	if (normalized === 'FULFILLED') {
-		return { backgroundColor: '#dcfce7' };
+		return { backgroundColor: '#1b3a2c' };
 	}
 	if (normalized === 'REJECTED') {
-		return { backgroundColor: '#fee2e2' };
+		return { backgroundColor: '#2a1518' };
 	}
 	if (normalized === 'CANCELLED') {
-		return { backgroundColor: '#e2e8f0' };
+		return { backgroundColor: neonTheme.colors.surfaceAlt };
 	}
-	return { backgroundColor: '#e2e8f0' };
+	return { backgroundColor: neonTheme.colors.surfaceAlt };
 };
 
 const styles = StyleSheet.create({
 	container: {
 		padding: 20,
 		paddingBottom: 40,
-		backgroundColor: '#f1f5f9',
 	},
 	title: {
 		fontSize: 22,
 		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 		marginBottom: 16,
 	},
 	searchInput: {
-		backgroundColor: '#f8fafc',
-		borderColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
+		borderColor: neonTheme.colors.border,
 		borderWidth: 1,
 		borderRadius: 10,
 		paddingHorizontal: 14,
 		paddingVertical: 10,
 		fontSize: 14,
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.body,
 		marginBottom: 12,
 	},
 	filterRow: {
@@ -206,43 +215,46 @@ const styles = StyleSheet.create({
 	},
 	filterChip: {
 		borderWidth: 1,
-		borderColor: '#cbd5f5',
+		borderColor: neonTheme.colors.border,
 		borderRadius: 999,
 		paddingVertical: 6,
 		paddingHorizontal: 12,
 		marginRight: 8,
 		marginBottom: 8,
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.surface,
 	},
 	filterChipActive: {
-		backgroundColor: '#0284c7',
-		borderColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
+		borderColor: neonTheme.colors.accent,
 	},
 	filterChipText: {
-		color: '#0f172a',
+		color: neonTheme.colors.text,
 		fontSize: 12,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	filterChipTextActive: {
-		color: '#fff',
+		color: '#07110b',
 	},
 	card: {
 		borderWidth: 1,
-		borderColor: '#e2e8f0',
+		borderColor: neonTheme.colors.border,
 		borderRadius: 12,
 		padding: 12,
 		marginBottom: 12,
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.surface,
 	},
 	cardTitle: {
 		fontSize: 15,
 		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	cardMeta: {
 		fontSize: 12,
-		color: '#64748b',
+		color: neonTheme.colors.muted,
 		marginTop: 6,
+		fontFamily: neonTheme.fonts.body,
 	},
 	badge: {
 		alignSelf: 'flex-start',
@@ -252,40 +264,52 @@ const styles = StyleSheet.create({
 		marginTop: 6,
 	},
 	badgeText: {
-		fontSize: 12,
 		fontWeight: '600',
-		color: '#0f172a',
+		color: '#07110b',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	actionRow: {
 		flexDirection: 'row',
+		flexWrap: 'wrap',
 		marginTop: 12,
 	},
 	secondaryButton: {
-		backgroundColor: '#e0f2fe',
+		backgroundColor: neonTheme.colors.surfaceAlt,
 		paddingVertical: 8,
 		paddingHorizontal: 14,
 		borderRadius: 10,
 		marginRight: 8,
+		marginBottom: 8,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
 	},
 	secondaryButtonText: {
-		color: '#0f172a',
+		color: neonTheme.colors.text,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	rejectButton: {
-		backgroundColor: '#fee2e2',
+		backgroundColor: '#2a1518',
 		paddingVertical: 8,
 		paddingHorizontal: 14,
 		borderRadius: 10,
+		marginRight: 8,
+		marginBottom: 8,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.danger,
 	},
 	rejectButtonText: {
-		color: '#b91c1c',
+		color: neonTheme.colors.danger,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	emptyText: {
-		color: '#64748b',
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 	},
 	errorText: {
-		color: '#dc2626',
+		color: neonTheme.colors.danger,
 		marginBottom: 10,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 });

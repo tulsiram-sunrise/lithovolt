@@ -1,19 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function WarrantyDetailsScreen({ navigation, route }) {
 	const warranty = route.params?.warranty;
 
 	if (!warranty) {
 		return (
-			<View style={styles.centered}>
+			<NeonScroll contentContainerStyle={styles.centered}>
 				<Text style={styles.errorText}>No warranty data available.</Text>
-			</View>
+			</NeonScroll>
 		);
 	}
 
 	return (
-		<ScrollView contentContainerStyle={styles.container}>
+		<NeonScroll contentContainerStyle={styles.container} testID="warranty-details">
 			<Text style={styles.title}>Warranty Details</Text>
 
 			<View style={styles.card}>
@@ -35,17 +37,18 @@ export default function WarrantyDetailsScreen({ navigation, route }) {
 				<Text style={styles.value}>{formatDate(warranty.end_date)}</Text>
 			</View>
 
-			<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+			<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')} testID="warranty-back-home">
 				<Text style={styles.buttonText}>Back to Home</Text>
 			</TouchableOpacity>
 
 			<TouchableOpacity
 				style={[styles.button, styles.secondaryButton]}
 				onPress={() => navigation.navigate('WarrantyClaim', { warranty })}
+				testID="warranty-submit-claim"
 			>
 				<Text style={[styles.buttonText, styles.secondaryButtonText]}>Submit Claim</Text>
 			</TouchableOpacity>
-		</ScrollView>
+		</NeonScroll>
 	);
 }
 
@@ -63,13 +66,13 @@ const formatDate = (value) => {
 const statusBadge = (status) => {
 	const normalized = (status || '').toUpperCase();
 	if (normalized === 'ACTIVE') {
-		return { backgroundColor: '#dcfce7' };
+		return { backgroundColor: neonTheme.colors.accent };
 	}
 	if (normalized === 'EXPIRED') {
-		return { backgroundColor: '#fee2e2' };
+		return { backgroundColor: '#2a1518' };
 	}
 	if (normalized === 'VOID') {
-		return { backgroundColor: '#e2e8f0' };
+		return { backgroundColor: neonTheme.colors.surfaceAlt };
 	}
 	return { backgroundColor: '#fef3c7' };
 };
@@ -77,34 +80,41 @@ const statusBadge = (status) => {
 const styles = StyleSheet.create({
 	container: {
 		padding: 20,
-		backgroundColor: '#f1f5f9',
 		flexGrow: 1,
+	},
+	centered: {
+		flexGrow: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: 20,
 	},
 	title: {
 		fontSize: 22,
 		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 		marginBottom: 16,
 	},
 	card: {
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.card,
 		borderRadius: 16,
-		padding: 16,
 		marginBottom: 24,
-		shadowColor: '#0f172a',
-		shadowOpacity: 0.06,
-		shadowRadius: 12,
-		elevation: 2,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
+		padding: 16,
 	},
 	label: {
 		fontSize: 12,
-		color: '#64748b',
+		color: neonTheme.colors.muted,
 		marginTop: 12,
+		fontFamily: neonTheme.fonts.body,
 	},
 	value: {
 		fontSize: 16,
-		color: '#0f172a',
+		color: neonTheme.colors.text,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
+		marginTop: 4,
 	},
 	badge: {
 		paddingHorizontal: 10,
@@ -114,35 +124,38 @@ const styles = StyleSheet.create({
 		marginTop: 6,
 	},
 	badgeText: {
-		fontSize: 12,
 		fontWeight: '600',
-		color: '#0f172a',
+		color: '#07110b',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	button: {
-		backgroundColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
 		paddingVertical: 12,
 		borderRadius: 12,
 		alignItems: 'center',
 		marginBottom: 12,
+		shadowColor: neonTheme.colors.accentGlow,
+		shadowOpacity: 0.3,
+		shadowRadius: 16,
+		shadowOffset: { width: 0, height: 8 },
+		elevation: 6,
 	},
 	buttonText: {
-		color: '#fff',
+		color: '#07110b',
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	secondaryButton: {
-		backgroundColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
 	},
 	secondaryButtonText: {
-		color: '#0f172a',
-	},
-	centered: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		padding: 20,
-		backgroundColor: '#f1f5f9',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	errorText: {
-		color: '#dc2626',
+		color: neonTheme.colors.danger,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 });

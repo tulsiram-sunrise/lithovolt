@@ -71,7 +71,7 @@ export default function IssueWarrantyScreen({ navigation, route }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} testID="wholesaler-issue-warranty">
       <Text style={styles.title}>Issue Warranty</Text>
       <Text style={styles.subtitle}>Enter serial number and consumer details.</Text>
 
@@ -82,6 +82,7 @@ export default function IssueWarrantyScreen({ navigation, route }) {
           placeholderTextColor="#94a3b8"
           value={form.serial_number}
           onChangeText={(value) => updateField('serial_number', value)}
+          testID="issue-serial"
         />
         <TextInput
           style={styles.input}
@@ -126,7 +127,7 @@ export default function IssueWarrantyScreen({ navigation, route }) {
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
         {info ? <Text style={styles.infoText}>{info}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleIssue} disabled={loading}>
+        <TouchableOpacity style={styles.button} onPress={handleIssue} disabled={loading} testID="issue-submit">
           <Text style={styles.buttonText}>Issue Warranty</Text>
         </TouchableOpacity>
 

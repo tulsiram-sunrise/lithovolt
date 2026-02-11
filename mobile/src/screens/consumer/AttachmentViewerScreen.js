@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { NeonBackground } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function AttachmentViewerScreen({ navigation, route }) {
   const attachment = route.params?.attachment;
@@ -33,14 +35,14 @@ export default function AttachmentViewerScreen({ navigation, route }) {
 
   if (!attachment?.file) {
     return (
-      <View style={styles.centered}>
+      <NeonBackground style={styles.centered}>
         <Text style={styles.errorText}>Attachment not available.</Text>
-      </View>
+      </NeonBackground>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <NeonBackground style={styles.container} testID="attachment-viewer">
       {isImage ? (
         <Image source={{ uri: attachment.file }} style={styles.image} resizeMode="contain" />
       ) : (
@@ -51,21 +53,20 @@ export default function AttachmentViewerScreen({ navigation, route }) {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleDownload} disabled={downloading}>
+      <TouchableOpacity style={styles.button} onPress={handleDownload} disabled={downloading} testID="attachment-download">
         {downloading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Download</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.linkButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.linkButton} onPress={() => navigation.goBack()} testID="attachment-back">
         <Text style={styles.linkText}>Back</Text>
       </TouchableOpacity>
-    </View>
+    </NeonBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -74,44 +75,55 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '70%',
     marginBottom: 20,
+    backgroundColor: neonTheme.colors.surface,
   },
   filePlaceholder: {
     width: '100%',
     height: 200,
+    borderWidth: 1,
+    borderColor: neonTheme.colors.border,
     borderRadius: 12,
-    backgroundColor: '#1e293b',
-    alignItems: 'center',
+    backgroundColor: neonTheme.colors.surface,
     justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 20,
   },
   fileText: {
-    color: '#e2e8f0',
+    color: neonTheme.colors.muted,
+    fontFamily: neonTheme.fonts.body,
   },
   button: {
-    backgroundColor: '#0284c7',
+    shadowColor: neonTheme.colors.accentGlow,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+    backgroundColor: neonTheme.colors.accent,
     paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
     borderRadius: 10,
     marginBottom: 12,
+    alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#07110b',
     fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   linkButton: {
     marginTop: 4,
   },
   linkText: {
-    color: '#94a3b8',
-    fontWeight: '600',
+    color: neonTheme.colors.muted,
+    fontFamily: neonTheme.fonts.body,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
   },
   errorText: {
-    color: '#fca5a5',
+    color: neonTheme.colors.danger,
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
 });

@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { warrantyAPI } from '../../services/api';
+import { NeonBackground } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function ScanQRScreen({ navigation }) {
-	const [hasPermission, setHasPermission] = useState(null);
+	const [permission, requestPermission] = useCameraPermissions();
 	const [scanned, setScanned] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [lastSerial, setLastSerial] = useState('');
 
 	useEffect(() => {
-		const requestPermission = async () => {
-			const { status } = await BarCodeScanner.requestPermissionsAsync();
-			setHasPermission(status === 'granted');
-		};
-		requestPermission();
-	}, []);
+		if (!permission) {
+			return;
+		}
+		if (!permission.granted) {
+			requestPermission();
+		}
+	}, [permission, requestPermission]);
 
 	const handleBarCodeScanned = async ({ data }) => {
 		if (scanned) {
@@ -39,27 +42,28 @@ export default function ScanQRScreen({ navigation }) {
 		}
 	};
 
-	if (hasPermission === null) {
+	if (!permission) {
 		return (
-			<View style={styles.centered}>
-				<ActivityIndicator color="#0284c7" />
+			<NeonBackground style={styles.centered}>
+				<ActivityIndicator color={neonTheme.colors.accent} />
 				<Text style={styles.helpText}>Requesting camera access...</Text>
-			</View>
+			</NeonBackground>
 		);
 	}
 
-	if (hasPermission === false) {
+	if (!permission.granted) {
 		return (
-			<View style={styles.centered}>
+			<NeonBackground style={styles.centered}>
 				<Text style={styles.errorText}>Camera permission denied.</Text>
-			</View>
+			</NeonBackground>
 		);
 	}
 
 	return (
-		<View style={styles.container}>
-			<BarCodeScanner
+		<NeonBackground style={styles.container}>
+			<CameraView
 				onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+				barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
 				style={StyleSheet.absoluteFillObject}
 			/>
 
@@ -84,7 +88,7 @@ export default function ScanQRScreen({ navigation }) {
 					</TouchableOpacity>
 				) : null}
 			</View>
-		</View>
+		</NeonBackground>
 	);
 }
 
@@ -97,46 +101,54 @@ const styles = StyleSheet.create({
 		bottom: 40,
 		left: 20,
 		right: 20,
-		backgroundColor: 'rgba(15, 23, 42, 0.75)',
+		backgroundColor: 'rgba(10, 18, 14, 0.85)',
 		borderRadius: 16,
 		padding: 16,
 		alignItems: 'center',
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
 	},
 	title: {
-		color: '#fff',
+		color: neonTheme.colors.text,
 		fontSize: 18,
 		fontWeight: '700',
+		fontFamily: neonTheme.fonts.heading,
 	},
 	subtitle: {
-		color: '#cbd5f5',
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 		marginTop: 6,
 		marginBottom: 12,
 		textAlign: 'center',
 	},
 	button: {
 		marginTop: 12,
-		backgroundColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
 		paddingVertical: 10,
 		paddingHorizontal: 24,
 		borderRadius: 10,
 	},
 	buttonText: {
-		color: '#fff',
+		color: '#07110b',
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	secondaryButton: {
 		marginTop: 10,
-		backgroundColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
 		paddingVertical: 10,
 		paddingHorizontal: 24,
 		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: neonTheme.colors.border,
 	},
 	secondaryButtonText: {
-		color: '#0f172a',
+		color: neonTheme.colors.text,
 		fontWeight: '600',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	errorText: {
-		color: '#fca5a5',
+		color: neonTheme.colors.danger,
 		marginTop: 8,
 	},
 	centered: {
@@ -144,10 +156,10 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		padding: 20,
-		backgroundColor: '#0f172a',
 	},
 	helpText: {
 		marginTop: 8,
-		color: '#e2e8f0',
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 	},
 });

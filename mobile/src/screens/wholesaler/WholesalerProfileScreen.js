@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { userAPI } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
-import { NeonScroll } from '../../components/layout/NeonBackground';
-import { neonTheme } from '../../styles/neonTheme';
 
-export default function ConsumerProfileScreen({ navigation }) {
+export default function WholesalerProfileScreen({ navigation }) {
   const authUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const [form, setForm] = useState({
@@ -13,6 +11,8 @@ export default function ConsumerProfileScreen({ navigation }) {
     last_name: '',
     email: '',
     phone: '',
+    company_name: '',
+    gst_number: '',
     address: '',
     city: '',
     state: '',
@@ -33,6 +33,8 @@ export default function ConsumerProfileScreen({ navigation }) {
         last_name: data.last_name || '',
         email: data.email || '',
         phone: data.phone || '',
+        company_name: data.company_name || '',
+        gst_number: data.gst_number || '',
         address: data.address || '',
         city: data.city || '',
         state: data.state || '',
@@ -77,8 +79,8 @@ export default function ConsumerProfileScreen({ navigation }) {
   };
 
   return (
-    <NeonScroll contentContainerStyle={styles.container} testID="consumer-profile">
-      <Text style={styles.title}>My Profile</Text>
+    <ScrollView contentContainerStyle={styles.container} testID="wholesaler-profile">
+      <Text style={styles.title}>Account Settings</Text>
 
       <View style={styles.form}>
         <TextInput
@@ -87,7 +89,6 @@ export default function ConsumerProfileScreen({ navigation }) {
           placeholderTextColor="#94a3b8"
           value={form.first_name}
           onChangeText={(value) => updateField('first_name', value)}
-          testID="profile-first-name"
         />
         <TextInput
           style={styles.input}
@@ -104,7 +105,6 @@ export default function ConsumerProfileScreen({ navigation }) {
           autoCapitalize="none"
           value={form.email}
           onChangeText={(value) => updateField('email', value)}
-          testID="profile-email"
         />
         <TextInput
           style={styles.input}
@@ -113,6 +113,20 @@ export default function ConsumerProfileScreen({ navigation }) {
           keyboardType="phone-pad"
           value={form.phone}
           onChangeText={(value) => updateField('phone', value)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Company name"
+          placeholderTextColor="#94a3b8"
+          value={form.company_name}
+          onChangeText={(value) => updateField('company_name', value)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="GST number"
+          placeholderTextColor="#94a3b8"
+          value={form.gst_number}
+          onChangeText={(value) => updateField('gst_number', value)}
         />
         <TextInput
           style={styles.input}
@@ -148,7 +162,7 @@ export default function ConsumerProfileScreen({ navigation }) {
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
         {info ? <Text style={styles.infoText}>{info}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading} testID="profile-save">
+        <TouchableOpacity style={styles.button} onPress={handleSave} disabled={loading}>
           <Text style={styles.buttonText}>Save Changes</Text>
         </TouchableOpacity>
 
@@ -156,7 +170,7 @@ export default function ConsumerProfileScreen({ navigation }) {
           <Text style={styles.linkText}>Back</Text>
         </TouchableOpacity>
       </View>
-    </NeonScroll>
+    </ScrollView>
   );
 }
 
@@ -164,66 +178,60 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
+    backgroundColor: '#f1f5f9',
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: neonTheme.colors.text,
-    fontFamily: neonTheme.fonts.heading,
+    color: '#0f172a',
     marginBottom: 16,
   },
   form: {
-    backgroundColor: neonTheme.colors.card,
+    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: neonTheme.colors.border,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
   },
   input: {
-    backgroundColor: neonTheme.colors.surface,
-    borderColor: neonTheme.colors.border,
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    color: neonTheme.colors.text,
-    fontFamily: neonTheme.fonts.body,
+    color: '#0f172a',
     marginBottom: 12,
   },
   button: {
-    backgroundColor: neonTheme.colors.accent,
+    backgroundColor: '#0284c7',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 6,
-    shadowColor: neonTheme.colors.accentGlow,
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
   },
   buttonText: {
-    color: '#07110b',
+    color: '#fff',
     fontWeight: '600',
     fontSize: 16,
-    fontFamily: neonTheme.fonts.bodyStrong,
   },
   linkButton: {
     marginTop: 12,
     alignItems: 'center',
   },
   linkText: {
-    color: neonTheme.colors.accent,
+    color: '#0284c7',
     fontWeight: '600',
-    fontFamily: neonTheme.fonts.bodyStrong,
   },
   errorText: {
-    color: neonTheme.colors.danger,
+    color: '#dc2626',
     marginBottom: 10,
   },
   infoText: {
-    color: neonTheme.colors.text,
+    color: '#0f172a',
     marginBottom: 10,
   },
 });

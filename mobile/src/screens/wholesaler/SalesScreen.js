@@ -14,7 +14,9 @@ export default function SalesScreen() {
 			setLoading(true);
 			setError('');
 			const response = await ordersAPI.getOrders({ status: 'FULFILLED' });
-			setOrders(response.data || []);
+			const payload = response.data;
+			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			setOrders(list);
 		} catch (err) {
 			setError('Failed to load sales.');
 		} finally {
@@ -44,6 +46,7 @@ export default function SalesScreen() {
 		<ScrollView
 			contentContainerStyle={styles.container}
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+			testID="wholesaler-sales"
 		>
 			<Text style={styles.title}>Sales</Text>
 
@@ -53,6 +56,7 @@ export default function SalesScreen() {
 				placeholderTextColor="#94a3b8"
 				value={search}
 				onChangeText={setSearch}
+				testID="sales-search"
 			/>
 
 			{loading ? <ActivityIndicator color="#0284c7" /> : null}

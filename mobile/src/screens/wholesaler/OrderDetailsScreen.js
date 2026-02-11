@@ -86,7 +86,7 @@ export default function OrderDetailsScreen({ navigation, route }) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} testID="wholesaler-order-details">
       <Text style={styles.title}>Order #{order.id}</Text>
       <View style={[styles.badge, statusBadge(order.status)]}>
         <Text style={styles.badgeText}>{order.status}</Text>
@@ -120,7 +120,7 @@ export default function OrderDetailsScreen({ navigation, route }) {
 
       {invoiceError ? <Text style={styles.errorText}>{invoiceError}</Text> : null}
 
-      <TouchableOpacity style={styles.secondaryButton} onPress={handleInvoiceDownload} disabled={downloadingInvoice}>
+      <TouchableOpacity style={styles.secondaryButton} onPress={handleInvoiceDownload} disabled={downloadingInvoice} testID="order-download-invoice">
         {downloadingInvoice ? (
           <ActivityIndicator color="#0284c7" />
         ) : (
@@ -132,6 +132,7 @@ export default function OrderDetailsScreen({ navigation, route }) {
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('IssueWarranty', { orderId: order.id })}
+          testID="order-issue-warranty"
         >
           <Text style={styles.buttonText}>Issue Warranty</Text>
         </TouchableOpacity>

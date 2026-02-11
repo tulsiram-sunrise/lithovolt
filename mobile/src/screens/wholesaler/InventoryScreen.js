@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
 import { inventoryAPI } from '../../services/api';
+import { NeonScroll } from '../../components/layout/NeonBackground';
+import { neonTheme } from '../../styles/neonTheme';
 
 export default function InventoryScreen() {
 	const [serials, setSerials] = useState([]);
@@ -19,8 +21,10 @@ export default function InventoryScreen() {
 				inventoryAPI.getInventory(),
 				inventoryAPI.getAllocations(),
 			]);
-			setSerials(serialResponse.data || []);
-			setAllocations(allocationResponse.data || []);
+			const serialPayload = serialResponse.data;
+			const allocationPayload = allocationResponse.data;
+			setSerials(Array.isArray(serialPayload) ? serialPayload : serialPayload?.results || []);
+			setAllocations(Array.isArray(allocationPayload) ? allocationPayload : allocationPayload?.results || []);
 		} catch (err) {
 			setError('Failed to load inventory.');
 		} finally {
@@ -54,9 +58,10 @@ export default function InventoryScreen() {
 	}, []);
 
 	return (
-		<ScrollView
+		<NeonScroll
 			contentContainerStyle={styles.container}
 			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+			testID="wholesaler-inventory"
 		>
 			<Text style={styles.title}>Inventory</Text>
 
@@ -82,6 +87,7 @@ export default function InventoryScreen() {
 					placeholderTextColor="#94a3b8"
 					value={search}
 					onChangeText={setSearch}
+					testID="inventory-search"
 				/>
 
 				<View style={styles.filterRow}>
@@ -112,73 +118,76 @@ export default function InventoryScreen() {
 					</View>
 				))}
 			</View>
-		</ScrollView>
+		</NeonScroll>
 	);
 }
 
 const statusBadge = (status) => {
 	const normalized = (status || '').toUpperCase();
 	if (normalized === 'ALLOCATED') {
-		return { backgroundColor: '#e0f2fe' };
+		return { backgroundColor: neonTheme.colors.accent };
 	}
 	if (normalized === 'SOLD') {
-		return { backgroundColor: '#dcfce7' };
+		return { backgroundColor: '#1b3a2c' };
 	}
-	return { backgroundColor: '#e2e8f0' };
+	return { backgroundColor: neonTheme.colors.surfaceAlt };
 };
 
 const styles = StyleSheet.create({
 	container: {
 		padding: 20,
 		paddingBottom: 40,
-		backgroundColor: '#f1f5f9',
 	},
 	title: {
 		fontSize: 22,
 		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 		marginBottom: 16,
 	},
 	section: {
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.card,
 		borderRadius: 16,
 		padding: 16,
-		marginBottom: 16,
 		borderWidth: 1,
-		borderColor: '#e2e8f0',
+		borderColor: neonTheme.colors.border,
+		marginBottom: 16,
 	},
 	sectionTitle: {
-		fontSize: 16,
 		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.heading,
 		marginBottom: 12,
 	},
 	card: {
 		borderWidth: 1,
-		borderColor: '#e2e8f0',
+		borderColor: neonTheme.colors.border,
 		borderRadius: 12,
 		padding: 12,
 		marginBottom: 12,
+		backgroundColor: neonTheme.colors.surface,
 	},
 	cardTitle: {
 		fontSize: 15,
-		fontWeight: '700',
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	cardMeta: {
 		fontSize: 12,
-		color: '#64748b',
+		color: neonTheme.colors.muted,
 		marginTop: 6,
+		fontFamily: neonTheme.fonts.body,
 	},
 	searchInput: {
-		backgroundColor: '#f8fafc',
-		borderColor: '#e2e8f0',
+		backgroundColor: neonTheme.colors.surface,
+		borderColor: neonTheme.colors.border,
 		borderWidth: 1,
 		borderRadius: 10,
 		paddingHorizontal: 14,
 		paddingVertical: 10,
 		fontSize: 14,
-		color: '#0f172a',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.body,
 		marginBottom: 12,
 	},
 	filterRow: {
@@ -188,25 +197,26 @@ const styles = StyleSheet.create({
 	},
 	filterChip: {
 		borderWidth: 1,
-		borderColor: '#cbd5f5',
+		borderColor: neonTheme.colors.border,
 		borderRadius: 999,
 		paddingVertical: 6,
 		paddingHorizontal: 12,
 		marginRight: 8,
 		marginBottom: 8,
-		backgroundColor: '#fff',
+		backgroundColor: neonTheme.colors.surface,
 	},
 	filterChipActive: {
-		backgroundColor: '#0284c7',
-		borderColor: '#0284c7',
+		backgroundColor: neonTheme.colors.accent,
+		borderColor: neonTheme.colors.accent,
 	},
 	filterChipText: {
-		color: '#0f172a',
 		fontSize: 12,
 		fontWeight: '600',
+		color: neonTheme.colors.text,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	filterChipTextActive: {
-		color: '#fff',
+		color: '#07110b',
 	},
 	badge: {
 		alignSelf: 'flex-start',
@@ -218,13 +228,16 @@ const styles = StyleSheet.create({
 	badgeText: {
 		fontSize: 12,
 		fontWeight: '600',
-		color: '#0f172a',
+		color: '#07110b',
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	emptyText: {
-		color: '#64748b',
+		color: neonTheme.colors.muted,
+		fontFamily: neonTheme.fonts.body,
 	},
 	errorText: {
-		color: '#dc2626',
+		color: neonTheme.colors.danger,
 		marginBottom: 10,
+		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 });
