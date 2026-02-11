@@ -5,6 +5,7 @@ import { useAuthStore } from './store/authStore'
 import AuthLayout from './components/layout/AuthLayout'
 import AdminLayout from './components/layout/AdminLayout'
 import WholesalerLayout from './components/layout/WholesalerLayout'
+import CustomerLayout from './components/layout/CustomerLayout'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
@@ -23,6 +24,12 @@ import WholesalerDashboard from './pages/wholesaler/Dashboard'
 import WholesalerInventory from './pages/wholesaler/InventoryPage'
 import WholesalerOrders from './pages/wholesaler/OrdersPage'
 import WholesalerSales from './pages/wholesaler/SalesPage'
+
+// Customer Pages
+import CustomerDashboard from './pages/customer/Dashboard'
+import CustomerWarrantiesPage from './pages/customer/WarrantiesPage'
+import CustomerClaimPage from './pages/customer/ClaimWarrantyPage'
+import CustomerWholesalerRegister from './pages/customer/WholesalerRegisterPage'
 
 function App() {
   return (
@@ -63,6 +70,21 @@ function App() {
         <Route path="inventory" element={<WholesalerInventory />} />
         <Route path="orders" element={<WholesalerOrders />} />
         <Route path="sales" element={<WholesalerSales />} />
+      </Route>
+
+      {/* Customer Routes */}
+      <Route
+        path="/customer/*"
+        element={
+          <ProtectedRoute roles={['CONSUMER']}>
+            <CustomerLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<CustomerDashboard />} />
+        <Route path="warranties" element={<CustomerWarrantiesPage />} />
+        <Route path="claim" element={<CustomerClaimPage />} />
+        <Route path="wholesaler-register" element={<CustomerWholesalerRegister />} />
       </Route>
 
       {/* Default Route */}

@@ -1,42 +1,48 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const adminMenu = [
-  { name: 'Dashboard', path: '/admin', icon: '📊' },
-  { name: 'Users', path: '/admin/users', icon: '👥' },
-  { name: 'Battery Models', path: '/admin/battery-models', icon: '🔋' },
-  { name: 'Inventory', path: '/admin/inventory', icon: '📦' },
-  { name: 'Orders', path: '/admin/orders', icon: '🛒' },
-  { name: 'Warranties', path: '/admin/warranties', icon: '📜' },
+  { name: 'Dashboard', path: '/admin' },
+  { name: 'Users', path: '/admin/users' },
+  { name: 'Battery Models', path: '/admin/battery-models' },
+  { name: 'Inventory', path: '/admin/inventory' },
+  { name: 'Orders', path: '/admin/orders' },
+  { name: 'Warranties', path: '/admin/warranties' },
 ]
 
 const wholesalerMenu = [
-  { name: 'Dashboard', path: '/wholesaler', icon: '📊' },
-  { name: 'Inventory', path: '/wholesaler/inventory', icon: '📦' },
-  { name: 'Orders', path: '/wholesaler/orders', icon: '🛒' },
-  { name: 'Sales', path: '/wholesaler/sales', icon: '💰' },
+  { name: 'Dashboard', path: '/wholesaler' },
+  { name: 'Inventory', path: '/wholesaler/inventory' },
+  { name: 'Orders', path: '/wholesaler/orders' },
+  { name: 'Sales', path: '/wholesaler/sales' },
+]
+
+const customerMenu = [
+  { name: 'Dashboard', path: '/customer' },
+  { name: 'My Warranties', path: '/customer/warranties' },
+  { name: 'Claim Warranty', path: '/customer/claim' },
+  { name: 'Wholesaler Signup', path: '/customer/wholesaler-register' },
 ]
 
 export default function Sidebar({ role }) {
   const location = useLocation()
-  const menu = role === 'admin' ? adminMenu : wholesalerMenu
+  const menu = role === 'admin' ? adminMenu : role === 'wholesaler' ? wholesalerMenu : customerMenu
 
   return (
-    <div className="w-64 bg-white shadow-lg">
+    <div className="sidebar">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-primary-600">Lithovolt</h1>
-        <p className="text-sm text-gray-500 capitalize">{role} Panel</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-[color:var(--muted)]">Command Center</p>
+        <h1 className="text-2xl font-bold neon-title text-[color:var(--accent)]">Lithovolt</h1>
+        <p className="text-sm text-[color:var(--muted)] capitalize">{role} Panel</p>
       </div>
       <nav className="mt-6">
         {menu.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center px-6 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors ${
-              location.pathname === item.path ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-600' : ''
-            }`}
+            className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
           >
-            <span className="mr-3">{item.icon}</span>
-            <span>{item.name}</span>
+            <span className="h-2 w-2 rounded-full bg-[color:var(--accent)]/70" />
+            <span className="text-sm font-medium">{item.name}</span>
           </Link>
         ))}
       </nav>

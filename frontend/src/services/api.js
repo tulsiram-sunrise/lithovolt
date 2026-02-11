@@ -37,6 +37,11 @@ api.interceptors.response.use(
 
 export default api
 
+// Admin API
+export const adminAPI = {
+  getMetrics: () => api.get('/admin/metrics/'),
+}
+
 // Auth API
 export const authAPI = {
   login: (credentials) => api.post('/auth/login/', credentials),
@@ -56,6 +61,14 @@ export const userAPI = {
   updateUser: (id, data) => api.patch(`/users/${id}/`, data),
   deleteUser: (id) => api.delete(`/users/${id}/`),
   getWholesalers: () => api.get('/users/wholesalers/'),
+  toggleActive: (id) => api.post(`/users/${id}/toggle_active/`),
+  getWholesalerApplications: (params) => api.get('/users/wholesaler-applications/', { params }),
+  getWholesalerApplication: (id) => api.get(`/users/wholesaler-applications/${id}/`),
+  approveWholesalerApplication: (id, data) => api.post(`/users/wholesaler-applications/${id}/approve/`, data),
+  rejectWholesalerApplication: (id, data) => api.post(`/users/wholesaler-applications/${id}/reject/`, data),
+  submitWholesalerApplication: (data) => api.post('/users/wholesaler-applications/', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 }
 
 // Inventory API
@@ -67,7 +80,8 @@ export const inventoryAPI = {
   
   getSerials: (params) => api.get('/inventory/serials/', { params }),
   generateSerials: (data) => api.post('/inventory/serials/generate/', data),
-  allocateStock: (data) => api.post('/inventory/allocate/', data),
+  getAllocations: (params) => api.get('/inventory/allocations/', { params }),
+  allocateStock: (data) => api.post('/inventory/allocations/', data),
 }
 
 // Order API
@@ -76,14 +90,17 @@ export const orderAPI = {
   createOrder: (data) => api.post('/orders/', data),
   getOrder: (id) => api.get(`/orders/${id}/`),
   updateOrder: (id, data) => api.patch(`/orders/${id}/`, data),
-  approveOrder: (id) => api.post(`/orders/${id}/approve/`),
+  acceptOrder: (id) => api.post(`/orders/${id}/accept/`),
+  rejectOrder: (id) => api.post(`/orders/${id}/reject/`),
+  fulfillOrder: (id) => api.post(`/orders/${id}/fulfill/`),
   getInvoice: (id) => api.get(`/orders/${id}/invoice/`, { responseType: 'blob' }),
 }
 
 // Warranty API
 export const warrantyAPI = {
   getWarranties: (params) => api.get('/warranty/', { params }),
-  activateWarranty: (data) => api.post('/warranty/activate/', data),
+  claimWarranty: (data) => api.post('/warranty/claim/', data),
+  issueWarranty: (data) => api.post('/warranty/issue/', data),
   verifyWarranty: (serial) => api.get(`/warranty/verify/${serial}/`),
   getCertificate: (id) => api.get(`/warranty/${id}/certificate/`, { responseType: 'blob' }),
   getWarrantyClaims: (params) => api.get('/warranty/claims/', { params }),
