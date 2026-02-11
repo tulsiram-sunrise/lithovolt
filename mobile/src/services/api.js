@@ -99,9 +99,16 @@ export const authAPI = {
 export const userAPI = {
   getMe: () => api.get('/users/me/'),
   updateProfile: (data) => api.patch('/users/update_profile/', data),
+  getWholesalerApplication: () => api.get('/users/wholesaler-applications/me/'),
+  submitWholesalerApplication: (formData) =>
+    api.post('/users/wholesaler-applications/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };
 
 export const inventoryAPI = {
+  getModels: (params) => api.get('/inventory/models/', { params }),
+  getAccessories: (params) => api.get('/inventory/accessories/', { params }),
   getInventory: (params) => api.get('/inventory/serials/', { params }),
   getAllocations: (params) => api.get('/inventory/allocations/', { params }),
   allocateStock: (data) => api.post('/inventory/allocate/', data),
@@ -111,6 +118,7 @@ export const ordersAPI = {
   getOrders: (params) => api.get('/orders/', { params }),
   getOrder: (id) => api.get(`/orders/${id}/`),
   getOrderItems: (id) => api.get(`/orders/${id}/items/`),
+  createOrder: (data) => api.post('/orders/', data),
   acceptOrder: (id) => api.post(`/orders/${id}/accept/`),
   rejectOrder: (id) => api.post(`/orders/${id}/reject/`),
   fulfillOrder: (id) => api.post(`/orders/${id}/fulfill/`),

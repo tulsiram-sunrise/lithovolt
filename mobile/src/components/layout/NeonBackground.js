@@ -17,11 +17,12 @@ function PatternOverlay() {
   );
 }
 
-export function NeonBackground({ children, style }) {
+export function NeonBackground({ children, style, ...rest }) {
   return (
     <LinearGradient
       colors={[neonTheme.colors.background, neonTheme.colors.backgroundAlt]}
       style={[styles.background, style]}
+      {...rest}
     >
       <PatternOverlay />
       <View style={styles.content}>{children}</View>
@@ -29,7 +30,7 @@ export function NeonBackground({ children, style }) {
   );
 }
 
-export function NeonScroll({ children, contentContainerStyle, style }) {
+export function NeonScroll({ children, contentContainerStyle, style, ...rest }) {
   return (
     <LinearGradient
       colors={[neonTheme.colors.background, neonTheme.colors.backgroundAlt]}
@@ -39,6 +40,7 @@ export function NeonScroll({ children, contentContainerStyle, style }) {
       <ScrollView
         contentContainerStyle={[styles.scrollContent, contentContainerStyle]}
         showsVerticalScrollIndicator={false}
+        {...rest}
       >
         {children}
       </ScrollView>

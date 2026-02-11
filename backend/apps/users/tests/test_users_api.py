@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from apps.users.models import User
+from apps.users.models import User, WholesalerApplication
 
 
 @pytest.fixture()
@@ -65,3 +65,63 @@ def test_consumer_update_profile(api_client, consumer_user):
     assert response.status_code == 200
     consumer_user.refresh_from_db()
     assert consumer_user.city == 'Delhi'
+
+
+@pytest.mark.django_db
+def test_consumer_submit_wholesaler_application(api_client, consumer_user):
+    api_client.force_authenticate(user=consumer_user)
+    url = reverse('wholesaler-application-list')
+    payload = {
+        'business_name': 'Demo Wholesales',
+        'registration_number': 'GST-1234',
+        'address': '123 Market Road',
+        'city': 'Delhi',
+        'state': 'Delhi',
+        'pincode': '110001',
+        'contact_phone': '+919999888777',
+        'contact_email': 'demo@wholesale.com'
+    }
+
+    response = api_client.post(url, payload, format='multipart')
+    assert response.status_code == 201
+    assert WholesalerApplication.objects.filter(user=consumer_user).exists()
+
+
+@pytest.mark.django_db
+def test_wholesaler_application_requires_consumer(api_client, admin_user):
+    api_client.force_authenticate(user=admin_user)
+    url = reverse('wholesaler-application-list')
+    payload = {
+        'business_name': 'Admin Wholesale',
+        'registration_number': 'GST-ADMIN',
+        'address': '123 Admin Road',
+        'city': 'Delhi',
+        'state': 'Delhi',
+        'pincode': '110001'
+    }
+
+    response = api_client.post(url, payload, format='multipart')
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_admin_approves_wholesaler_application(api_client, admin_user, consumer_user):
+    application = WholesalerApplication.objects.create(
+        user=consumer_user,
+        business_name='Demo Wholesales',
+        registration_number='GST-1234',
+        address='123 Market Road',
+        city='Delhi',
+        state='Delhi',
+        pincode='110001'
+    )
+
+    api_client.force_authenticate(user=admin_user)
+    url = reverse('wholesaler-application-approve', kwargs={'pk': application.id})
+    response = api_client.post(url, {'review_notes': 'Approved'}, format='json')
+
+    assert response.status_code == 200
+    application.refresh_from_db()
+    assert application.status == WholesalerApplication.Status.APPROVED
+    consumer_user.refresh_from_db()
+    assert consumer_user.role == 'WHOLESALER'

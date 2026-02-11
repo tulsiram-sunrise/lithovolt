@@ -1,11 +1,7 @@
 """Serializers for order APIs."""
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-
 from .models import Order, OrderItem
 from apps.inventory.models import BatteryModel, Accessory
-
-User = get_user_model()
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -75,14 +71,8 @@ class OrderItemCreateSerializer(serializers.Serializer):
 class OrderCreateSerializer(serializers.Serializer):
     """Create serializer for orders."""
 
-    wholesaler_id = serializers.IntegerField(required=False)
     notes = serializers.CharField(required=False, allow_blank=True)
     items = OrderItemCreateSerializer(many=True)
-
-    def validate_wholesaler_id(self, value):
-        if not User.objects.filter(id=value, role='WHOLESALER', is_active=True).exists():
-            raise serializers.ValidationError('Wholesaler not found or inactive')
-        return value
 
     def validate_items(self, value):
         if not value:

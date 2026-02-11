@@ -93,7 +93,7 @@ export default function OrderDetailsScreen({ navigation, route }) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Consumer</Text>
+        <Text style={styles.label}>Wholesaler</Text>
         <Text style={styles.value}>{order.consumer_name || order.consumer}</Text>
 
         <Text style={styles.label}>Items</Text>
@@ -127,16 +127,6 @@ export default function OrderDetailsScreen({ navigation, route }) {
           <Text style={styles.secondaryButtonText}>Download Invoice</Text>
         )}
       </TouchableOpacity>
-
-      {order.status === 'FULFILLED' ? (
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('IssueWarranty', { orderId: order.id })}
-          testID="order-issue-warranty"
-        >
-          <Text style={styles.buttonText}>Issue Warranty</Text>
-        </TouchableOpacity>
-      ) : null}
 
       <TouchableOpacity style={styles.linkButton} onPress={() => navigation.goBack()}>
         <Text style={styles.linkText}>Back</Text>

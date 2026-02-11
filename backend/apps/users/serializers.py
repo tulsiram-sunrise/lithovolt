@@ -3,7 +3,7 @@ Serializers for User models.
 """
 from rest_framework import serializers
 from core.utils import format_phone_number
-from .models import User, UserProfile
+from .models import User, UserProfile, WholesalerApplication
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -84,3 +84,43 @@ class WholesalerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'full_name', 'company_name', 'phone', 'city', 'is_active']
+
+
+class WholesalerApplicationSerializer(serializers.ModelSerializer):
+    """Read serializer for wholesaler applications."""
+
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    reviewer_email = serializers.EmailField(source='reviewed_by.email', read_only=True)
+
+    class Meta:
+        model = WholesalerApplication
+        fields = [
+            'id', 'user', 'user_email', 'business_name', 'registration_number',
+            'address', 'city', 'state', 'pincode', 'contact_phone', 'contact_email',
+            'document', 'status', 'review_notes', 'reviewed_by', 'reviewer_email',
+            'reviewed_at', 'created_at'
+        ]
+        read_only_fields = ['status', 'reviewed_by', 'reviewed_at', 'created_at']
+
+
+class WholesalerApplicationCreateSerializer(serializers.ModelSerializer):
+    """Create serializer for wholesaler applications."""
+
+    class Meta:
+        model = WholesalerApplication
+        fields = [
+            'business_name', 'registration_number', 'address', 'city', 'state',
+            'pincode', 'contact_phone', 'contact_email', 'document'
+        ]
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        if user.role != 'CONSUMER':
+            raise serializers.ValidationError('Only consumers can apply to become wholesalers')
+        if WholesalerApplication.objects.filter(user=user, status=WholesalerApplication.Status.PENDING).exists():
+            raise serializers.ValidationError('You already have a pending application')
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return WholesalerApplication.objects.create(user=user, **validated_data)

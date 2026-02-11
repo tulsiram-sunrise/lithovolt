@@ -32,5 +32,8 @@ describe('DashboardScreen', () => {
 
     fireEvent.press(getByTestId('dashboard-inventory'));
     expect(navigation.navigate).toHaveBeenCalledWith('Inventory');
+
+    fireEvent.press(getByTestId('dashboard-place-order'));
+    expect(navigation.navigate).toHaveBeenCalledWith('PlaceOrder');
   });
 });

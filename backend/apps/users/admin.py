@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserProfile
+from .models import User, UserProfile, WholesalerApplication
 
 
 @admin.register(User)
@@ -34,3 +34,11 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'credit_limit', 'outstanding_balance', 'created_at']
     search_fields = ['user__email', 'user__first_name']
     readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(WholesalerApplication)
+class WholesalerApplicationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'business_name', 'status', 'created_at', 'reviewed_at']
+    list_filter = ['status']
+    search_fields = ['user__email', 'business_name', 'registration_number']
+    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']

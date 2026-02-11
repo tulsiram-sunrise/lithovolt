@@ -77,6 +77,15 @@ export default function HomeScreen({ navigation }) {
 				<TouchableOpacity style={styles.primaryButton} onPress={() => navigation.navigate('WarrantyActivate')} testID="home-activate">
 					<Text style={styles.primaryButtonText}>Activate Warranty</Text>
 				</TouchableOpacity>
+				{user?.role !== 'WHOLESALER' ? (
+					<TouchableOpacity
+						style={styles.secondaryButton}
+						onPress={() => navigation.navigate('WholesalerRegister')}
+						testID="home-wholesaler-register"
+					>
+						<Text style={styles.secondaryButtonText}>Register as Wholesaler</Text>
+					</TouchableOpacity>
+				) : null}
 				<TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate('Claims')} testID="home-claims">
 					<Text style={styles.secondaryButtonText}>My Claims</Text>
 				</TouchableOpacity>

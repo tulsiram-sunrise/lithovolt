@@ -85,6 +85,9 @@ export default function DashboardScreen({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Inventory')} testID="dashboard-inventory">
           <Text style={styles.buttonText}>Inventory</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PlaceOrder')} testID="dashboard-place-order">
+          <Text style={styles.buttonText}>Place Order</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Orders')} testID="dashboard-orders">
           <Text style={styles.buttonText}>Orders</Text>
         </TouchableOpacity>

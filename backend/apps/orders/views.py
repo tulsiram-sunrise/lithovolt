@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from core.permissions import IsAdmin, IsAdminOrWholesaler
+from core.permissions import IsAdmin
 from apps.inventory.models import BatteryModel, Accessory
 
 from .models import Order, OrderItem
@@ -41,11 +41,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         if user.is_admin:
             return self.queryset
         if user.is_wholesaler:
-            return self.queryset.filter(
-                models.Q(wholesaler=user) |
-                models.Q(wholesaler__isnull=True, status=Order.Status.PENDING)
-            )
-        if user.is_consumer:
             return self.queryset.filter(consumer=user)
         return self.queryset.none()
 
@@ -64,19 +59,17 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        if not request.user.is_consumer and not request.user.is_admin:
-            return Response({'error': 'Only consumers can create orders'}, status=status.HTTP_403_FORBIDDEN)
+        if not request.user.is_wholesaler and not request.user.is_admin:
+            return Response({'error': 'Only wholesalers can create orders'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        wholesaler_id = serializer.validated_data.get('wholesaler_id')
         notes = serializer.validated_data.get('notes', '')
         items_data = serializer.validated_data['items']
 
         order = Order.objects.create(
             consumer=request.user,
-            wholesaler_id=wholesaler_id,
             notes=notes
         )
 
@@ -115,17 +108,16 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = OrderItemSerializer(order.items.all(), many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrWholesaler])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def accept(self, request, pk=None):
         order = self.get_object()
         if order.status != Order.Status.PENDING:
             return Response({'error': 'Only pending orders can be accepted'}, status=status.HTTP_400_BAD_REQUEST)
 
-        wholesaler = request.user if request.user.is_wholesaler else order.wholesaler
-        order.mark_accepted(wholesaler=wholesaler)
+        order.mark_accepted()
         return Response(OrderSerializer(order).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrWholesaler])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def reject(self, request, pk=None):
         order = self.get_object()
         if order.status != Order.Status.PENDING:
@@ -133,7 +125,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.mark_rejected()
         return Response(OrderSerializer(order).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrWholesaler])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def fulfill(self, request, pk=None):
         order = self.get_object()
         if order.status not in [Order.Status.ACCEPTED, Order.Status.PENDING]:
@@ -155,7 +147,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def invoice(self, request, pk=None):
         """Generate order invoice PDF."""
         order = self.get_object()
-        if request.user.is_consumer and order.consumer_id != request.user.id:
+        if request.user.is_wholesaler and order.consumer_id != request.user.id:
             return Response({'error': 'Not allowed to access this invoice'}, status=status.HTTP_403_FORBIDDEN)
 
         buffer = BytesIO()

@@ -18,6 +18,7 @@ import WholesalerOrders from '../screens/wholesaler/OrdersScreen';
 import WholesalerSales from '../screens/wholesaler/SalesScreen';
 import WholesalerOrderDetails from '../screens/wholesaler/OrderDetailsScreen';
 import WholesalerIssueWarranty from '../screens/wholesaler/IssueWarrantyScreen';
+import WholesalerPlaceOrder from '../screens/wholesaler/PlaceOrderScreen';
 import WholesalerProfileScreen from '../screens/wholesaler/WholesalerProfileScreen';
 import WholesalerSettingsScreen from '../screens/wholesaler/WholesalerSettingsScreen';
 
@@ -32,6 +33,7 @@ import ClaimDetailsScreen from '../screens/consumer/ClaimDetailsScreen';
 import ConsumerProfileScreen from '../screens/consumer/ConsumerProfileScreen';
 import SettingsScreen from '../screens/consumer/SettingsScreen';
 import AttachmentViewerScreen from '../screens/consumer/AttachmentViewerScreen';
+import WholesalerRegisterScreen from '../screens/consumer/WholesalerRegisterScreen';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -64,6 +66,7 @@ function WholesalerDrawer() {
   return (
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
       <Drawer.Screen name="Dashboard" component={WholesalerDashboard} />
+      <Drawer.Screen name="PlaceOrder" component={WholesalerPlaceOrder} />
       <Drawer.Screen name="Inventory" component={WholesalerInventory} />
       <Drawer.Screen name="Orders" component={WholesalerOrdersStack} />
       <Drawer.Screen name="Sales" component={WholesalerSales} />
@@ -94,6 +97,7 @@ function ConsumerStack() {
       <Stack.Screen name="ClaimDetails" component={ClaimDetailsScreen} />
       <Stack.Screen name="AttachmentViewer" component={AttachmentViewerScreen} />
       <Stack.Screen name="Profile" component={ConsumerProfileScreen} />
+      <Stack.Screen name="WholesalerRegister" component={WholesalerRegisterScreen} />
     </Stack.Navigator>
   );
 }

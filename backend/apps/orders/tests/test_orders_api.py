@@ -22,16 +22,6 @@ def admin_user(db):
 
 
 @pytest.fixture()
-def consumer_user(db):
-    return User.objects.create_user(
-        email='consumer@test.com',
-        password='consumerpass123',
-        first_name='Consumer',
-        role='CONSUMER'
-    )
-
-
-@pytest.fixture()
 def wholesaler_user(db):
     return User.objects.create_user(
         email='wholesaler@test.com',
@@ -67,8 +57,8 @@ def accessory(db):
 
 
 @pytest.mark.django_db
-def test_consumer_create_order(api_client, consumer_user, battery_model, accessory):
-    api_client.force_authenticate(user=consumer_user)
+def test_wholesaler_create_order(api_client, wholesaler_user, battery_model, accessory):
+    api_client.force_authenticate(user=wholesaler_user)
     url = reverse('order-list')
     payload = {
         'notes': 'Need two items',
@@ -89,29 +79,29 @@ def test_consumer_create_order(api_client, consumer_user, battery_model, accesso
     response = api_client.post(url, payload, format='json')
     assert response.status_code == 201
     order = Order.objects.get(id=response.data['id'])
-    assert order.consumer == consumer_user
+    assert order.consumer == wholesaler_user
     assert order.items.count() == 2
 
 
 @pytest.mark.django_db
-def test_wholesaler_accept_order(api_client, consumer_user, wholesaler_user, battery_model):
-    order = Order.objects.create(consumer=consumer_user)
+def test_admin_accept_order(api_client, admin_user, wholesaler_user, battery_model):
+    order = Order.objects.create(consumer=wholesaler_user)
     order.items.create(product_type='BATTERY_MODEL', battery_model=battery_model, quantity=1)
 
-    api_client.force_authenticate(user=wholesaler_user)
+    api_client.force_authenticate(user=admin_user)
     url = reverse('order-accept', kwargs={'pk': order.id})
     response = api_client.post(url, {}, format='json')
 
     assert response.status_code == 200
     order.refresh_from_db()
     assert order.status == Order.Status.ACCEPTED
-    assert order.wholesaler == wholesaler_user
+    assert order.wholesaler is None
 
 
 @pytest.mark.django_db
-def test_export_orders_csv(api_client, admin_user, consumer_user):
+def test_export_orders_csv(api_client, admin_user, wholesaler_user):
     api_client.force_authenticate(user=admin_user)
-    Order.objects.create(consumer=consumer_user)
+    Order.objects.create(consumer=wholesaler_user)
 
     url = reverse('order-export')
     response = api_client.get(url)
@@ -121,11 +111,11 @@ def test_export_orders_csv(api_client, admin_user, consumer_user):
 
 
 @pytest.mark.django_db
-def test_invoice_pdf(api_client, consumer_user, battery_model):
-    order = Order.objects.create(consumer=consumer_user)
+def test_invoice_pdf(api_client, wholesaler_user, battery_model):
+    order = Order.objects.create(consumer=wholesaler_user)
     order.items.create(product_type='BATTERY_MODEL', battery_model=battery_model, quantity=1)
 
-    api_client.force_authenticate(user=consumer_user)
+    api_client.force_authenticate(user=wholesaler_user)
     url = reverse('order-invoice', kwargs={'pk': order.id})
     response = api_client.get(url)
 

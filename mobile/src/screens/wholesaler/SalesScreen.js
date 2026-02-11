@@ -68,7 +68,7 @@ export default function SalesScreen() {
 			{filteredOrders.map((order) => (
 				<View key={order.id} style={styles.card}>
 					<Text style={styles.cardTitle}>Order #{order.id}</Text>
-					<Text style={styles.cardMeta}>Consumer: {order.consumer_name || order.consumer}</Text>
+					<Text style={styles.cardMeta}>Placed by: {order.consumer_name || order.consumer}</Text>
 					<Text style={styles.cardMeta}>Items: {order.total_items || order.items?.length || 0}</Text>
 					{order.fulfilled_at ? <Text style={styles.cardMeta}>Fulfilled: {formatDate(order.fulfilled_at)}</Text> : null}
 				</View>

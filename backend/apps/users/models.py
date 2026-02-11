@@ -131,3 +131,40 @@ class UserProfile(TimeStampedModel):
     
     def __str__(self):
         return f'Profile of {self.user.email}'
+
+
+class WholesalerApplication(TimeStampedModel):
+    """Wholesaler onboarding application."""
+
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        APPROVED = 'APPROVED', 'Approved'
+        REJECTED = 'REJECTED', 'Rejected'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wholesaler_applications')
+    business_name = models.CharField(max_length=200)
+    registration_number = models.CharField(max_length=100)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=10)
+    contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    document = models.FileField(upload_to='wholesaler_docs/', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='wholesaler_applications_reviewed'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'wholesaler_applications'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'WholesalerApplication({self.user_id}, {self.status})'

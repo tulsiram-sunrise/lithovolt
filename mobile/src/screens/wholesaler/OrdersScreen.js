@@ -46,21 +46,6 @@ export default function OrdersScreen({ navigation }) {
 		});
 	}, [orders, search, statusFilter]);
 
-	const handleAction = async (orderId, action) => {
-		try {
-			if (action === 'ACCEPT') {
-				await ordersAPI.acceptOrder(orderId);
-			} else if (action === 'REJECT') {
-				await ordersAPI.rejectOrder(orderId);
-			} else if (action === 'FULFILL') {
-				await ordersAPI.fulfillOrder(orderId);
-			}
-			await loadOrders();
-		} catch (err) {
-			setError('Unable to update order.');
-		}
-	};
-
 	useEffect(() => {
 		loadOrders();
 	}, []);
@@ -109,44 +94,10 @@ export default function OrdersScreen({ navigation }) {
 						<View style={[styles.badge, statusBadge(order.status)]}>
 							<Text style={styles.badgeText}>{order.status}</Text>
 						</View>
-						<Text style={styles.cardMeta}>Consumer: {order.consumer_name || order.consumer}</Text>
+						<Text style={styles.cardMeta}>Placed by: {order.consumer_name || order.consumer}</Text>
 						<Text style={styles.cardMeta}>Items: {order.total_items || order.items?.length || 0}</Text>
 						{order.created_at ? <Text style={styles.cardMeta}>Created: {formatDate(order.created_at)}</Text> : null}
 					</TouchableOpacity>
-
-					<View style={styles.actionRow}>
-						<TouchableOpacity
-							style={styles.secondaryButton}
-							onPress={() => navigation.navigate('OrderDetails', { orderId: order.id })}
-							testID={`order-details-${order.id}`}
-						>
-							<Text style={styles.secondaryButtonText}>Details</Text>
-						</TouchableOpacity>
-						{order.status === 'PENDING' ? (
-							<>
-								<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'ACCEPT')} testID={`order-accept-${order.id}`}>
-									<Text style={styles.secondaryButtonText}>Accept</Text>
-								</TouchableOpacity>
-								<TouchableOpacity style={styles.rejectButton} onPress={() => handleAction(order.id, 'REJECT')} testID={`order-reject-${order.id}`}>
-									<Text style={styles.rejectButtonText}>Reject</Text>
-								</TouchableOpacity>
-							</>
-						) : null}
-						{order.status === 'ACCEPTED' ? (
-							<TouchableOpacity style={styles.secondaryButton} onPress={() => handleAction(order.id, 'FULFILL')} testID={`order-fulfill-${order.id}`}>
-								<Text style={styles.secondaryButtonText}>Fulfill</Text>
-							</TouchableOpacity>
-						) : null}
-						{order.status === 'FULFILLED' ? (
-							<TouchableOpacity
-								style={styles.secondaryButton}
-								onPress={() => navigation.navigate('IssueWarranty', { orderId: order.id })}
-								testID={`order-issue-warranty-${order.id}`}
-							>
-								<Text style={styles.secondaryButtonText}>Issue Warranty</Text>
-							</TouchableOpacity>
-						) : null}
-					</View>
 				</View>
 			))}
 		</NeonScroll>
@@ -266,41 +217,6 @@ const styles = StyleSheet.create({
 	badgeText: {
 		fontWeight: '600',
 		color: '#07110b',
-		fontFamily: neonTheme.fonts.bodyStrong,
-	},
-	actionRow: {
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		marginTop: 12,
-	},
-	secondaryButton: {
-		backgroundColor: neonTheme.colors.surfaceAlt,
-		paddingVertical: 8,
-		paddingHorizontal: 14,
-		borderRadius: 10,
-		marginRight: 8,
-		marginBottom: 8,
-		borderWidth: 1,
-		borderColor: neonTheme.colors.border,
-	},
-	secondaryButtonText: {
-		color: neonTheme.colors.text,
-		fontWeight: '600',
-		fontFamily: neonTheme.fonts.bodyStrong,
-	},
-	rejectButton: {
-		backgroundColor: '#2a1518',
-		paddingVertical: 8,
-		paddingHorizontal: 14,
-		borderRadius: 10,
-		marginRight: 8,
-		marginBottom: 8,
-		borderWidth: 1,
-		borderColor: neonTheme.colors.danger,
-	},
-	rejectButtonText: {
-		color: neonTheme.colors.danger,
-		fontWeight: '600',
 		fontFamily: neonTheme.fonts.bodyStrong,
 	},
 	emptyText: {

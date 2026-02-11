@@ -6,9 +6,6 @@ import { ordersAPI } from '../../src/services/api';
 jest.mock('../../src/services/api', () => ({
   ordersAPI: {
     getOrders: jest.fn(),
-    acceptOrder: jest.fn(),
-    rejectOrder: jest.fn(),
-    fulfillOrder: jest.fn(),
   },
 }));
 
@@ -19,20 +16,17 @@ describe('OrdersScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders orders and accepts a pending order', async () => {
+  it('renders orders and opens details', async () => {
     ordersAPI.getOrders.mockResolvedValue({
       data: [{ id: 10, status: 'PENDING', consumer_name: 'Consumer', total_items: 1 }],
     });
 
     const { findByTestId } = render(<OrdersScreen navigation={navigation} />);
 
-    const acceptButton = await findByTestId('order-accept-10');
+    const card = await findByTestId('order-card-10');
+    fireEvent.press(card);
 
-    fireEvent.press(acceptButton);
-
-    await waitFor(() => {
-      expect(ordersAPI.acceptOrder).toHaveBeenCalledWith(10);
-    });
+    expect(navigation.navigate).toHaveBeenCalledWith('OrderDetails', { orderId: 10 });
   });
 
   it('shows error when orders fail to load', async () => {
