@@ -6,7 +6,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from core.views import AdminMetricsView
+from core.views import AdminMetricsView, AppDownloadRedirectView
 
 urlpatterns = [
     # Admin
@@ -19,6 +19,9 @@ urlpatterns = [
 
     # Admin Metrics
     path('api/admin/metrics/', AdminMetricsView.as_view(), name='admin-metrics'),
+    
+    # Smart Download Redirect (QR code endpoint for device detection)
+    path('download/app/', AppDownloadRedirectView.as_view(), name='app-download-redirect'),
     
     # API Endpoints
     path('api/auth/', include('apps.authentication.urls')),

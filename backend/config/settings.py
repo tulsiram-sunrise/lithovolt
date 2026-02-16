@@ -223,6 +223,21 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
+# App Download Redirect Settings
+# Smart redirect endpoint for QR code downloads
+ANDROID_APP_URL = config(
+    'ANDROID_APP_URL',
+    default='https://play.google.com/store/apps/details?id=au.com.lithovolt'
+)
+IOS_APP_URL = config(
+    'IOS_APP_URL',
+    default='https://apps.apple.com/app/lithovolt/id1234567890'
+)
+WEB_LANDING_URL = config(
+    'WEB_LANDING_URL',
+    default='https://www.lithovolt.com.au'
+)
+
 # Logging
 LOGGING = {
     'version': 1,
