@@ -61,7 +61,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
         <RootNavigator />
-        <StatusBar style="auto" />
+        <StatusBar style="light" backgroundColor={neonTheme.colors.card} />
       </NavigationContainer>
     </QueryClientProvider>
   );

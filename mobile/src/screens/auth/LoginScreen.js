@@ -9,6 +9,7 @@ export default function LoginScreen({ navigation }) {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -34,62 +35,79 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <NeonBackground style={styles.container} testID="login-screen">
-      <Image
-        source={require('../../../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.title}>Lithovolt</Text>
-      <Text style={styles.subtitle}>Battery Management Platform</Text>
+      <View style={styles.screen}>
+        <View style={styles.logoWrap}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.subtitle}>Battery Management Platform</Text>
+          </View>
+        </View>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#94a3b8"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          testID="login-email"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#94a3b8"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          testID="login-password"
-        />
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={styles.formWrap}>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              testID="login-email"
+            />
+            <View style={styles.passwordField}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor="#94a3b8"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                testID="login-password"
+              />
+              <TouchableOpacity
+                style={styles.passwordToggle}
+                onPress={() => setShowPassword((prev) => !prev)}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
+                <Text style={styles.passwordToggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+              </TouchableOpacity>
+            </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading} testID="login-submit">
-          {loading ? <ActivityIndicator color="#0284c7" /> : <Text style={styles.buttonText}>Login</Text>}
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading} testID="login-submit">
+              {loading ? <ActivityIndicator color="#0284c7" /> : <Text style={styles.buttonText}>Login</Text>}
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.linkButton}
-          onPress={() => navigation.navigate('OtpLogin')}
-        >
-          <Text style={styles.linkText}>Login with OTP</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('OtpLogin')}
+            >
+              <Text style={styles.linkText}>Login with OTP</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.linkButton}
-          onPress={() => navigation.navigate('PasswordResetRequest')}
-        >
-          <Text style={styles.linkText}>Forgot password?</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('PasswordResetRequest')}
+            >
+              <Text style={styles.linkText}>Forgot password?</Text>
+            </TouchableOpacity>
 
-        <View style={styles.divider} />
+            <View style={styles.divider} />
 
-        <TouchableOpacity
-          style={styles.outlineButton}
-          onPress={() => navigation.navigate('Register')}
-        >
-          <Text style={styles.outlineButtonText}>Create Account</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.outlineButton}
+              onPress={() => navigation.navigate('Register')}
+            >
+              <Text style={styles.outlineButtonText}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </NeonBackground>
   );
@@ -102,18 +120,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: neonTheme.colors.text,
-    fontFamily: neonTheme.fonts.display,
-    marginBottom: 8,
+  screen: {
+    flex: 1,
+    width: '100%',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
     color: neonTheme.colors.muted,
-    fontFamily: neonTheme.fonts.body,
-    marginBottom: 40,
+    fontFamily: neonTheme.fonts.bodyStrong,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+  logoWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formWrap: {
+    flex: 4,
+    alignItems: 'center',
   },
   form: {
     width: '100%',
@@ -135,6 +161,33 @@ const styles = StyleSheet.create({
     color: neonTheme.colors.text,
     fontFamily: neonTheme.fonts.body,
     marginBottom: 12,
+  },
+  passwordField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: neonTheme.colors.surface,
+    borderColor: neonTheme.colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.body,
+  },
+  passwordToggle: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  passwordToggleText: {
+    color: neonTheme.colors.accent,
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: neonTheme.fonts.bodyStrong,
   },
   errorText: {
     color: neonTheme.colors.danger,
@@ -187,8 +240,11 @@ const styles = StyleSheet.create({
     fontFamily: neonTheme.fonts.bodyStrong,
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 12,
+    width: 200,
+    height: 80,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

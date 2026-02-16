@@ -2,7 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/authStore';
+import { neonTheme } from '../styles/neonTheme';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -78,11 +80,46 @@ function WholesalerDrawer() {
 
 function ConsumerTabs() {
   return (
-    <Tabs.Navigator screenOptions={{ headerShown: false }}>
-      <Tabs.Screen name="Home" component={ConsumerHome} />
-      <Tabs.Screen name="ScanQR" component={ScanQRScreen} />
-      <Tabs.Screen name="Claims" component={ConsumerClaimsScreen} />
-      <Tabs.Screen name="Settings" component={SettingsScreen} />
+    <Tabs.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'ScanQR') {
+            iconName = 'qr-code';
+          } else if (route.name === 'Claims') {
+            iconName = focused ? 'document-text' : 'document-text-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: neonTheme.colors.accent,
+        tabBarInactiveTintColor: neonTheme.colors.muted,
+        tabBarStyle: {
+          backgroundColor: neonTheme.colors.card,
+          borderTopColor: neonTheme.colors.border,
+          borderTopWidth: 1,
+          paddingBottom: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+          paddingBottom: 4,
+        },
+        sceneContainerStyle: {
+          backgroundColor: 'transparent',
+        },
+      })}
+    >
+      <Tabs.Screen name="Home" component={ConsumerHome} options={{ title: 'Home' }} />
+      <Tabs.Screen name="ScanQR" component={ScanQRScreen} options={{ title: 'Scan' }} />
+      <Tabs.Screen name="Claims" component={ConsumerClaimsScreen} options={{ title: 'Claims' }} />
+      <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
     </Tabs.Navigator>
   );
 }
