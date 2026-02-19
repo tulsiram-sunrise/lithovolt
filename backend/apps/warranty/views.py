@@ -255,9 +255,9 @@ class WarrantyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class WarrantyClaimViewSet(viewsets.ModelViewSet):
-    """Warranty claim workflow APIs."""
+    """Warranty claim workflow APIs with status transitions."""
 
-    queryset = WarrantyClaim.objects.select_related('warranty', 'consumer', 'warranty__serial_number').prefetch_related('attachments')
+    queryset = WarrantyClaim.objects.select_related('warranty', 'consumer', 'warranty__serial_number', 'assigned_to', 'reviewed_by').prefetch_related('attachments')
     serializer_class = WarrantyClaimDetailSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -309,17 +309,70 @@ class WarrantyClaimViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
-    def approve(self, request, pk=None):
+    def assign(self, request, pk=None):
+        """Assign a claim to a staff member and transition to UNDER_REVIEW."""
         claim = self.get_object()
-        claim.status = WarrantyClaim.Status.APPROVED
-        claim.save(update_fields=['status'])
+        staff_user_id = request.data.get('assigned_to')
+        
+        if not staff_user_id:
+            return Response({'error': 'assigned_to field is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        staff_user = get_object_or_404(User, id=staff_user_id)
+        if not (staff_user.is_admin or hasattr(staff_user, 'staff_profile')):
+            return Response({'error': 'User is not a staff member'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        claim.assigned_to = staff_user
+        try:
+            claim.update_status(
+                WarrantyClaim.Status.UNDER_REVIEW,
+                reviewed_by=request.user,
+                review_notes=request.data.get('review_notes', '')
+            )
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(WarrantyClaimDetailSerializer(claim).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
+    def approve(self, request, pk=None):
+        """Approve a warranty claim."""
+        claim = self.get_object()
+        try:
+            claim.update_status(
+                WarrantyClaim.Status.APPROVED,
+                reviewed_by=request.user,
+                review_notes=request.data.get('review_notes', '')
+            )
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(WarrantyClaimDetailSerializer(claim).data)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def reject(self, request, pk=None):
+        """Reject a warranty claim."""
         claim = self.get_object()
-        claim.status = WarrantyClaim.Status.REJECTED
-        claim.save(update_fields=['status'])
+        try:
+            claim.update_status(
+                WarrantyClaim.Status.REJECTED,
+                reviewed_by=request.user,
+                review_notes=request.data.get('review_notes', '')
+            )
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(WarrantyClaimDetailSerializer(claim).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
+    def resolve(self, request, pk=None):
+        """Mark a claim as resolved."""
+        claim = self.get_object()
+        try:
+            claim.update_status(
+                WarrantyClaim.Status.RESOLVED,
+                reviewed_by=request.user,
+                review_notes=request.data.get('review_notes', '')
+            )
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(WarrantyClaimDetailSerializer(claim).data)
 
 

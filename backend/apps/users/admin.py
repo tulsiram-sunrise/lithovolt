@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserProfile, WholesalerApplication
+from .models import User, UserProfile, WholesalerApplication, Role, Permission, StaffUser
 
 
 @admin.register(User)
@@ -42,3 +42,27 @@ class WholesalerApplicationAdmin(admin.ModelAdmin):
     list_filter = ['status']
     search_fields = ['user__email', 'business_name', 'registration_number']
     readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description', 'is_active', 'created_at']
+    list_filter = ['is_active']
+    search_fields = ['name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ['role', 'resource', 'action', 'created_at']
+    list_filter = ['role', 'resource', 'action']
+    search_fields = ['description']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(StaffUser)
+class StaffUserAdmin(admin.ModelAdmin):
+    list_display = ['user', 'role', 'supervisor', 'hire_date', 'is_active']
+    list_filter = ['role', 'is_active', 'hire_date']
+    search_fields = ['user__email', 'user__first_name', 'user__last_name']
+    readonly_fields = ['created_at', 'updated_at', 'hire_date']

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, orderAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 
-const createEmptyItem = () => ({ battery_model_id: '', quantity: 1 })
+const createEmptyItem = () => ({ product_type: 'BATTERY_MODEL', item_id: '', quantity: 1 })
 
 export default function OrdersPage() {
   const [notes, setNotes] = useState('')
@@ -14,6 +14,18 @@ export default function OrdersPage() {
   const { data: modelsData } = useQuery({
     queryKey: ['wholesaler-models'],
     queryFn: () => inventoryAPI.getBatteryModels({ ordering: 'name', is_active: true }),
+    select: (response) => response.data,
+  })
+
+  const { data: accessoriesData } = useQuery({
+    queryKey: ['wholesaler-accessories'],
+    queryFn: () => inventoryAPI.getAccessories({ ordering: 'name', is_active: true }),
+    select: (response) => response.data,
+  })
+
+  const { data: productsData } = useQuery({
+    queryKey: ['wholesaler-products'],
+    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', is_active: true }),
     select: (response) => response.data,
   })
 
@@ -37,10 +49,20 @@ export default function OrdersPage() {
   })
 
   const models = Array.isArray(modelsData) ? modelsData : modelsData?.results || []
+  const accessories = Array.isArray(accessoriesData) ? accessoriesData : accessoriesData?.results || []
+  const products = Array.isArray(productsData) ? productsData : productsData?.results || []
   const orders = useMemo(() => (Array.isArray(ordersData) ? ordersData : ordersData?.results || []), [ordersData])
 
   const handleItemChange = (index, field, value) => {
-    setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, [field]: value } : item)))
+    setItems((prev) => prev.map((item, idx) => {
+      if (idx !== index) {
+        return item
+      }
+      if (field === 'product_type') {
+        return { ...item, product_type: value, item_id: '' }
+      }
+      return { ...item, [field]: value }
+    }))
   }
 
   const handleAddItem = () => {
@@ -54,12 +76,23 @@ export default function OrdersPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     const payloadItems = items
-      .filter((item) => item.battery_model_id)
-      .map((item) => ({
-        product_type: 'BATTERY_MODEL',
-        battery_model_id: Number(item.battery_model_id),
-        quantity: Number(item.quantity || 1),
-      }))
+      .filter((item) => item.item_id)
+      .map((item) => {
+        const payload = {
+          product_type: item.product_type,
+          quantity: Number(item.quantity || 1),
+        }
+        if (item.product_type === 'BATTERY_MODEL') {
+          payload.battery_model_id = Number(item.item_id)
+        }
+        if (item.product_type === 'ACCESSORY') {
+          payload.accessory_id = Number(item.item_id)
+        }
+        if (item.product_type === 'PRODUCT') {
+          payload.product_id = Number(item.item_id)
+        }
+        return payload
+      })
 
     if (!payloadItems.length) {
       return
@@ -96,19 +129,44 @@ export default function OrdersPage() {
         </div>
 
         {items.map((item, index) => (
-          <div key={`${item.battery_model_id}-${index}`} className="grid gap-4 md:grid-cols-12">
-            <div className="md:col-span-8">
-              <label htmlFor={`battery-model-${index}`} className="field-label">Battery Model</label>
+          <div key={`${item.product_type}-${item.item_id}-${index}`} className="grid gap-4 md:grid-cols-12">
+            <div className="md:col-span-3">
+              <label htmlFor={`type-${index}`} className="field-label">Type</label>
               <select
-                id={`battery-model-${index}`}
+                id={`type-${index}`}
                 className="neon-input"
-                value={item.battery_model_id}
-                onChange={(event) => handleItemChange(index, 'battery_model_id', event.target.value)}
+                value={item.product_type}
+                onChange={(event) => handleItemChange(index, 'product_type', event.target.value)}
               >
-                <option value="">Select model</option>
-                {models.map((model) => (
-                  <option key={model.id} value={model.id}>{model.name}</option>
-                ))}
+                <option value="BATTERY_MODEL">Battery Model</option>
+                <option value="ACCESSORY">Accessory</option>
+                <option value="PRODUCT">Product</option>
+              </select>
+            </div>
+            <div className="md:col-span-5">
+              <label htmlFor={`item-${index}`} className="field-label">Item</label>
+              <select
+                id={`item-${index}`}
+                className="neon-input"
+                value={item.item_id}
+                onChange={(event) => handleItemChange(index, 'item_id', event.target.value)}
+              >
+                <option value="">Select item</option>
+                {item.product_type === 'BATTERY_MODEL'
+                  ? models.map((model) => (
+                    <option key={model.id} value={model.id}>{model.name}</option>
+                  ))
+                  : null}
+                {item.product_type === 'ACCESSORY'
+                  ? accessories.map((accessory) => (
+                    <option key={accessory.id} value={accessory.id}>{accessory.name}</option>
+                  ))
+                  : null}
+                {item.product_type === 'PRODUCT'
+                  ? products.map((product) => (
+                    <option key={product.id} value={product.id}>{product.name}</option>
+                  ))
+                  : null}
               </select>
             </div>
             <div className="md:col-span-3">

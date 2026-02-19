@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from core.models import TimeStampedModel
-from apps.inventory.models import BatteryModel, Accessory
+from apps.inventory.models import BatteryModel, Accessory, Product
 
 User = get_user_model()
 
@@ -74,6 +74,7 @@ class OrderItem(TimeStampedModel):
 	class ProductType(models.TextChoices):
 		BATTERY_MODEL = 'BATTERY_MODEL', 'Battery Model'
 		ACCESSORY = 'ACCESSORY', 'Accessory'
+		PRODUCT = 'PRODUCT', 'Product'
 
 	order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
 	product_type = models.CharField(max_length=20, choices=ProductType.choices)
@@ -86,6 +87,13 @@ class OrderItem(TimeStampedModel):
 	)
 	accessory = models.ForeignKey(
 		Accessory,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='order_items'
+	)
+	product = models.ForeignKey(
+		Product,
 		on_delete=models.SET_NULL,
 		null=True,
 		blank=True,

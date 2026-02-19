@@ -13,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from core.permissions import IsAdmin
-from apps.inventory.models import BatteryModel, Accessory
+from apps.inventory.models import BatteryModel, Accessory, Product
 
 from .models import Order, OrderItem
 from .serializers import (
@@ -79,6 +79,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             quantity = item['quantity']
             battery_model = None
             accessory = None
+            product = None
             unit_price = None
 
             if product_type == OrderItem.ProductType.BATTERY_MODEL:
@@ -86,6 +87,9 @@ class OrderViewSet(viewsets.ModelViewSet):
             elif product_type == OrderItem.ProductType.ACCESSORY:
                 accessory = Accessory.objects.get(id=item['accessory_id'])
                 unit_price = accessory.price
+            elif product_type == OrderItem.ProductType.PRODUCT:
+                product = Product.objects.get(id=item['product_id'])
+                unit_price = product.price
 
             order_items.append(
                 OrderItem(
@@ -93,6 +97,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                     product_type=product_type,
                     battery_model=battery_model,
                     accessory=accessory,
+                    product=product,
                     quantity=quantity,
                     unit_price=unit_price
                 )
@@ -168,7 +173,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         y = 670
         pdf.setFont('Helvetica', 11)
         for item in order.items.all():
-            name = item.battery_model.name if item.battery_model else item.accessory.name
+            if item.battery_model:
+                name = item.battery_model.name
+            elif item.accessory:
+                name = item.accessory.name
+            else:
+                name = item.product.name
             pdf.drawString(60, y, f'- {name} x {item.quantity}')
             y -= 18
             if y < 100:

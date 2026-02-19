@@ -34,7 +34,10 @@
       "favicon": "./assets/logo.png"
     },
     "extra": {
-      "apiUrl": "http://10.41.127.202:8000/api"
+      "apiUrl": "http://10.41.127.202:8000/api",
+      "eas": {
+        "projectId": "e1ec3552-6bb5-4a54-ac51-3ea360b6b936"
+      }
     },
     "plugins": [
       "expo-font"

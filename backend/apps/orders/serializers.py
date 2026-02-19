@@ -1,7 +1,7 @@
 """Serializers for order APIs."""
 from rest_framework import serializers
 from .models import Order, OrderItem
-from apps.inventory.models import BatteryModel, Accessory
+from apps.inventory.models import BatteryModel, Accessory, Product
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -9,12 +9,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     battery_model_name = serializers.CharField(source='battery_model.name', read_only=True)
     accessory_name = serializers.CharField(source='accessory.name', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
 
     class Meta:
         model = OrderItem
         fields = [
             'id', 'product_type', 'battery_model', 'battery_model_name',
-            'accessory', 'accessory_name', 'quantity', 'unit_price', 'created_at'
+            'accessory', 'accessory_name', 'product', 'product_name',
+            'quantity', 'unit_price', 'created_at'
         ]
         read_only_fields = ['created_at']
 
@@ -48,12 +50,14 @@ class OrderItemCreateSerializer(serializers.Serializer):
     product_type = serializers.ChoiceField(choices=OrderItem.ProductType.choices)
     battery_model_id = serializers.IntegerField(required=False)
     accessory_id = serializers.IntegerField(required=False)
+    product_id = serializers.IntegerField(required=False)
     quantity = serializers.IntegerField(min_value=1)
 
     def validate(self, attrs):
         product_type = attrs['product_type']
         battery_model_id = attrs.get('battery_model_id')
         accessory_id = attrs.get('accessory_id')
+        product_id = attrs.get('product_id')
 
         if product_type == OrderItem.ProductType.BATTERY_MODEL:
             if not battery_model_id:
@@ -65,6 +69,11 @@ class OrderItemCreateSerializer(serializers.Serializer):
                 raise serializers.ValidationError('accessory_id is required')
             if not Accessory.objects.filter(id=accessory_id, is_active=True).exists():
                 raise serializers.ValidationError('Accessory not found')
+        if product_type == OrderItem.ProductType.PRODUCT:
+            if not product_id:
+                raise serializers.ValidationError('product_id is required')
+            if not Product.objects.filter(id=product_id, is_active=True).exists():
+                raise serializers.ValidationError('Product not found')
         return attrs
 
 

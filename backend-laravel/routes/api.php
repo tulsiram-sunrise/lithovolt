@@ -7,11 +7,16 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BatteryModelController;
 use App\Http\Controllers\Api\SerialNumberController;
 use App\Http\Controllers\Api\AccessoryController;
+use App\Http\Controllers\Api\ProductCategoryController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\WarrantyController;
 use App\Http\Controllers\Api\WarrantyClaimController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\StaffUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +90,24 @@ Route::middleware('auth:jwt')->group(function () {
         Route::put('/{accessory}/', [AccessoryController::class, 'update']);
         Route::delete('/{accessory}/', [AccessoryController::class, 'destroy']);
     });
+
+    // Inventory - Product Categories
+    Route::prefix('inventory/categories')->group(function () {
+        Route::get('/', [ProductCategoryController::class, 'index']);
+        Route::post('/', [ProductCategoryController::class, 'store']);
+        Route::get('/{category}/', [ProductCategoryController::class, 'show']);
+        Route::put('/{category}/', [ProductCategoryController::class, 'update']);
+        Route::delete('/{category}/', [ProductCategoryController::class, 'destroy']);
+    });
+
+    // Inventory - Products
+    Route::prefix('inventory/products')->group(function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::post('/', [ProductController::class, 'store']);
+        Route::get('/{product}/', [ProductController::class, 'show']);
+        Route::put('/{product}/', [ProductController::class, 'update']);
+        Route::delete('/{product}/', [ProductController::class, 'destroy']);
+    });
     
     // Orders
     Route::prefix('orders')->group(function () {
@@ -131,6 +154,33 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/orders/stats/', [AdminController::class, 'orderStats']);
         Route::get('/warranties/stats/', [AdminController::class, 'warrantyStats']);
         Route::get('/export/{model}/', [AdminController::class, 'exportData']);
+        
+        // Role Management
+        Route::prefix('roles')->group(function () {
+            Route::get('/', [RoleController::class, 'index']);
+            Route::post('/', [RoleController::class, 'store']);
+            Route::get('/{role}/', [RoleController::class, 'show']);
+            Route::put('/{role}/', [RoleController::class, 'update']);
+            Route::delete('/{role}/', [RoleController::class, 'destroy']);
+        });
+        
+        // Permission Management
+        Route::prefix('permissions')->group(function () {
+            Route::get('/', [PermissionController::class, 'index']);
+            Route::post('/', [PermissionController::class, 'store']);
+            Route::put('/{permission}/', [PermissionController::class, 'update']);
+            Route::delete('/{permission}/', [PermissionController::class, 'destroy']);
+            Route::post('/bulk-assign/', [PermissionController::class, 'bulkAssign']);
+        });
+        
+        // Staff User Management
+        Route::prefix('staff')->group(function () {
+            Route::get('/', [StaffUserController::class, 'index']);
+            Route::post('/', [StaffUserController::class, 'store']);
+            Route::get('/{staff}/', [StaffUserController::class, 'show']);
+            Route::put('/{staff}/', [StaffUserController::class, 'update']);
+            Route::delete('/{staff}/', [StaffUserController::class, 'destroy']);
+        });
     });
 });
 

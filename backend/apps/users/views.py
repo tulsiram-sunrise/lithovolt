@@ -11,11 +11,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from core.permissions import IsAdmin, IsAdminOrWholesaler
-from .models import User, WholesalerApplication
+from .models import User, WholesalerApplication, Role, Permission, StaffUser
 from .serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
     WholesalerListSerializer, WholesalerApplicationSerializer,
-    WholesalerApplicationCreateSerializer
+    WholesalerApplicationCreateSerializer, RoleSerializer, PermissionSerializer,
+    StaffUserSerializer, StaffUserCreateUpdateSerializer
 )
 
 
@@ -150,3 +151,41 @@ class WholesalerApplicationViewSet(viewsets.ModelViewSet):
         application.reviewed_at = timezone.now()
         application.save(update_fields=['status', 'review_notes', 'reviewed_by', 'reviewed_at'])
         return Response(WholesalerApplicationSerializer(application).data)
+
+
+class RoleViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing roles for staff users."""
+    
+    queryset = Role.objects.prefetch_related('permissions', 'staff_users')
+    serializer_class = RoleSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['name', 'created_at']
+
+
+class PermissionViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing permissions."""
+    
+    queryset = Permission.objects.select_related('role')
+    serializer_class = PermissionSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['role', 'resource', 'action']
+    search_fields = ['description']
+
+
+class StaffUserViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing staff users and their roles."""
+    
+    queryset = StaffUser.objects.select_related('user', 'role', 'supervisor')
+    permission_classes = [IsAdmin]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['role', 'is_active']
+    search_fields = ['user__email', 'user__first_name', 'user__last_name']
+    ordering_fields = ['hire_date', 'user__first_name']
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return StaffUserCreateUpdateSerializer
+        return StaffUserSerializer

@@ -168,3 +168,84 @@ class WholesalerApplication(TimeStampedModel):
 
     def __str__(self):
         return f'WholesalerApplication({self.user_id}, {self.status})'
+
+
+class Role(TimeStampedModel):
+    """Role definition for staff users."""
+    
+    STAFF_ROLE_TYPES = (
+        ('MANAGER', 'Manager'),
+        ('SUPPORT', 'Support'),
+        ('SALES', 'Sales'),
+        ('TECH', 'Technical'),
+    )
+    
+    name = models.CharField(max_length=50, choices=STAFF_ROLE_TYPES, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'roles'
+        ordering = ['name']
+    
+    def __str__(self):
+        return f'{self.get_name_display()} role'
+
+
+class Permission(TimeStampedModel):
+    """Permission definition mapping roles to resource actions."""
+    
+    RESOURCE_CHOICES = (
+        ('INVENTORY', 'Inventory'),
+        ('ORDERS', 'Orders'),
+        ('WARRANTY_CLAIMS', 'Warranty Claims'),
+        ('USERS', 'Users'),
+        ('REPORTS', 'Reports'),
+        ('SETTINGS', 'Settings'),
+    )
+    
+    ACTION_CHOICES = (
+        ('VIEW', 'View'),
+        ('CREATE', 'Create'),
+        ('UPDATE', 'Update'),
+        ('DELETE', 'Delete'),
+        ('APPROVE', 'Approve'),
+        ('ASSIGN', 'Assign'),
+    )
+    
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='permissions')
+    resource = models.CharField(max_length=50, choices=RESOURCE_CHOICES)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    description = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'permissions'
+        unique_together = ('role', 'resource', 'action')
+        ordering = ['role', 'resource', 'action']
+    
+    def __str__(self):
+        return f'{self.role.name}: {self.get_action_display()} {self.get_resource_display()}'
+
+
+class StaffUser(TimeStampedModel):
+    """Map staff users to their assigned roles."""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, related_name='staff_users')
+    supervisor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='supervised_staff'
+    )
+    hire_date = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        db_table = 'staff_users'
+        ordering = ['user__first_name']
+    
+    def __str__(self):
+        return f'{self.user.get_full_name()} - {self.role.get_name_display() if self.role else "No Role"}'

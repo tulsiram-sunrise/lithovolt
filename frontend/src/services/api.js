@@ -77,6 +77,21 @@ export const inventoryAPI = {
   createBatteryModel: (data) => api.post('/inventory/models/', data),
   updateBatteryModel: (id, data) => api.patch(`/inventory/models/${id}/`, data),
   deleteBatteryModel: (id) => api.delete(`/inventory/models/${id}/`),
+
+  getAccessories: (params) => api.get('/inventory/accessories/', { params }),
+  createAccessory: (data) => api.post('/inventory/accessories/', data),
+  updateAccessory: (id, data) => api.patch(`/inventory/accessories/${id}/`, data),
+  deleteAccessory: (id) => api.delete(`/inventory/accessories/${id}/`),
+
+  getCategories: (params) => api.get('/inventory/categories/', { params }),
+  createCategory: (data) => api.post('/inventory/categories/', data),
+  updateCategory: (id, data) => api.patch(`/inventory/categories/${id}/`, data),
+  deleteCategory: (id) => api.delete(`/inventory/categories/${id}/`),
+
+  getProducts: (params) => api.get('/inventory/products/', { params }),
+  createProduct: (data) => api.post('/inventory/products/', data),
+  updateProduct: (id, data) => api.patch(`/inventory/products/${id}/`, data),
+  deleteProduct: (id) => api.delete(`/inventory/products/${id}/`),
   
   getSerials: (params) => api.get('/inventory/serials/', { params }),
   generateSerials: (data) => api.post('/inventory/serials/generate/', data),

@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from .models import BatteryModel, Accessory, SerialNumber, StockAllocation
+from .models import BatteryModel, Accessory, SerialNumber, StockAllocation, ProductCategory, Product
 
 User = get_user_model()
 
@@ -49,6 +49,30 @@ class AccessorySerializer(serializers.ModelSerializer):
         model = Accessory
         fields = ['id', 'name', 'sku', 'description', 'price', 'is_active', 'created_at']
         read_only_fields = ['created_at']
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    """Serializer for product categories."""
+
+    class Meta:
+        model = ProductCategory
+        fields = ['id', 'name', 'slug', 'parent', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    """Serializer for generic products."""
+
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'sku', 'category', 'category_name', 'description',
+            'price', 'total_quantity', 'available_quantity', 'low_stock_threshold',
+            'metadata', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
 
 
 class SerialBatchCreateSerializer(serializers.Serializer):

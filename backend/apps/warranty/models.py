@@ -134,17 +134,39 @@ class Warranty(TimeStampedModel):
 
 
 class WarrantyClaim(TimeStampedModel):
-	"""Warranty claim record (future workflow)."""
+	"""Warranty claim record with status workflow."""
 
 	class Status(models.TextChoices):
 		PENDING = 'PENDING', 'Pending'
+		UNDER_REVIEW = 'UNDER_REVIEW', 'Under Review'
 		APPROVED = 'APPROVED', 'Approved'
 		REJECTED = 'REJECTED', 'Rejected'
+		RESOLVED = 'RESOLVED', 'Resolved'
 
 	warranty = models.ForeignKey(Warranty, on_delete=models.CASCADE, related_name='claims')
 	consumer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warranty_claims')
 	description = models.TextField(blank=True)
 	status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+	
+	# Staff assignment and review tracking
+	assigned_to = models.ForeignKey(
+		User,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='assigned_warranty_claims',
+		help_text='Staff member assigned to review this claim'
+	)
+	reviewed_by = models.ForeignKey(
+		User,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='reviewed_warranty_claims',
+		help_text='Staff member who reviewed/approved/rejected this claim'
+	)
+	review_notes = models.TextField(blank=True, help_text='Notes from the reviewer')
+	resolution_date = models.DateTimeField(null=True, blank=True)
 
 	class Meta:
 		db_table = 'warranty_claims'
@@ -152,6 +174,58 @@ class WarrantyClaim(TimeStampedModel):
 
 	def __str__(self):
 		return f'Claim {self.id} ({self.status})'
+	
+	def can_transition_to(self, new_status):
+		"""Check if transition to new_status is valid."""
+		valid_transitions = {
+			self.Status.PENDING: [self.Status.UNDER_REVIEW],
+			self.Status.UNDER_REVIEW: [self.Status.APPROVED, self.Status.REJECTED],
+			self.Status.APPROVED: [self.Status.RESOLVED],
+			self.Status.REJECTED: [self.Status.RESOLVED],
+			self.Status.RESOLVED: [],
+		}
+		return new_status in valid_transitions.get(self.status, [])
+	
+	def update_status(self, new_status, reviewed_by=None, review_notes=''):
+		"""Update claim status with validation."""
+		if not self.can_transition_to(new_status):
+			raise ValueError(f'Cannot transition from {self.status} to {new_status}')
+		
+		self.status = new_status
+		if reviewed_by:
+			self.reviewed_by = reviewed_by
+		if review_notes:
+			self.review_notes = review_notes
+		if new_status in [self.Status.APPROVED, self.Status.REJECTED, self.Status.RESOLVED]:
+			self.resolution_date = timezone.now()
+		
+		self.save()
+		
+		# Create status history record
+		ClaimStatusHistory.objects.create(
+			claim=self,
+			from_status=self.status,
+			to_status=new_status,
+			changed_by=reviewed_by,
+			notes=review_notes
+		)
+
+
+class ClaimStatusHistory(TimeStampedModel):
+	"""Track status transitions for warranty claims."""
+	
+	claim = models.ForeignKey(WarrantyClaim, on_delete=models.CASCADE, related_name='status_history')
+	from_status = models.CharField(max_length=20)
+	to_status = models.CharField(max_length=20)
+	changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+	notes = models.TextField(blank=True)
+	
+	class Meta:
+		db_table = 'warranty_claim_status_history'
+		ordering = ['-created_at']
+	
+	def __str__(self):
+		return f'Claim {self.claim_id}: {self.from_status} → {self.to_status}'
 
 
 class WarrantyClaimAttachment(TimeStampedModel):

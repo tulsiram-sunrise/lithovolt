@@ -16,6 +16,8 @@ import AdminDashboard from './pages/admin/Dashboard'
 import UsersPage from './pages/admin/UsersPage'
 import BatteryModelsPage from './pages/admin/BatteryModelsPage'
 import InventoryPage from './pages/admin/InventoryPage'
+import ProductsPage from './pages/admin/ProductsPage'
+import CategoriesPage from './pages/admin/CategoriesPage'
 import OrdersPage from './pages/admin/OrdersPage'
 import WarrantiesPage from './pages/admin/WarrantiesPage'
 
@@ -24,12 +26,14 @@ import WholesalerDashboard from './pages/wholesaler/Dashboard'
 import WholesalerInventory from './pages/wholesaler/InventoryPage'
 import WholesalerOrders from './pages/wholesaler/OrdersPage'
 import WholesalerSales from './pages/wholesaler/SalesPage'
+import WholesalerProducts from './pages/wholesaler/ProductsPage'
 
 // Customer Pages
 import CustomerDashboard from './pages/customer/Dashboard'
 import CustomerWarrantiesPage from './pages/customer/WarrantiesPage'
 import CustomerClaimPage from './pages/customer/ClaimWarrantyPage'
 import CustomerWholesalerRegister from './pages/customer/WholesalerRegisterPage'
+import CustomerProducts from './pages/customer/ProductsPage'
 
 function App() {
   return (
@@ -53,6 +57,8 @@ function App() {
         <Route path="users" element={<UsersPage />} />
         <Route path="battery-models" element={<BatteryModelsPage />} />
         <Route path="inventory" element={<InventoryPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="warranties" element={<WarrantiesPage />} />
       </Route>
@@ -68,6 +74,7 @@ function App() {
       >
         <Route index element={<WholesalerDashboard />} />
         <Route path="inventory" element={<WholesalerInventory />} />
+        <Route path="products" element={<WholesalerProducts />} />
         <Route path="orders" element={<WholesalerOrders />} />
         <Route path="sales" element={<WholesalerSales />} />
       </Route>
@@ -84,6 +91,7 @@ function App() {
         <Route index element={<CustomerDashboard />} />
         <Route path="warranties" element={<CustomerWarrantiesPage />} />
         <Route path="claim" element={<CustomerClaimPage />} />
+        <Route path="products" element={<CustomerProducts />} />
         <Route path="wholesaler-register" element={<CustomerWholesalerRegister />} />
       </Route>
 

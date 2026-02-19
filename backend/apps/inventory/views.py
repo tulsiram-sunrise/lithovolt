@@ -9,16 +9,18 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from core.permissions import IsAdmin, IsAdminOrWholesaler
+from core.permissions import IsAdmin, IsAdminOrWholesaler, require_resource_permission
 from apps.notifications.models import NotificationLog
 from apps.notifications.services import log_and_send
 from apps.notifications.tasks import send_notification_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from .models import BatteryModel, Accessory, SerialNumber, StockAllocation
+from .models import BatteryModel, Accessory, SerialNumber, StockAllocation, ProductCategory, Product
 from .serializers import (
 	BatteryModelSerializer,
 	AccessorySerializer,
+	ProductCategorySerializer,
+	ProductSerializer,
 	SerialNumberSerializer,
 	SerialBatchCreateSerializer,
 	StockAllocationSerializer,
@@ -162,6 +164,38 @@ class AccessoryViewSet(viewsets.ModelViewSet):
 	serializer_class = AccessorySerializer
 	filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
 	filterset_fields = ['is_active']
+	search_fields = ['name', 'sku']
+	ordering_fields = ['created_at', 'name', 'sku']
+
+	def get_permissions(self):
+		if self.action in ['create', 'update', 'partial_update', 'destroy']:
+			return [IsAdmin()]
+		return [IsAuthenticated()]
+
+
+class ProductCategoryViewSet(viewsets.ModelViewSet):
+	"""CRUD for product categories."""
+
+	queryset = ProductCategory.objects.all()
+	serializer_class = ProductCategorySerializer
+	filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+	filterset_fields = ['is_active', 'parent']
+	search_fields = ['name', 'slug']
+	ordering_fields = ['created_at', 'name']
+
+	def get_permissions(self):
+		if self.action in ['create', 'update', 'partial_update', 'destroy']:
+			return [IsAdmin()]
+		return [IsAuthenticated()]
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+	"""CRUD for generic products."""
+
+	queryset = Product.objects.select_related('category')
+	serializer_class = ProductSerializer
+	filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+	filterset_fields = ['is_active', 'category']
 	search_fields = ['name', 'sku']
 	ordering_fields = ['created_at', 'name', 'sku']
 

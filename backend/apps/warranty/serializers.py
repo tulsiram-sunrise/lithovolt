@@ -109,12 +109,16 @@ class WarrantyClaimCreateSerializer(serializers.Serializer):
 
 
 class WarrantyClaimDetailSerializer(serializers.ModelSerializer):
-    """Detailed serializer for warranty claims."""
+    """Detailed serializer for warranty claims with workflow."""
 
     attachments = serializers.SerializerMethodField()
     warranty_number = serializers.CharField(source='warranty.warranty_number', read_only=True)
     serial_number = serializers.CharField(source='warranty.serial_number.serial_number', read_only=True)
     consumer_name = serializers.CharField(source='consumer.get_full_name', read_only=True)
+    assigned_to_name = serializers.CharField(source='assigned_to.get_full_name', read_only=True, allow_null=True)
+    reviewed_by_name = serializers.CharField(source='reviewed_by.get_full_name', read_only=True, allow_null=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    status_history = serializers.SerializerMethodField()
 
     def get_attachments(self, obj):
         request = self.context.get('request')
@@ -129,14 +133,25 @@ class WarrantyClaimDetailSerializer(serializers.ModelSerializer):
                 'created_at': attachment.created_at,
             })
         return items
+    
+    def get_status_history(self, obj):
+        """Get all status transitions for this claim."""
+        from .models import ClaimStatusHistory
+        history = ClaimStatusHistory.objects.filter(claim=obj).values(
+            'id', 'from_status', 'to_status', 'changed_by__first_name', 'changed_by__last_name',
+            'notes', 'created_at'
+        ).order_by('-created_at')
+        return list(history)
 
     class Meta:
         model = WarrantyClaim
         fields = [
             'id', 'warranty', 'warranty_number', 'serial_number', 'consumer',
-            'consumer_name', 'description', 'status', 'created_at', 'attachments'
+            'consumer_name', 'description', 'status', 'status_display', 'assigned_to',
+            'assigned_to_name', 'reviewed_by', 'reviewed_by_name', 'review_notes',
+            'resolution_date', 'status_history', 'created_at', 'attachments'
         ]
-        read_only_fields = ['created_at']
+        read_only_fields = ['created_at', 'assigned_to', 'reviewed_by', 'review_notes', 'resolution_date', 'status_history']
 
 
 class WarrantySerialLookupSerializer(serializers.Serializer):

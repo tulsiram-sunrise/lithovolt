@@ -23,6 +23,7 @@ import WholesalerIssueWarranty from '../screens/wholesaler/IssueWarrantyScreen';
 import WholesalerPlaceOrder from '../screens/wholesaler/PlaceOrderScreen';
 import WholesalerProfileScreen from '../screens/wholesaler/WholesalerProfileScreen';
 import WholesalerSettingsScreen from '../screens/wholesaler/WholesalerSettingsScreen';
+import WholesalerProductsScreen from '../screens/wholesaler/ProductsScreen';
 
 // Consumer Screens
 import ConsumerHome from '../screens/consumer/HomeScreen';
@@ -36,6 +37,7 @@ import ConsumerProfileScreen from '../screens/consumer/ConsumerProfileScreen';
 import SettingsScreen from '../screens/consumer/SettingsScreen';
 import AttachmentViewerScreen from '../screens/consumer/AttachmentViewerScreen';
 import WholesalerRegisterScreen from '../screens/consumer/WholesalerRegisterScreen';
+import ConsumerProductsScreen from '../screens/consumer/ProductsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -69,6 +71,7 @@ function WholesalerDrawer() {
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
       <Drawer.Screen name="Dashboard" component={WholesalerDashboard} />
       <Drawer.Screen name="PlaceOrder" component={WholesalerPlaceOrder} />
+      <Drawer.Screen name="Products" component={WholesalerProductsScreen} />
       <Drawer.Screen name="Inventory" component={WholesalerInventory} />
       <Drawer.Screen name="Orders" component={WholesalerOrdersStack} />
       <Drawer.Screen name="Sales" component={WholesalerSales} />
@@ -90,6 +93,8 @@ function ConsumerTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'ScanQR') {
             iconName = 'qr-code';
+          } else if (route.name === 'Products') {
+            iconName = focused ? 'bag' : 'bag-outline';
           } else if (route.name === 'Claims') {
             iconName = focused ? 'document-text' : 'document-text-outline';
           } else if (route.name === 'Settings') {
@@ -118,6 +123,7 @@ function ConsumerTabs() {
     >
       <Tabs.Screen name="Home" component={ConsumerHome} options={{ title: 'Home' }} />
       <Tabs.Screen name="ScanQR" component={ScanQRScreen} options={{ title: 'Scan' }} />
+      <Tabs.Screen name="Products" component={ConsumerProductsScreen} options={{ title: 'Products' }} />
       <Tabs.Screen name="Claims" component={ConsumerClaimsScreen} options={{ title: 'Claims' }} />
       <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
     </Tabs.Navigator>

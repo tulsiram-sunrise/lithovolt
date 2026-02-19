@@ -1,83 +1,110 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Picker } from 'react-native';
 import { inventoryAPI, ordersAPI } from '../../services/api';
 import { NeonScroll } from '../../components/layout/NeonBackground';
 import { neonTheme } from '../../styles/neonTheme';
 
 export default function PlaceOrderScreen({ navigation }) {
   const [models, setModels] = useState([]);
+  const [accessories, setAccessories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [productType, setProductType] = useState('BATTERY_MODEL');
   const [cart, setCart] = useState([]);
 
-  const loadModels = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await inventoryAPI.getModels({ is_active: true });
-      const payload = response.data;
-      const list = Array.isArray(payload) ? payload : payload?.results || [];
-      setModels(list);
+      const [modelsRes, accessoriesRes, productsRes] = await Promise.all([
+        inventoryAPI.getModels({ is_active: true }),
+        inventoryAPI.getAccessories({ is_active: true }),
+        inventoryAPI.getProducts(),
+      ]);
+      
+      const parsePayload = (res) => {
+        const payload = res.data;
+        return Array.isArray(payload) ? payload : payload?.results || [];
+      };
+
+      setModels(parsePayload(modelsRes));
+      setAccessories(parsePayload(accessoriesRes));
+      setProducts(parsePayload(productsRes));
     } catch (err) {
-      setError('Unable to load battery models.');
+      setError('Unable to load inventory items.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadModels();
+    loadData();
   }, []);
 
-  const filteredModels = useMemo(() => {
+  // Get available items based on product type
+  const availableItems = useMemo(() => {
+    const list =
+      productType === 'BATTERY_MODEL' ? models :
+      productType === 'ACCESSORY' ? accessories :
+      products;
+
     const term = search.trim().toLowerCase();
     if (!term) {
-      return models;
+      return list;
     }
-    return models.filter((item) => item.name.toLowerCase().includes(term) || item.sku.toLowerCase().includes(term));
-  }, [models, search]);
+    return list.filter((item) => item.name.toLowerCase().includes(term) || item.sku.toLowerCase().includes(term));
+  }, [models, accessories, products, productType, search]);
 
-  const updateQuantity = (modelId, value) => {
+  const getItemKey = (item, type) => `${type}-${item.id}`;
+
+  const updateQuantity = (itemId, value) => {
     const qty = Math.max(1, Number(value) || 1);
     setCart((prev) => {
-      const existing = prev.find((item) => item.modelId === modelId);
+      const key = getItemKey({ id: itemId }, productType);
+      const existing = prev.find((item) => item.key === key);
       if (existing) {
-        return prev.map((item) => (item.modelId === modelId ? { ...item, quantity: qty } : item));
+        return prev.map((item) => (item.key === key ? { ...item, quantity: qty } : item));
       }
-      return [...prev, { modelId, quantity: qty }];
+      return [...prev, { key, itemId, productType, quantity: qty }];
     });
   };
 
-  const handleAdd = (model) => {
+  const handleAdd = (item) => {
+    const key = getItemKey(item, productType);
     setCart((prev) => {
-      const existing = prev.find((item) => item.modelId === model.id);
+      const existing = prev.find((cartItem) => cartItem.key === key);
       if (existing) {
-        return prev.map((item) => (item.modelId === model.id ? { ...item, quantity: item.quantity + 1 } : item));
+        return prev.map((cartItem) =>
+          cartItem.key === key ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+        );
       }
-      return [...prev, { modelId: model.id, quantity: 1 }];
+      return [...prev, { key, itemId: item.id, productType, quantity: 1 }];
     });
   };
 
-  const handleRemove = (modelId) => {
-    setCart((prev) => prev.filter((item) => item.modelId !== modelId));
+  const handleRemove = (key) => {
+    setCart((prev) => prev.filter((item) => item.key !== key));
   };
 
   const handleSubmit = async () => {
     if (cart.length === 0) {
-      setError('Add at least one battery model.');
+      setError('Add at least one item to your order.');
       return;
     }
 
     try {
       setSubmitting(true);
       setError('');
-      const items = cart.map((item) => ({
-        product_type: 'BATTERY_MODEL',
-        battery_model_id: item.modelId,
-        quantity: item.quantity,
-      }));
+      const items = cart.map((item) => {
+        const base = { product_type: item.productType, quantity: item.quantity };
+        if (item.productType === 'BATTERY_MODEL') base.battery_model_id = item.itemId;
+        if (item.productType === 'ACCESSORY') base.accessory_id = item.itemId;
+        if (item.productType === 'PRODUCT') base.product_id = item.itemId;
+        return base;
+      });
       const response = await ordersAPI.createOrder({ items });
       navigation.navigate('Orders');
       return response.data;
@@ -92,11 +119,26 @@ export default function PlaceOrderScreen({ navigation }) {
   return (
     <NeonScroll contentContainerStyle={styles.container} testID="wholesaler-place-order">
       <Text style={styles.title}>Place Order</Text>
-      <Text style={styles.subtitle}>Select battery models to order from Lithovolt.</Text>
+      <Text style={styles.subtitle}>Select items to add to your order.</Text>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Item Type</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={productType}
+            onValueChange={setProductType}
+            style={styles.picker}
+          >
+            <Picker.Item label="Battery Models" value="BATTERY_MODEL" />
+            <Picker.Item label="Accessories" value="ACCESSORY" />
+            <Picker.Item label="Products" value="PRODUCT" />
+          </Picker>
+        </View>
+      </View>
 
       <TextInput
         style={styles.searchInput}
-        placeholder="Search model or SKU"
+        placeholder="Search name or SKU"
         placeholderTextColor="#94a3b8"
         value={search}
         onChangeText={setSearch}
@@ -107,14 +149,16 @@ export default function PlaceOrderScreen({ navigation }) {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Battery Models</Text>
-        {filteredModels.map((model) => (
-          <View key={model.id} style={styles.card}>
+        <Text style={styles.sectionTitle}>
+          {productType === 'BATTERY_MODEL' ? 'Battery Models' : productType === 'ACCESSORY' ? 'Accessories' : 'Products'}
+        </Text>
+        {availableItems.map((item) => (
+          <View key={item.id} style={styles.card}>
             <View>
-              <Text style={styles.cardTitle}>{model.name}</Text>
-              <Text style={styles.cardMeta}>SKU: {model.sku}</Text>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardMeta}>SKU: {item.sku}</Text>
             </View>
-            <TouchableOpacity style={styles.secondaryButton} onPress={() => handleAdd(model)}>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => handleAdd(item)}>
               <Text style={styles.secondaryButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -122,24 +166,26 @@ export default function PlaceOrderScreen({ navigation }) {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Order Items</Text>
+        <Text style={styles.sectionTitle}>Order Items ({cart.length})</Text>
         {cart.length === 0 ? <Text style={styles.emptyText}>No items added.</Text> : null}
         {cart.map((item) => {
-          const model = models.find((m) => m.id === item.modelId);
+          const allItemsList = item.productType === 'BATTERY_MODEL' ? models : item.productType === 'ACCESSORY' ? accessories : products;
+          const itemData = allItemsList.find((m) => m.id === item.itemId);
           return (
-            <View key={item.modelId} style={styles.cartRow}>
+            <View key={item.key} style={styles.cartRow}>
               <View>
-                <Text style={styles.cartTitle}>{model?.name || 'Model'}</Text>
-                <Text style={styles.cartMeta}>SKU: {model?.sku || '-'}</Text>
+                <Text style={styles.cartTitle}>{itemData?.name || 'Item'}</Text>
+                <Text style={styles.cartMeta}>SKU: {itemData?.sku || '-'}</Text>
+                <Text style={styles.cartMeta}>Type: {item.productType === 'BATTERY_MODEL' ? 'Battery' : item.productType === 'ACCESSORY' ? 'Accessory' : 'Product'}</Text>
               </View>
               <View style={styles.cartActions}>
                 <TextInput
                   style={styles.qtyInput}
                   keyboardType="numeric"
                   value={String(item.quantity)}
-                  onChangeText={(value) => updateQuantity(item.modelId, value)}
+                  onChangeText={(value) => updateQuantity(item.itemId, value)}
                 />
-                <TouchableOpacity style={styles.removeButton} onPress={() => handleRemove(item.modelId)}>
+                <TouchableOpacity style={styles.removeButton} onPress={() => handleRemove(item.key)}>
                   <Text style={styles.removeButtonText}>Remove</Text>
                 </TouchableOpacity>
               </View>
@@ -176,6 +222,30 @@ const styles = StyleSheet.create({
     fontFamily: neonTheme.fonts.body,
     marginBottom: 12,
   },
+  section: {
+    backgroundColor: neonTheme.colors.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: neonTheme.colors.border,
+    marginBottom: 16,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    color: neonTheme.colors.text,
+    fontFamily: neonTheme.fonts.heading,
+    marginBottom: 8,
+  },
+  pickerContainer: {
+    borderColor: neonTheme.colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: neonTheme.colors.surface,
+  },
+  picker: {
+    color: neonTheme.colors.text,
+  },
   searchInput: {
     backgroundColor: neonTheme.colors.surface,
     borderColor: neonTheme.colors.border,
@@ -187,14 +257,6 @@ const styles = StyleSheet.create({
     color: neonTheme.colors.text,
     fontFamily: neonTheme.fonts.body,
     marginBottom: 12,
-  },
-  section: {
-    backgroundColor: neonTheme.colors.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: neonTheme.colors.border,
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,

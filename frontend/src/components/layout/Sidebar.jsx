@@ -5,6 +5,8 @@ const adminMenu = [
   { name: 'Users', path: '/admin/users' },
   { name: 'Battery Models', path: '/admin/battery-models' },
   { name: 'Inventory', path: '/admin/inventory' },
+  { name: 'Products', path: '/admin/products' },
+  { name: 'Categories', path: '/admin/categories' },
   { name: 'Orders', path: '/admin/orders' },
   { name: 'Warranties', path: '/admin/warranties' },
 ]
@@ -12,6 +14,7 @@ const adminMenu = [
 const wholesalerMenu = [
   { name: 'Dashboard', path: '/wholesaler' },
   { name: 'Inventory', path: '/wholesaler/inventory' },
+  { name: 'Products', path: '/wholesaler/products' },
   { name: 'Orders', path: '/wholesaler/orders' },
   { name: 'Sales', path: '/wholesaler/sales' },
 ]
@@ -20,6 +23,7 @@ const customerMenu = [
   { name: 'Dashboard', path: '/customer' },
   { name: 'My Warranties', path: '/customer/warranties' },
   { name: 'Claim Warranty', path: '/customer/claim' },
+  { name: 'Products', path: '/customer/products' },
   { name: 'Wholesaler Signup', path: '/customer/wholesaler-register' },
 ]
 

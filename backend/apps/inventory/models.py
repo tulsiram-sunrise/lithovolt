@@ -63,6 +63,56 @@ class Accessory(TimeStampedModel):
 		return f'{self.name} ({self.sku})'
 
 
+class ProductCategory(TimeStampedModel):
+	"""Generic product category for future product lines."""
+
+	name = models.CharField(max_length=200, unique=True)
+	slug = models.SlugField(max_length=200, unique=True)
+	parent = models.ForeignKey(
+		'self',
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='children'
+	)
+	is_active = models.BooleanField(default=True)
+
+	class Meta:
+		db_table = 'product_categories'
+		ordering = ['name']
+
+	def __str__(self):
+		return self.name
+
+
+class Product(TimeStampedModel):
+	"""Generic product catalog item (non-serialized)."""
+
+	name = models.CharField(max_length=200)
+	sku = models.CharField(max_length=100, unique=True)
+	category = models.ForeignKey(
+		ProductCategory,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='products'
+	)
+	description = models.TextField(blank=True)
+	price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+	total_quantity = models.PositiveIntegerField(default=0)
+	available_quantity = models.PositiveIntegerField(default=0)
+	low_stock_threshold = models.PositiveIntegerField(default=5)
+	metadata = models.JSONField(default=dict, blank=True)
+	is_active = models.BooleanField(default=True)
+
+	class Meta:
+		db_table = 'products'
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return f'{self.name} ({self.sku})'
+
+
 class SerialNumber(TimeStampedModel):
 	"""Individual battery serial number tracking."""
 
