@@ -16,14 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lithovolt.app"
+      "bundleIdentifier": "au.com.lithovolt"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#0284c7"
       },
-      "package": "com.lithovolt.app",
+      "package": "au.com.lithovolt",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
