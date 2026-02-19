@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AppDownloadRedirectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Smart app download redirect endpoint (device detection for app store)
+// Must be before the catch-all route
+Route::get('/download/app', [AppDownloadRedirectController::class, 'redirect']);
 
 Route::get('/', function () {
     return view('welcome');

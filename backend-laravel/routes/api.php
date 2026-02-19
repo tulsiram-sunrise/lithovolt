@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\WarrantyController;
 use App\Http\Controllers\Api\WarrantyClaimController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AdminController;
-use App\Http\Controllers\Api\AppDownloadRedirectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,9 +26,6 @@ use App\Http\Controllers\Api\AppDownloadRedirectController;
 
 // Public Routes
 Route::prefix('v1')->group(function () {
-    // Smart app download redirect (device detection for app store)
-    Route::get('/download/app', [AppDownloadRedirectController::class, 'redirect']);
-    
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
