@@ -15,75 +15,126 @@ use App\Http\Controllers\Api\AdminController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes (Matching Python Backend Structure)
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| Routes configured to match Python backend exactly for frontend compatibility
 |
 */
 
-// Public Routes
-Route::prefix('v1')->group(function () {
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
+// ====== PUBLIC AUTHENTICATION ROUTES ======
+Route::prefix('auth')->group(function () {
+    // Standard Auth
+    Route::post('/register/', [AuthController::class, 'register']);
+    Route::post('/login/', [AuthController::class, 'login']);
+    
+    // OTP Authentication
+    Route::post('/otp/send/', [AuthController::class, 'sendOtp']);
+    Route::post('/otp/verify/', [AuthController::class, 'verifyOtp']);
+    
+    // Password Reset
+    Route::post('/password-reset/', [AuthController::class, 'passwordResetRequest']);
+    Route::post('/password-reset/confirm/', [AuthController::class, 'passwordResetConfirm']);
+});
 
-    // Protected Routes
-    Route::middleware('auth:sanctum')->group(function () {
-        // Auth
-        Route::post('/auth/logout', [AuthController::class, 'logout']);
-        Route::get('/auth/profile', [AuthController::class, 'profile']);
-
-        // Users
-        Route::apiResource('users', UserController::class);
-        Route::post('/users/{user}/verify', [UserController::class, 'verifyEmail']);
-
-        // Battery Models
-        Route::apiResource('battery-models', BatteryModelController::class)
-            ->parameters(['battery-models' => 'battery']);
-
-        // Serial Numbers
-        Route::apiResource('serial-numbers', SerialNumberController::class)
-            ->parameters(['serial-numbers' => 'serial']);
-        Route::post('/serial-numbers/{serial}/allocate', [SerialNumberController::class, 'allocate']);
-        Route::post('/serial-numbers/{serial}/mark-sold', [SerialNumberController::class, 'markSold']);
-
-        // Accessories
-        Route::apiResource('accessories', AccessoryController::class);
-
-        // Orders
-        Route::apiResource('orders', OrderController::class);
-        Route::get('/users/{userId}/orders', [OrderController::class, 'ordersByUser']);
-
-        // Warranties
-        Route::apiResource('warranties', WarrantyController::class);
-        Route::get('/warranties/qr/{qrCode}', [WarrantyController::class, 'validateQRCode']);
-
-        // Warranty Claims
-        Route::apiResource('warranty-claims', WarrantyClaimController::class)
-            ->parameters(['warranty-claims' => 'claim']);
-        Route::get('/warranties/{warrantyId}/claims', [WarrantyClaimController::class, 'claimsByWarranty']);
-
-        // Notifications
-        Route::get('/my-notifications', [NotificationController::class, 'userNotifications']);
-        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
-        Route::post('/notifications', [NotificationController::class, 'store']);
-        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-        Route::apiResource('notifications', NotificationController::class, ['only' => ['index', 'show']])
-            ->whereNumber('notification');
-
-        // Admin Routes
-        Route::prefix('admin')->middleware('admin')->group(function () {
-            Route::get('/dashboard', [AdminController::class, 'dashboard']);
-            Route::get('/users/stats', [AdminController::class, 'userStats']);
-            Route::get('/orders/stats', [AdminController::class, 'orderStats']);
-            Route::get('/warranties/stats', [AdminController::class, 'warrantyStats']);
-            Route::get('/export/{model}', [AdminController::class, 'exportData']);
-        });
+// ====== PROTECTED ROUTES ======
+Route::middleware('auth:jwt')->group(function () {
+    // Auth - Authenticated routes
+    Route::prefix('auth')->group(function () {
+        Route::post('/logout/', [AuthController::class, 'logout']);
+        Route::post('/refresh/', [AuthController::class, 'refresh']);
+        Route::get('/profile/', [AuthController::class, 'profile']);
+    });
+    
+    // Users
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::get('/{user}/', [UserController::class, 'show']);
+        Route::put('/{user}/', [UserController::class, 'update']);
+        Route::delete('/{user}/', [UserController::class, 'destroy']);
+        Route::post('/{user}/verify/', [UserController::class, 'verifyEmail']);
+    });
+    
+    // Inventory - Battery Models
+    Route::prefix('inventory/models')->group(function () {
+        Route::get('/', [BatteryModelController::class, 'index']);
+        Route::post('/', [BatteryModelController::class, 'store']);
+        Route::get('/{battery}/', [BatteryModelController::class, 'show']);
+        Route::put('/{battery}/', [BatteryModelController::class, 'update']);
+        Route::delete('/{battery}/', [BatteryModelController::class, 'destroy']);
+    });
+    
+    // Inventory - Serial Numbers
+    Route::prefix('inventory/serials')->group(function () {
+        Route::get('/', [SerialNumberController::class, 'index']);
+        Route::post('/', [SerialNumberController::class, 'store']);
+        Route::post('/generate/', [SerialNumberController::class, 'generate']);
+        Route::get('/{serial}/', [SerialNumberController::class, 'show']);
+        Route::put('/{serial}/', [SerialNumberController::class, 'update']);
+        Route::delete('/{serial}/', [SerialNumberController::class, 'destroy']);
+        Route::post('/{serial}/allocate/', [SerialNumberController::class, 'allocate']);
+        Route::post('/{serial}/mark-sold/', [SerialNumberController::class, 'markSold']);
+    });
+    
+    // Inventory - Accessories
+    Route::prefix('inventory/accessories')->group(function () {
+        Route::get('/', [AccessoryController::class, 'index']);
+        Route::post('/', [AccessoryController::class, 'store']);
+        Route::get('/{accessory}/', [AccessoryController::class, 'show']);
+        Route::put('/{accessory}/', [AccessoryController::class, 'update']);
+        Route::delete('/{accessory}/', [AccessoryController::class, 'destroy']);
+    });
+    
+    // Orders
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::post('/', [OrderController::class, 'store']);
+        Route::get('/{order}/', [OrderController::class, 'show']);
+        Route::put('/{order}/', [OrderController::class, 'update']);
+        Route::delete('/{order}/', [OrderController::class, 'destroy']);
+        Route::get('/user/{userId}/', [OrderController::class, 'ordersByUser']);
+    });
+    
+    // Warranties
+    Route::prefix('warranties')->group(function () {
+        Route::get('/', [WarrantyController::class, 'index']);
+        Route::post('/', [WarrantyController::class, 'store']);
+        Route::get('/{warranty}/', [WarrantyController::class, 'show']);
+        Route::put('/{warranty}/', [WarrantyController::class, 'update']);
+        Route::delete('/{warranty}/', [WarrantyController::class, 'destroy']);
+        Route::get('/verify/{serialNumber}/', [WarrantyController::class, 'verify']);
+    });
+    
+    // Warranty Claims
+    Route::prefix('warranty-claims')->group(function () {
+        Route::get('/', [WarrantyClaimController::class, 'index']);
+        Route::post('/', [WarrantyClaimController::class, 'store']);
+        Route::get('/{claim}/', [WarrantyClaimController::class, 'show']);
+        Route::put('/{claim}/', [WarrantyClaimController::class, 'update']);
+        Route::delete('/{claim}/', [WarrantyClaimController::class, 'destroy']);
+    });
+    
+    // Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::post('/', [NotificationController::class, 'store']);
+        Route::get('/{notification}/', [NotificationController::class, 'show']);
+        Route::post('/{notification}/read/', [NotificationController::class, 'markAsRead']);
+    });
+    
+    // Admin Routes
+    Route::prefix('admin')->middleware('admin')->group(function () {
+        Route::get('/metrics/', [AdminController::class, 'metrics']);
+        Route::get('/dashboard/', [AdminController::class, 'dashboard']);
+        Route::get('/users/stats/', [AdminController::class, 'userStats']);
+        Route::get('/orders/stats/', [AdminController::class, 'orderStats']);
+        Route::get('/warranties/stats/', [AdminController::class, 'warrantyStats']);
+        Route::get('/export/{model}/', [AdminController::class, 'exportData']);
     });
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+// Generic JWT authenticated user route
+Route::middleware('auth:jwt')->get('/user/', function (Request $request) {
     return $request->user();
 });
