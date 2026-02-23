@@ -12,26 +12,34 @@ class RolePermissionSeeder extends Seeder
     {
         // Create roles
         $roles = [
-            'MANAGER' => Role::create([
-                'name' => 'MANAGER',
-                'description' => 'Management staff role with full access to most resources',
-                'is_active' => true,
-            ]),
-            'SUPPORT' => Role::create([
-                'name' => 'SUPPORT',
-                'description' => 'Support staff role focused on customer service and warranty claims',
-                'is_active' => true,
-            ]),
-            'SALES' => Role::create([
-                'name' => 'SALES',
-                'description' => 'Sales staff role for orders and customer management',
-                'is_active' => true,
-            ]),
-            'TECH' => Role::create([
-                'name' => 'TECH',
-                'description' => 'Technical staff role for inventory and product management',
-                'is_active' => true,
-            ]),
+            'MANAGER' => Role::updateOrCreate(
+                ['name' => 'MANAGER'],
+                [
+                    'description' => 'Management staff role with full access to most resources',
+                    'is_active' => true,
+                ]
+            ),
+            'SUPPORT' => Role::updateOrCreate(
+                ['name' => 'SUPPORT'],
+                [
+                    'description' => 'Support staff role focused on customer service and warranty claims',
+                    'is_active' => true,
+                ]
+            ),
+            'SALES' => Role::updateOrCreate(
+                ['name' => 'SALES'],
+                [
+                    'description' => 'Sales staff role for orders and customer management',
+                    'is_active' => true,
+                ]
+            ),
+            'TECH' => Role::updateOrCreate(
+                ['name' => 'TECH'],
+                [
+                    'description' => 'Technical staff role for inventory and product management',
+                    'is_active' => true,
+                ]
+            ),
         ];
         
         // Define permissions per role
@@ -71,12 +79,16 @@ class RolePermissionSeeder extends Seeder
         foreach ($rolePermissions as $roleName => $permissions) {
             $role = $roles[$roleName];
             foreach ($permissions as [$resource, $action]) {
-                Permission::create([
-                    'role_id' => $role->id,
-                    'resource' => $resource,
-                    'action' => $action,
-                    'description' => "$action $resource",
-                ]);
+                Permission::updateOrCreate(
+                    [
+                        'role_id' => $role->id,
+                        'resource' => $resource,
+                        'action' => $action,
+                    ],
+                    [
+                        'description' => "$action $resource",
+                    ]
+                );
             }
         }
         

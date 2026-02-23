@@ -2,38 +2,34 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('roles')->insert([
-            [
-                'name' => 'admin',
-                'description' => 'Administrator with full access',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'wholesaler',
-                'description' => 'Wholesaler user',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'retailer',
-                'description' => 'Retailer user',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'customer',
-                'description' => 'End customer',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        // Delete old lowercase roles (these will cause conflicts)
+        Role::whereIn('name', ['admin', 'wholesaler', 'retailer', 'customer'])->delete();
+        
+        // Create or update roles with uppercase names
+        Role::updateOrCreate(
+            ['name' => 'ADMIN'],
+            ['id' => 1, 'description' => 'Administrator with full access']
+        );
+        Role::updateOrCreate(
+            ['name' => 'WHOLESALER'],
+            ['id' => 2, 'description' => 'Wholesaler user']
+        );
+        Role::updateOrCreate(
+            ['name' => 'RETAILER'],
+            ['id' => 3, 'description' => 'Retailer user']
+        );
+        Role::updateOrCreate(
+            ['name' => 'CONSUMER'],
+            ['id' => 4, 'description' => 'End customer']
+        );
     }
 }
+
+

@@ -96,14 +96,19 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getRoleAttribute()
     {
-        // Check if role field exists directly
+        // Check if role field exists directly in attributes
         if ($this->attributes['role'] ?? null) {
             return $this->attributes['role'];
         }
 
         // Otherwise, get from role relationship
-        if ($this->role_id && $this->relationLoaded('role')) {
-            return $this->modelRole()->first()?->name ?? 'customer';
+        if ($this->role_id) {
+            // If relation is loaded, use it
+            if ($this->relationLoaded('role')) {
+                return $this->role?->name ?? 'customer';
+            }
+            // Otherwise, query it
+            return Role::find($this->role_id)?->name ?? 'customer';
         }
 
         return 'customer';
@@ -112,6 +117,14 @@ class User extends Authenticatable implements JWTSubject
     public function modelRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Alias for modelRole relationship for convenience
+     */
+    public function role(): BelongsTo
+    {
+        return $this->modelRole();
     }
 
     public function orders(): HasMany

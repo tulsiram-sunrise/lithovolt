@@ -26,6 +26,7 @@ export default function LoginPage() {
       } else if (user?.role === 'WHOLESALER') {
         navigate('/wholesaler', { replace: true })
       } else {
+        // For CONSUMER, RETAILER, or any other role
         navigate('/customer', { replace: true })
       }
     } catch (err) {

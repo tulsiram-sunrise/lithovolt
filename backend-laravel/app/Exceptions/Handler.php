@@ -34,9 +34,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        // For API requests, don't try to redirect to login route
-        if ($exception instanceof AuthenticationException && $request->expectsJson()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        // For API requests with authentication failures, return JSON
+        if ($exception instanceof AuthenticationException) {
+            // Check if it's an API request
+            if ($request->expectsJson() || str_starts_with($request->path(), 'api')) {
+                return response()->json([
+                    'message' => 'Unauthenticated.',
+                    'error' => 'Unauthorized'
+                ], 401);
+            }
+            
+            // For non-API requests, don't try to redirect (no login route defined)
+            // Just return a simple error
+            return response('Unauthorized', 401);
         }
 
         return parent::render($request, $exception);
