@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lithovolt Artisan Commands - Production Helper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 30px;
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .auth-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        input[type="password"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-execute {
+            background: #667eea;
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .btn-execute:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-quick {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-quick:hover {
+            background: #e0e0e0;
+        }
+        
+        .commands-preset {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .commands-preset h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .preset-commands {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .preset-cmd {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .preset-cmd:hover {
+            background: #e8f0ff;
+            border-color: #667eea;
+        }
+        
+        .output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            display: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .output.show {
+            display: block;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status-message.show {
+            display: block;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+        
+        .footer strong {
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Lithovolt Artisan Commands</h1>
+        <p class="subtitle">Execute Laravel commands without SSH access</p>
+        
+        <div class="warning">
+            ⚠️ <strong>IMPORTANT:</strong> After using this tool, DELETE this file immediately!
+            <br>File location: public/artisan-commands.html
+            <br>This is a security risk if left on the server.
+        </div>
+        
+        <div class="auth-section">
+            <div class="form-group">
+                <label for="password">Admin Password:</label>
+                <input type="password" id="password" placeholder="Enter the admin password">
+            </div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="commands-preset">
+            <h3>Quick Fix (CORS Issues)</h3>
+            <div class="preset-commands">
+                <button class="preset-cmd" onclick="runCommand('config:clear')">1. Clear Config Cache</button>
+                <button class="preset-cmd" onclick="runCommand('config:cache')">2. Cache Config</button>
+                <button class="preset-cmd" onclick="runCommand('route:cache')">3. Cache Routes</button>
+                <button class="preset-cmd" onclick="runCommand('optimize:clear')">4. Clear Optimization</button>
+            </div>
+        </div>
+        
+        <div class="commands-preset">
+            <h3>Other Commands</h3>
+            <div class="preset-commands">
+                <button class="preset-cmd" onclick="runCommand('cache:clear')">Clear Application Cache</button>
+                <button class="preset-cmd" onclick="runCommand('view:clear')">Clear View Cache</button>
+                <button class="preset-cmd" onclick="runCommand('queue:restart')">Restart Queue</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="customCommand">Custom Command:</label>
+            <select id="customCommand">
+                <option value="">Select a command...</option>
+                <option value="config:clear">config:clear</option>
+                <option value="config:cache">config:cache</option>
+                <option value="route:cache">route:cache</option>
+                <option value="view:clear">view:clear</option>
+                <option value="cache:clear">cache:clear</option>
+                <option value="optimize:clear">optimize:clear</option>
+                <option value="queue:restart">queue:restart</option>
+                <option value="migrate">migrate</option>
+                <option value="seed">seed</option>
+            </select>
+        </div>
+        
+        <button class="btn-execute" onclick="runSelectedCommand()">Execute Selected Command</button>
+        
+        <div class="output" id="output"></div>
+        
+        <div class="footer">
+            <strong>⚠️ SECURITY REMINDER:</strong><br>
+            Delete this file immediately after use:<br>
+            <code>rm public/artisan-commands.html</code><br>
+            <br>
+            This file is for emergency use only.
+        </div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message show ${type}`;
+        }
+        
+        function showOutput(text) {
+            const outputEl = document.getElementById('output');
+            outputEl.textContent = text;
+            outputEl.classList.add('show');
+            outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function runCommand(command) {
+            const password = document.getElementById('password').value;
+            
+            if (!password) {
+                showStatus('❌ Please enter the admin password', 'error');
+                return;
+            }
+            
+            showStatus(`⏳ Running: ${command}`, 'loading');
+            
+            fetch(`artisan-commands.php?pwd=${encodeURIComponent(password)}&cmd=${encodeURIComponent(command)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showStatus(`✅ Successfully executed: ${command}`, 'success');
+                        showOutput(`Command: ${command}\nExit Code: ${data.exit_code}\n\n${data.output}`);
+                    } else {
+                        showStatus(`❌ Error: ${data.message}`, 'error');
+                        showOutput(`Command: ${command}\n\nError: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`❌ Request failed: ${error.message}`, 'error');
+                    showOutput(`Error: ${error.message}`);
+                });
+        }
+        
+        function runSelectedCommand() {
+            const command = document.getElementById('customCommand').value;
+            
+            if (!command) {
+                showStatus('❌ Please select a command', 'error');
+                return;
+            }
+            
+            runCommand(command);
+        }
+        
+        // Allow Enter key to execute
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                runSelectedCommand();
+            }
+        });
+    </script>
+</body>
+</html>
