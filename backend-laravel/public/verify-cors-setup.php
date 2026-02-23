@@ -9,6 +9,33 @@
 
 header('Content-Type: application/json');
 
+// Prevent error display that breaks JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+// Catch any PHP errors and return as JSON
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    die(json_encode([
+        'status' => 'error',
+        'error' => 'PHP Error',
+        'message' => $errstr,
+        'file' => basename($errfile),
+        'line' => $errline
+    ]));
+});
+
+set_exception_handler(function($exception) {
+    http_response_code(500);
+    die(json_encode([
+        'status' => 'error',
+        'error' => 'Exception',
+        'message' => $exception->getMessage(),
+        'file' => basename($exception->getFile()),
+        'line' => $exception->getLine()
+    ]));
+});
+
 // Find Laravel root - check known path first, then auto-detect
 function findLaravelRoot($startPath) {
     // First try the known path: ../../lithovolt-api
@@ -128,23 +155,27 @@ if (!$checks['cors_config_file']['exists']) {
     $issues[] = "❌ config/cors.php is MISSING - Need to upload this file";
 }
 
-if ($checks['env_values']['APP_ENV'] !== 'production') {
-    $issues[] = "❌ APP_ENV is not set to 'production' - Set it in .env";
-}
+if (isset($checks['env_values'])) {
+    if ($checks['env_values']['APP_ENV'] !== 'production') {
+        $issues[] = "❌ APP_ENV is not set to 'production' - Set it in .env";
+    }
 
-if ($checks['env_values']['APP_DEBUG'] !== 'false') {
-    $issues[] = "❌ APP_DEBUG is not set to 'false' - Set it in .env";
-}
+    if ($checks['env_values']['APP_DEBUG'] !== 'false') {
+        $issues[] = "❌ APP_DEBUG is not set to 'false' - Set it in .env";
+    }
 
-if ($checks['env_values']['CORS_MAX_AGE'] === 'NOT SET') {
-    $issues[] = "⚠️  CORS_MAX_AGE not set in .env - Add: CORS_MAX_AGE=86400";
+    if ($checks['env_values']['CORS_MAX_AGE'] === 'NOT SET') {
+        $issues[] = "⚠️  CORS_MAX_AGE not set in .env - Add: CORS_MAX_AGE=86400";
+    }
+} else {
+    $issues[] = "⚠️  .env file not found at $envPath";
 }
 
 if (!$corsPackageInstalled) {
     $issues[] = "❌ fruitcake/laravel-cors package not installed - Run: composer require fruitcake/laravel-cors";
 }
 
-if (!$checks['cors_middleware_checks']['contains_handlecors']) {
+if (isset($checks['cors_middleware_checks']) && !$checks['cors_middleware_checks']['contains_handlecors']) {
     $issues[] = "❌ HandleCors middleware not found in Kernel.php - Add it to middleware list";
 }
 
