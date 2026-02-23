@@ -10,8 +10,10 @@
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # Redirect Trailing Slashes If Not A Folder...
+    # BUT: Don't redirect OPTIONS requests (CORS preflight must not be redirected)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteCond %{REQUEST_METHOD} !OPTIONS
     RewriteRule ^ %1 [L,R=301]
 
     # Send Requests To Front Controller...
