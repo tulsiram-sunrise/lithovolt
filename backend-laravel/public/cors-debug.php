@@ -9,6 +9,30 @@
 
 header('Content-Type: application/json');
 
+// Prevent error display that breaks JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    die(json_encode([
+        'status' => 'error',
+        'message' => $errstr,
+        'file' => basename($errfile),
+        'line' => $errline
+    ]));
+});
+
+set_exception_handler(function($exception) {
+    http_response_code(500);
+    die(json_encode([
+        'status' => 'error',
+        'message' => $exception->getMessage(),
+        'file' => basename($exception->getFile()),
+        'line' => $exception->getLine()
+    ]));
+});
+
 // Find Laravel root - check known path first, then auto-detect
 function findLaravelRoot($startPath) {
     // First try the known path: ../../lithovolt-api
@@ -74,10 +98,18 @@ if ($laravelRoot) {
         $debug['cors_config_file']['exists'] = true;
         $debug['cors_config_file']['path'] = $corsConfigPath;
         
-        // Parse the config file
-        $corsConfig = require $corsConfigPath;
-        $debug['cors_config_file']['allowed_origins'] = $corsConfig['allowed_origins'] ?? [];
-        $debug['cors_config_file']['supports_credentials'] = $corsConfig['supports_credentials'] ?? false;
+        // Parse the config file without executing it (avoids env() error)
+        $corsFileContent = file_get_contents($corsConfigPath);
+        
+        // Extract allowed_origins using regex
+        $allowedOrigins = [];
+        if (preg_match("/'allowed_origins'\s*=>\s*\[(.*?)\]/s", $corsFileContent, $matches)) {
+            // Extract all quoted URLs (single or double quotes)
+            preg_match_all("/['\"]([^'\"]*)['\"]/" , $matches[1], $origins);
+            $allowedOrigins = $origins[1] ?? [];
+        }
+        
+        $debug['cors_config_file']['allowed_origins'] = $allowedOrigins;
     }
 }
 
