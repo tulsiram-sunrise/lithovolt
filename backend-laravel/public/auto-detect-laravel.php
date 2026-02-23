@@ -5,6 +5,15 @@
  */
 
 function findLaravelRoot($startPath) {
+    // First try the known path: ../../lithovolt-api
+    $knownPath = realpath($startPath . '/../../lithovolt-api');
+    if ($knownPath && file_exists($knownPath . '/artisan') && 
+        file_exists($knownPath . '/composer.json') && 
+        file_exists($knownPath . '/app')) {
+        return $knownPath;
+    }
+    
+    // Fallback to auto-detection
     $currentPath = $startPath;
     $maxLevels = 5;
     $level = 0;

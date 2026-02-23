@@ -50,41 +50,38 @@ set_exception_handler(function($exception) {
 $PASSWORD = 'MySecure@Pass!2026#Litho#';  // ← Production password
 
 // ============================================================================
-// PATH DETECTION (Auto-detects Laravel location)
+// PATH DETECTION
 // ============================================================================
 
-// This file is at: /[laravel]/public/artisan-commands.php
-// We need to find: /[laravel]/vendor/autoload.php
+// Laravel is at: ../../lithovolt-api (from public folder)
+// This file is at: [public]/artisan-commands.php
 
 $basePath = null;
 $pathsChecked = [];
 
-// Method 1: Standard - Laravel inside public_html
-// /public_html/backend-laravel/public/ → /public_html/backend-laravel/
-$testPath = dirname(__DIR__);
+// Method 1: Use the known path ../../lithovolt-api
+$testPath = realpath(__DIR__ . '/../../lithovolt-api');
 $pathsChecked[] = $testPath . '/vendor/autoload.php';
-if (file_exists($testPath . '/vendor/autoload.php')) {
+if ($testPath && file_exists($testPath . '/vendor/autoload.php')) {
     $basePath = $testPath;
 }
 
-// Method 2: Two levels up (if in subdirectory)
+// Method 2: Fallback to parent directory
 if (!$basePath) {
-    $testPath = dirname(dirname(__DIR__));
+    $testPath = dirname(__DIR__);
     $pathsChecked[] = $testPath . '/vendor/autoload.php';
     if (file_exists($testPath . '/vendor/autoload.php')) {
         $basePath = $testPath;
     }
 }
 
-// Method 3: Explicitly set if methods above fail
-// Edit this if auto-detection doesn't work:
+// Method 3: Two levels up
 if (!$basePath) {
-    // Uncomment and set your actual path:
-    // $basePath = '/home/yourusername/public_html/backend-laravel';
-    // $pathsChecked[] = $basePath . '/vendor/autoload.php';
-    // if (file_exists($basePath . '/vendor/autoload.php')) {
-    //     // Keep $basePath as is
-    // }
+    $testPath = dirname(dirname(__DIR__));
+    $pathsChecked[] = $testPath . '/vendor/autoload.php';
+    if (file_exists($testPath . '/vendor/autoload.php')) {
+        $basePath = $testPath;
+    }
 }
 
 // ============================================================================
