@@ -47,7 +47,7 @@ set_exception_handler(function($exception) {
 // CONFIGURATION - CHANGE THESE!
 // ============================================================================
 
-$PASSWORD = 'your-secret-password-here';  // ← CHANGE TO STRONG PASSWORD!
+$PASSWORD = 'MySecure@Pass!2026#Litho#';  // ← Production password
 
 // ============================================================================
 // PATH DETECTION (Auto-detects Laravel location)
