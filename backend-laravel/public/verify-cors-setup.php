@@ -92,23 +92,17 @@ if (file_exists($corsConfigPath)) {
     // Parse the file without executing it (avoids env() not defined error)
     $corsFileContent = file_get_contents($corsConfigPath);
     
-    // Extract allowed_origins using regex
+    // Extract allowed_origins using regex - match quoted strings
     $allowedOrigins = [];
     if (preg_match("/'allowed_origins'\s*=>\s*\[(.*?)\]/s", $corsFileContent, $matches)) {
-        // Extract quoted strings
-        preg_match_all("/'([^']*)'|\"([^\"]*)\"", $matches[1], $origins);
-        foreach ($origins[1] ?? [] as $origin) {
-            if ($origin) $allowedOrigins[] = $origin;
-        }
-        foreach ($origins[2] ?? [] as $origin) {
-            if ($origin) $allowedOrigins[] = $origin;
-        }
+        // Extract all quoted URLs (single or double quotes)
+        preg_match_all("/['\"]([^'\"]*)['\"]/" , $matches[1], $origins);
+        $allowedOrigins = $origins[1] ?? [];
     }
     
     $checks['cors_config_content'] = [
-        'allowed_origins' => $allowedOrigins ?: 'Could not parse from file',
-        'file_snippet' => 'See allowed_origins array above',
-        'note' => 'Parsed from file content (env() values not expanded)'
+        'allowed_origins' => $allowedOrigins ?: 'Could not parse',
+        'note' => 'Extracted from file content'
     ];
 }
 
