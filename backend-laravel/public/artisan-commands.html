@@ -264,6 +264,11 @@
         <div class="status-message" id="statusMessage"></div>
         
         <div class="commands-preset">
+            <h3>Diagnostic Tools</h3>
+            <button class="preset-cmd" style="grid-column: 1/-1; background: #e8f0ff; border-color: #667eea; color: #667eea; font-weight: 600;" onclick="runTest()">🔍 Test Configuration (RUN THIS FIRST!)</button>
+        </div>
+        
+        <div class="commands-preset">
             <h3>Quick Fix (CORS Issues)</h3>
             <div class="preset-commands">
                 <button class="preset-cmd" onclick="runCommand('config:clear')">1. Clear Config Cache</button>
@@ -314,7 +319,7 @@
     <script>
         function showStatus(message, type = 'loading') {
             const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
+            statusEl.innerHTML = message;  // Use innerHTML instead of textContent for HTML content
             statusEl.className = `status-message show ${type}`;
         }
         
@@ -323,6 +328,48 @@
             outputEl.textContent = text;
             outputEl.classList.add('show');
             outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function runTest() {
+            showStatus('🔍 Testing configuration...', 'loading');
+            
+            fetch('artisan-commands.php?test=1')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'info') {
+                        const info = data.data || {};
+                        let output = '✅ Configuration Test Results:\n\n';
+                        output += `PHPVersion: ${info.php_version}\n`;
+                        output += `Memory Limit: ${info.memory_limit}\n`;
+                        output += `Base Path Found: ${info.base_path_found}\n`;
+                        output += `Base Path: ${info.base_path}\n`;
+                        output += `Vendor Exists: ${info.vendor_exists}\n`;
+                        output += `Env Exists: ${info.env_exists}\n`;
+                        output += `Bootstrap Exists: ${info.bootstrap_exists}\n\n`;
+                        
+                        if (!info.vendor_exists) {
+                            output += '❌ PROBLEM: vendor folder not found\n';
+                            output += 'SOLUTION: Run "composer install" in the Laravel directory\n';
+                        } else if (!info.base_path) {
+                            output += '⚠️ WARNING: Auto-detection failed\n';
+                            output += 'SOLUTION: Manually set $basePath in artisan-commands.php\n';
+                        } else {
+                            output += '✅ All systems OK - ready to run commands!\n';
+                        }
+                        
+                        showStatus('✅ Configuration check complete', 'success');
+                        showOutput(output);
+                    }
+                })
+                .catch(error => {
+                    showStatus(`❌ Test failed: ${error.message}`, 'error');
+                    showOutput(`Error: ${error.message}\n\nPossible causes:\n1. File not found (wrong path)\n2. PHP error (check file syntax)\n3. Web server error\n\nTry accessing directly: artisan-commands.php?test=1`);
+                });
         }
         
         function runCommand(command) {
@@ -336,19 +383,28 @@
             showStatus(`⏳ Running: ${command}`, 'loading');
             
             fetch(`artisan-commands.php?pwd=${encodeURIComponent(password)}&cmd=${encodeURIComponent(command)}`)
-                .then(response => response.json())
+                .then(response => {
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server did not return JSON - likely a PHP error');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.status === 'success') {
                         showStatus(`✅ Successfully executed: ${command}`, 'success');
                         showOutput(`Command: ${command}\nExit Code: ${data.exit_code}\n\n${data.output}`);
                     } else {
-                        showStatus(`❌ Error: ${data.message}`, 'error');
-                        showOutput(`Command: ${command}\n\nError: ${data.message}`);
+                        showStatus(`❌ ${data.message}`, 'error');
+                        const output = data.output ? `${data.message}\n\n${data.output}` : data.message;
+                        showOutput(`Command: ${command}\n\nError: ${output}`);
                     }
                 })
                 .catch(error => {
-                    showStatus(`❌ Request failed: ${error.message}`, 'error');
-                    showOutput(`Error: ${error.message}`);
+                    console.error('Fetch error:', error);
+                    showStatus(`❌ Error: ${error.message}`, 'error');
+                    showOutput(`Error Type: ${error.message}\n\nThis usually means:\n1. JSON parsing error - PHP returned non-JSON output\n2. Server error - check Laravel logs\n3. Path issue - vendor files not found\n\nSolutions:\n1. Click Test button above to diagnose\n2. Check if vendor folder exists\n3. Verify laravel path in artisan-commands.php\n4. Check file permissions (644)\n\nTry test first: artisan-commands.php?test=1`);
                 });
         }
         
