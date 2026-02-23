@@ -89,13 +89,26 @@ $checks['cors_config_file'] = [
 ];
 
 if (file_exists($corsConfigPath)) {
-    $corsConfig = require $corsConfigPath;
+    // Parse the file without executing it (avoids env() not defined error)
+    $corsFileContent = file_get_contents($corsConfigPath);
+    
+    // Extract allowed_origins using regex
+    $allowedOrigins = [];
+    if (preg_match("/'allowed_origins'\s*=>\s*\[(.*?)\]/s", $corsFileContent, $matches)) {
+        // Extract quoted strings
+        preg_match_all("/'([^']*)'|\"([^\"]*)\"", $matches[1], $origins);
+        foreach ($origins[1] ?? [] as $origin) {
+            if ($origin) $allowedOrigins[] = $origin;
+        }
+        foreach ($origins[2] ?? [] as $origin) {
+            if ($origin) $allowedOrigins[] = $origin;
+        }
+    }
+    
     $checks['cors_config_content'] = [
-        'paths' => $corsConfig['paths'] ?? [],
-        'allowed_origins' => $corsConfig['allowed_origins'] ?? [],
-        'allowed_methods' => $corsConfig['allowed_methods'] ?? [],
-        'supports_credentials' => $corsConfig['supports_credentials'] ?? false,
-        'max_age' => $corsConfig['max_age'] ?? null
+        'allowed_origins' => $allowedOrigins ?: 'Could not parse from file',
+        'file_snippet' => 'See allowed_origins array above',
+        'note' => 'Parsed from file content (env() values not expanded)'
     ];
 }
 
