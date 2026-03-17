@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Mobile Expo Doctor",
+			"type": "shell",
+			"command": "cd mobile && npx expo-doctor",
+			"isBackground": false
+		}
+	]
+}

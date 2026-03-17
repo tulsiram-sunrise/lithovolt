@@ -33,7 +33,7 @@ describe('API Services', () => {
 
       await authAPI.register(userData)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/auth/register/', userData)
+      expect(axios.create().post).toHaveBeenCalledWith('/auth/register', userData)
     })
   })
 
@@ -44,7 +44,7 @@ describe('API Services', () => {
 
       await inventoryAPI.getBatteryModels(params)
 
-      expect(axios.create().get).toHaveBeenCalledWith('/inventory/models/', {
+      expect(axios.create().get).toHaveBeenCalledWith('/inventory/models', {
         params,
       })
     })
@@ -56,7 +56,7 @@ describe('API Services', () => {
       await inventoryAPI.createBatteryModel(modelData)
 
       expect(axios.create().post).toHaveBeenCalledWith(
-        '/inventory/models/',
+        '/inventory/models',
         modelData
       )
     })
@@ -72,7 +72,7 @@ describe('API Services', () => {
       await inventoryAPI.allocateStock(allocationData)
 
       expect(axios.create().post).toHaveBeenCalledWith(
-        '/inventory/allocations/',
+        '/inventory/allocations',
         allocationData
       )
     })
@@ -84,7 +84,7 @@ describe('API Services', () => {
 
       await orderAPI.getOrders({ status: 'PENDING' })
 
-      expect(axios.create().get).toHaveBeenCalledWith('/orders/', {
+      expect(axios.create().get).toHaveBeenCalledWith('/orders', {
         params: { status: 'PENDING' },
       })
     })
@@ -95,7 +95,7 @@ describe('API Services', () => {
 
       await orderAPI.createOrder(orderData)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/', orderData)
+      expect(axios.create().post).toHaveBeenCalledWith('/orders', orderData)
     })
 
     it('accepts order', async () => {
@@ -103,7 +103,7 @@ describe('API Services', () => {
 
       await orderAPI.acceptOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/accept/')
+      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/accept')
     })
 
     it('rejects order', async () => {
@@ -111,7 +111,7 @@ describe('API Services', () => {
 
       await orderAPI.rejectOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/reject/')
+      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/reject')
     })
 
     it('fulfills order', async () => {
@@ -119,7 +119,7 @@ describe('API Services', () => {
 
       await orderAPI.fulfillOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/fulfill/')
+      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/fulfill')
     })
   })
 
@@ -134,7 +134,7 @@ describe('API Services', () => {
       await warrantyAPI.claimWarranty(claimData)
 
       expect(axios.create().post).toHaveBeenCalledWith(
-        '/warranty/claim/',
+        '/warranty/claim',
         claimData
       )
     })
@@ -149,7 +149,7 @@ describe('API Services', () => {
       await warrantyAPI.issueWarranty(issueData)
 
       expect(axios.create().post).toHaveBeenCalledWith(
-        '/warranty/issue/',
+        '/warranty/issue',
         issueData
       )
     })
@@ -160,7 +160,7 @@ describe('API Services', () => {
       await warrantyAPI.getCertificate(1)
 
       expect(axios.create().get).toHaveBeenCalledWith(
-        '/warranty/1/certificate/',
+        '/warranty/1/certificate',
         { responseType: 'blob' }
       )
     })
@@ -176,7 +176,7 @@ describe('API Services', () => {
 
       await adminAPI.getMetrics()
 
-      expect(axios.create().get).toHaveBeenCalledWith('/admin/metrics/')
+      expect(axios.create().get).toHaveBeenCalledWith('/admin/metrics')
     })
   })
 
@@ -186,7 +186,7 @@ describe('API Services', () => {
 
       await userAPI.toggleActive(5)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/users/5/toggle_active/')
+      expect(axios.create().post).toHaveBeenCalledWith('/users/5/toggle_active')
     })
 
     it('gets wholesaler applications', async () => {
@@ -195,7 +195,7 @@ describe('API Services', () => {
       await userAPI.getWholesalerApplications({ status: 'PENDING' })
 
       expect(axios.create().get).toHaveBeenCalledWith(
-        '/users/wholesaler-applications/',
+        '/users/wholesaler-applications',
         { params: { status: 'PENDING' } }
       )
     })
@@ -206,7 +206,7 @@ describe('API Services', () => {
       await userAPI.approveWholesalerApplication(1, { notes: 'Approved' })
 
       expect(axios.create().post).toHaveBeenCalledWith(
-        '/users/wholesaler-applications/1/approve/',
+        '/users/wholesaler-applications/1/approve',
         { notes: 'Approved' }
       )
     })
