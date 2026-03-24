@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { warrantyAPI } from '../../services/api'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function WarrantiesPage() {
   const [downloading, setDownloading] = useState(null)
@@ -50,7 +51,8 @@ export default function WarrantiesPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : warranties).map((item) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={5} /> : null}
+              {warranties.map((item) => (
                 <tr key={item.id}>
                   <td>{item.warranty_number}</td>
                   <td>{item.consumer_name}</td>
@@ -69,7 +71,6 @@ export default function WarrantiesPage() {
               ))}
             </tbody>
           </table>
-          {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading warranties...</p> : null}
         </div>
       </div>
     </div>

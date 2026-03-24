@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orderAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('')
@@ -73,7 +74,8 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : orders).map((order) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={5} /> : null}
+              {orders.map((order) => (
                 <tr key={order.id}>
                   <td>ORD-{order.id}</td>
                   <td>{order.consumer_name || order.consumer_email || 'Wholesaler'}</td>
@@ -94,7 +96,6 @@ export default function OrdersPage() {
               ))}
             </tbody>
           </table>
-          {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading orders...</p> : null}
         </div>
       </div>
     </div>

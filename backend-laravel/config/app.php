@@ -85,6 +85,11 @@ return [
         'https://www.lithovolt.com.au'
     ),
 
+    'frontend_url' => env(
+        'FRONTEND_URL',
+        'http://localhost:5173'
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

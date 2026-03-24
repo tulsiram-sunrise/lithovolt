@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 const emptyForm = { name: '', slug: '', parent_id: '', is_active: true }
 
@@ -118,7 +119,8 @@ export default function CategoriesPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : categories).map((category) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={5} /> : null}
+              {categories.map((category) => (
                 <tr key={category.id}>
                   <td>{category.name}</td>
                   <td>{category.slug}</td>
@@ -138,7 +140,6 @@ export default function CategoriesPage() {
               ))}
             </tbody>
           </table>
-          {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading categories...</p> : null}
           {!isLoading && categories.length === 0 ? (
             <p className="mt-3 text-sm text-[color:var(--muted)]">No categories created.</p>
           ) : null}

@@ -13,9 +13,9 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@lithovolt.com'],
             [
-                'name' => 'Admin User',
+                'first_name' => 'Admin',
+                'last_name' => 'User',
                 'phone' => '9876543210',
-                'company_name' => 'LithoVolt',
                 'role_id' => 1,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
@@ -25,9 +25,9 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'wholesaler@lithovolt.com'],
             [
-                'name' => 'Wholesaler User',
+                'first_name' => 'Wholesaler',
+                'last_name' => 'User',
                 'phone' => '9876543211',
-                'company_name' => 'WholeSale Inc',
                 'role_id' => 2,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
@@ -37,9 +37,9 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'retailer@lithovolt.com'],
             [
-                'name' => 'Retailer User',
+                'first_name' => 'Retailer',
+                'last_name' => 'User',
                 'phone' => '9876543212',
-                'company_name' => 'Retail Store',
                 'role_id' => 3,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
@@ -49,9 +49,9 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'customer@lithovolt.com'],
             [
-                'name' => 'Customer User',
+                'first_name' => 'Customer',
+                'last_name' => 'User',
                 'phone' => '9876543213',
-                'company_name' => 'Personal',
                 'role_id' => 4,
                 'password' => Hash::make('password123'),
                 'is_verified' => false,

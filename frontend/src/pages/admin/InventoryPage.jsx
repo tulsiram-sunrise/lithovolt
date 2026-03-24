@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, userAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function InventoryPage() {
   const [allocation, setAllocation] = useState({ battery_model_id: '', wholesaler_id: '', quantity: '' })
@@ -136,7 +137,8 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {(allocationsLoading ? [] : allocations).map((allocationItem) => (
+              {allocationsLoading ? <ShimmerTableRows rows={6} columns={3} /> : null}
+              {allocations.map((allocationItem) => (
                 <tr key={allocationItem.id}>
                   <td>{allocationItem.battery_model_name}</td>
                   <td>{allocationItem.wholesaler_email}</td>
@@ -145,7 +147,6 @@ export default function InventoryPage() {
               ))}
             </tbody>
           </table>
-          {allocationsLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading allocations...</p> : null}
         </div>
       </div>
     </div>

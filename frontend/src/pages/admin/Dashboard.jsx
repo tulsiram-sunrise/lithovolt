@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { adminAPI, orderAPI } from '../../services/api'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function AdminDashboard() {
   const {
@@ -89,7 +90,8 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(ordersLoading ? [] : recentOrders).map((order) => (
+                  {ordersLoading ? <ShimmerTableRows rows={6} columns={4} /> : null}
+                  {recentOrders.map((order) => (
                     <tr key={order.id}>
                       <td>ORD-{order.id}</td>
                       <td>{order.consumer_name || order.consumer_email || 'Wholesaler'}</td>
@@ -101,9 +103,6 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
-              {ordersLoading ? (
-                <p className="mt-3 text-sm text-[color:var(--muted)]">Loading orders...</p>
-              ) : null}
             </div>
           )}
         </div>

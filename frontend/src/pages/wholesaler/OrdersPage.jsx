@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, orderAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 const createEmptyItem = () => ({ product_type: 'BATTERY_MODEL', item_id: '', quantity: 1 })
 
@@ -216,7 +217,8 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody>
-            {(ordersLoading ? [] : orders).map((order) => (
+            {ordersLoading ? <ShimmerTableRows rows={5} columns={4} /> : null}
+            {orders.map((order) => (
               <tr key={order.id}>
                 <td>ORD-{order.id}</td>
                 <td><span className="tag">{order.status}</span></td>
@@ -234,7 +236,6 @@ export default function OrdersPage() {
             ))}
           </tbody>
         </table>
-        {ordersLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading orders...</p> : null}
         {!ordersLoading && orders.length === 0 ? (
           <p className="mt-3 text-sm text-[color:var(--muted)]">No orders yet.</p>
         ) : null}

@@ -37,7 +37,7 @@ describe('BatteryModelsPage', () => {
       </TestWrapper>
     )
 
-    expect(screen.getByText('Loading models...')).toBeInTheDocument()
+    expect(document.querySelectorAll('tbody tr').length).toBeGreaterThan(0)
   })
 
   it('submits new battery model', async () => {
@@ -68,13 +68,14 @@ describe('BatteryModelsPage', () => {
       target: { value: '24' },
     })
 
-    fireEvent.click(screen.getByText('Create Model'))
+    fireEvent.click(screen.getByText('Add Model'))
 
     await waitFor(() => {
       expect(api.inventoryAPI.createBatteryModel).toHaveBeenCalledWith({
         name: 'LV 200Ah',
         sku: 'LV-200',
         warranty_months: 24,
+        is_active: true,
       })
     })
   })

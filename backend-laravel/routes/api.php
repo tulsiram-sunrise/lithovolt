@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\StaffUserController;
+use App\Http\Controllers\Api\VehicleFitmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/password-reset/confirm/', [AuthController::class, 'passwordResetConfirm']);
 });
 
+// Public fitment lookup (throttled)
+Route::get('/catalog/models/', [BatteryModelController::class, 'publicIndex']);
+Route::post('/fitment/registration-lookup/', [VehicleFitmentController::class, 'registrationLookup'])
+    ->middleware('throttle:20,1');
+Route::post('/fitment/vehicle-lookup/', [VehicleFitmentController::class, 'vehicleLookup'])
+    ->middleware('throttle:20,1');
+
 // ====== PROTECTED ROUTES ======
 Route::middleware('auth:jwt')->group(function () {
     // Auth - Authenticated routes
@@ -49,12 +57,19 @@ Route::middleware('auth:jwt')->group(function () {
         Route::post('/logout/', [AuthController::class, 'logout']);
         Route::post('/refresh/', [AuthController::class, 'refresh']);
         Route::get('/profile/', [AuthController::class, 'profile']);
+        Route::patch('/profile/', [AuthController::class, 'updateProfile']);
+        Route::post('/change-password/', [AuthController::class, 'changePassword']);
     });
     
     // Users
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
+        Route::get('/wholesaler-applications', [UserController::class, 'getWholesalerApplications']);
+        Route::post('/wholesaler-applications', [UserController::class, 'submitWholesalerApplication']);
+        Route::get('/wholesaler-applications/{id}', [UserController::class, 'getWholesalerApplication']);
+        Route::post('/wholesaler-applications/{id}/approve', [UserController::class, 'approveWholesalerApplication']);
+        Route::post('/wholesaler-applications/{id}/reject', [UserController::class, 'rejectWholesalerApplication']);
         Route::get('/{user}/', [UserController::class, 'show']);
         Route::put('/{user}/', [UserController::class, 'update']);
         Route::delete('/{user}/', [UserController::class, 'destroy']);

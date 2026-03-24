@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function ProductsPage() {
   const [search, setSearch] = useState('')
@@ -46,7 +47,8 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : products).map((item) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={4} /> : null}
+              {products.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
                   <td>{item.sku}</td>
@@ -57,7 +59,6 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
-        {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading products...</p> : null}
         {!isLoading && products.length === 0 ? (
           <p className="mt-3 text-sm text-[color:var(--muted)]">No products available.</p>
         ) : null}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { warrantyAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function SalesPage() {
   const [issueForm, setIssueForm] = useState({
@@ -152,7 +153,8 @@ export default function SalesPage() {
             </tr>
           </thead>
           <tbody>
-            {(isLoading ? [] : warranties).map((warranty) => (
+            {isLoading ? <ShimmerTableRows rows={5} columns={6} /> : null}
+            {warranties.map((warranty) => (
               <tr key={warranty.id}>
                 <td>{warranty.warranty_number}</td>
                 <td>{warranty.battery_model_name}</td>
@@ -179,7 +181,6 @@ export default function SalesPage() {
             ))}
           </tbody>
         </table>
-        {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading warranties...</p> : null}
         {!isLoading && warranties.length === 0 ? (
           <p className="mt-3 text-sm text-[color:var(--muted)]">No issued warranties yet.</p>
         ) : null}

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -20,7 +22,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:8|confirmed',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users',
@@ -34,14 +36,21 @@ class AuthController extends Controller
         }
 
         try {
+            $consumerRole = Role::where('name', 'CONSUMER')->first();
+            if (!$consumerRole) {
+                return response()->json([
+                    'error' => 'Default consumer role is not configured.'
+                ], 500);
+            }
+
             $user = User::create([
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
                 'phone' => $request->phone,
+                'role_id' => $consumerRole->id,
                 'is_verified' => false,
-                'role' => 'customer', // Default role
             ]);
 
             // Generate JWT tokens
@@ -182,6 +191,10 @@ class AuthController extends Controller
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'phone' => $user->phone,
+                'address' => $user->address,
+                'city' => $user->city,
+                'state' => $user->state,
+                'postal_code' => $user->postal_code,
                 'is_verified' => $user->is_verified,
                 'role' => $user->role,
             ]);
@@ -189,6 +202,110 @@ class AuthController extends Controller
             return response()->json([
                 'error' => 'Failed to retrieve profile'
             ], 401);
+        }
+    }
+
+    /**
+     * Update authenticated user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = auth('jwt')->user();
+        /** @var User $user */
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|unique:users,phone,' . $user->id,
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'details' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user->update([
+                'first_name' => $request->input('first_name', $user->first_name),
+                'last_name' => $request->input('last_name', $user->last_name),
+                'phone' => $request->input('phone', $user->phone),
+                'address' => $request->input('address', $user->address),
+                'city' => $request->input('city', $user->city),
+                'state' => $request->input('state', $user->state),
+                'postal_code' => $request->input('postal_code', $user->postal_code),
+            ]);
+
+            $user = $user->fresh();
+
+            return response()->json([
+                'message' => 'Profile updated successfully',
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'phone' => $user->phone,
+                    'address' => $user->address,
+                    'city' => $user->city,
+                    'state' => $user->state,
+                    'postal_code' => $user->postal_code,
+                    'is_verified' => $user->is_verified,
+                    'role' => $user->role,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to update profile',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Change authenticated user password
+     */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'details' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $user = auth('jwt')->user();
+            /** @var User $user */
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'error' => 'Current password is incorrect'
+                ], 422);
+            }
+
+            $user->update([
+                'password' => Hash::make($request->new_password),
+            ]);
+
+            return response()->json([
+                'message' => 'Password changed successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to change password',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -338,12 +455,39 @@ class AuthController extends Controller
                 'email' => $user->email
             ], now()->addHours(1));
 
-            // Send email with reset token (implement actual email sending)
-            // For now, just return token (in production, send via email)
+            $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
+            $resetLink = $frontendUrl . '/reset-password?token=' . urlencode($resetToken) . '&email=' . urlencode($user->email);
+
+            try {
+                Mail::raw(
+                    "We received a request to reset your Lithovolt password.\n\n" .
+                    "Use this link to set a new password:\n" .
+                    $resetLink . "\n\n" .
+                    "Or enter this reset token manually:\n" .
+                    $resetToken . "\n\n" .
+                    "This link expires in 1 hour. If you did not request this change, you can ignore this email.",
+                    function ($message) use ($user) {
+                        $message->to($user->email)
+                            ->subject('Lithovolt Password Reset');
+                    }
+                );
+            } catch (\Throwable $mailError) {
+                if (config('app.debug')) {
+                    return response()->json([
+                        'message' => 'Password reset email failed to send in debug mode. Use returned token/link for local testing.',
+                        'reset_token' => $resetToken,
+                        'reset_link' => $resetLink,
+                        'mail_error' => $mailError->getMessage(),
+                    ]);
+                }
+
+                return response()->json([
+                    'error' => 'Unable to send password reset email at this time.'
+                ], 500);
+            }
 
             return response()->json([
-                'message' => 'Password reset token sent to email',
-                'reset_token' => $resetToken  // Remove in production
+                'message' => 'Password reset link sent to email'
             ]);
         } catch (\Exception $e) {
             return response()->json([

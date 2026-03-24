@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function BatteryModelsPage() {
   const [form, setForm] = useState({
@@ -83,7 +84,8 @@ export default function BatteryModelsPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : models).map((model) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={4} /> : null}
+              {models.map((model) => (
                 <tr key={model.id}>
                   <td>{model.name}</td>
                   <td>{model.sku}</td>
@@ -93,7 +95,6 @@ export default function BatteryModelsPage() {
               ))}
             </tbody>
           </table>
-          {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading models...</p> : null}
         </div>
       </div>
     </div>

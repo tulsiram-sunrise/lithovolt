@@ -193,22 +193,73 @@
   }
 
   .auth-shell {
-    min-height: 100vh;
+    min-height: 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2.5rem;
+    gap: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .auth-shell {
+      gap: 1.75rem;
+      padding: 1.75rem;
+    }
   }
 
   .auth-hero {
     background: linear-gradient(150deg, rgba(93, 255, 138, 0.1), transparent 60%);
     border-radius: 28px;
-    padding: 2.5rem;
+    padding: 0;
   }
 
   .auth-card {
     @apply panel-card;
     padding: 2rem;
+  }
+
+  .guest-header {
+    background: linear-gradient(130deg, rgba(17, 33, 25, 0.95), rgba(10, 20, 16, 0.96));
+    border: 1px solid rgba(93, 255, 138, 0.22);
+  }
+
+  .guest-nav-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(93, 255, 138, 0.25);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1;
+    min-height: 2.05rem;
+    min-width: 7.5rem;
+    padding: 0.45rem 0.9rem;
+    transition: all 160ms ease;
+  }
+
+  .guest-nav-chip:hover {
+    border-color: rgba(93, 255, 138, 0.45);
+    color: var(--text);
+  }
+
+  .guest-nav-chip.active {
+    background: rgba(93, 255, 138, 0.16);
+    border-color: rgba(93, 255, 138, 0.55);
+    color: var(--accent);
+  }
+
+  .guest-nav-chip-login {
+    border-color: rgba(93, 255, 138, 0.45);
+    color: var(--text);
+    background: rgba(93, 255, 138, 0.08);
+  }
+
+  .guest-hero {
+    background:
+      radial-gradient(500px 240px at 12% 15%, rgba(93, 255, 138, 0.16), transparent 65%),
+      linear-gradient(155deg, rgba(12, 26, 20, 0.95), rgba(14, 32, 24, 0.94));
+    border: 1px solid rgba(93, 255, 138, 0.24);
   }
 
   @keyframes slide-in {

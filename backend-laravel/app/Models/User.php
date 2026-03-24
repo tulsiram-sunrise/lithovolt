@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,15 +14,20 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
+    protected $appends = [
+        'full_name',
+    ];
+
     protected $fillable = [
         'first_name',
         'last_name',
-        'name',
         'email',
         'password',
         'phone',
-        'company_name',
-        'company_registration',
+        'address',
+        'city',
+        'state',
+        'postal_code',
         'role_id',
         'role',
         'is_verified',
@@ -58,37 +64,9 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    /**
-     * Get the user's first name and last name from 'name' field if they don't exist
-     */
-    public function getFirstNameAttribute()
+    public function getFullNameAttribute(): string
     {
-        if ($this->attributes['first_name'] ?? null) {
-            return $this->attributes['first_name'];
-        }
-
-        // Extract first_name from name field if it exists
-        if (isset($this->attributes['name'])) {
-            $parts = explode(' ', $this->attributes['name']);
-            return $parts[0] ?? $this->attributes['name'];
-        }
-
-        return null;
-    }
-
-    public function getLastNameAttribute()
-    {
-        if ($this->attributes['last_name'] ?? null) {
-            return $this->attributes['last_name'];
-        }
-
-        // Extract last_name from name field if it exists
-        if (isset($this->attributes['name'])) {
-            $parts = explode(' ', $this->attributes['name']);
-            return $parts[1] ?? '';
-        }
-
-        return null;
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
     }
 
     /**
@@ -150,5 +128,10 @@ class User extends Authenticatable implements JWTSubject
     public function notificationSettings(): HasMany
     {
         return $this->hasMany(NotificationSetting::class);
+    }
+
+    public function wholesalerApplication(): HasOne
+    {
+        return $this->hasOne(WholesalerApplication::class);
     }
 }

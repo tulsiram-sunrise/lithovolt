@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
-import { Button, Table, Modal, Input, Select, Empty, Spin, message } from 'antd';
+import { Button, Table, Modal, Input, Select, Empty, Skeleton, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 export default function RolesPage() {
@@ -143,7 +143,19 @@ export default function RolesPage() {
     },
   ];
 
-  if (isLoading) return <Spin />;
+  if (isLoading) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <Skeleton.Input active style={{ width: 180 }} />
+          <Skeleton.Button active style={{ width: 130 }} />
+        </div>
+        <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+          <Skeleton active paragraph={{ rows: 8 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

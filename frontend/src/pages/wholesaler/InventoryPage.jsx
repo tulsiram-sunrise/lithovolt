@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function InventoryPage() {
   const { data: serialsData, isLoading } = useQuery({
@@ -46,7 +47,8 @@ export default function InventoryPage() {
             </tr>
           </thead>
           <tbody>
-            {(isLoading ? [] : summary).map((item) => (
+            {isLoading ? <ShimmerTableRows rows={5} columns={3} /> : null}
+            {summary.map((item) => (
               <tr key={item.model}>
                 <td>{item.model}</td>
                 <td>{item.allocated}</td>
@@ -55,7 +57,6 @@ export default function InventoryPage() {
             ))}
           </tbody>
         </table>
-        {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading inventory...</p> : null}
         {!isLoading && summary.length === 0 ? (
           <p className="mt-3 text-sm text-[color:var(--muted)]">No allocated stock yet.</p>
         ) : null}

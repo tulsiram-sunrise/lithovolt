@@ -1,36 +1,63 @@
 import { useEffect, useState } from 'react'
+import { useAuthStore } from '../../store/authStore'
 import { userAPI } from '../../services/api'
 
 export default function WholesalerRegisterPage() {
+  const authUser = useAuthStore((state) => state.user)
+
   const [form, setForm] = useState({
     business_name: '',
     registration_number: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    contact_phone: '',
-    contact_email: '',
   })
+  const [application, setApplication] = useState(null)
   const [status, setStatus] = useState('')
+  const [initialLoading, setInitialLoading] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
-  const loadStatus = async () => {
+  const loadApplication = async () => {
     try {
       const response = await userAPI.getWholesalerApplications({ ordering: '-created_at' })
       const list = Array.isArray(response.data) ? response.data : response.data?.results || []
-      setStatus(list[0]?.status || '')
+      const latest = list[0] || null
+
+      if (latest) {
+        setApplication(latest)
+        setStatus(latest.status || '')
+        setForm((prev) => ({
+          ...prev,
+          business_name: latest.business_name || '',
+          registration_number: latest.registration_number || '',
+        }))
+      } else {
+        setApplication(null)
+        setStatus('')
+      }
     } catch (err) {
+      setApplication(null)
       setStatus('')
     }
   }
 
   useEffect(() => {
-    loadStatus()
+    let isMounted = true
+
+    const bootstrap = async () => {
+      setInitialLoading(true)
+      await loadApplication()
+      if (isMounted) {
+        setInitialLoading(false)
+      }
+    }
+
+    bootstrap()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const handleSubmit = async (event) => {
@@ -47,13 +74,28 @@ export default function WholesalerRegisterPage() {
       })
       await userAPI.submitWholesalerApplication(payload)
       setSuccess('Application submitted. We will review it soon.')
-      await loadStatus()
+      await loadApplication()
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to submit application.')
     } finally {
       setLoading(false)
     }
   }
+
+  const getStatusTone = () => {
+    if (status === 'approved') {
+      return 'text-[color:var(--accent)]'
+    }
+    if (status === 'rejected') {
+      return 'text-[color:var(--danger)]'
+    }
+    return 'text-[color:var(--warning)]'
+  }
+
+  const hasApplication = !!application
+  const normalizedStatus = status || (hasApplication ? 'pending' : '')
+  const isRejected = normalizedStatus === 'rejected'
+  const readOnly = hasApplication && !isRejected
 
   return (
     <div className="space-y-6">
@@ -62,36 +104,92 @@ export default function WholesalerRegisterPage() {
         <p className="text-[color:var(--muted)]">Apply for wholesale access.</p>
       </div>
 
-      {status ? <p className="text-[color:var(--muted)]">Current status: {status}</p> : null}
+      {initialLoading ? (
+        <div className="panel-card p-6 space-y-4 animate-pulse" aria-hidden="true">
+          <div className="h-5 w-56 rounded bg-white/10" />
+          <div className="space-y-2">
+            <div className="h-3 w-28 rounded bg-white/10" />
+            <div className="h-10 w-full rounded bg-white/10" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-40 rounded bg-white/10" />
+            <div className="h-10 w-full rounded bg-white/10" />
+          </div>
+          <div className="border-t border-[color:var(--border)] pt-4 mt-4 space-y-3">
+            <div className="h-3 w-72 rounded bg-white/10" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="h-14 rounded bg-white/10" />
+              <div className="h-14 rounded bg-white/10" />
+            </div>
+          </div>
+          <div className="h-10 w-48 rounded bg-white/10" />
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="panel-card p-6 space-y-4">
+        {hasApplication ? (
+          <div className="rounded-lg border border-[color:var(--border)] bg-white/5 p-3">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <p className="text-sm text-[color:var(--muted)]">
+                {isRejected
+                  ? 'Your previous request was rejected. Update details and resubmit.'
+                  : 'Your application is submitted. You can track status below.'}
+              </p>
+              <p className={`font-semibold uppercase tracking-wide ${getStatusTone()}`}>
+                Status: {normalizedStatus}
+              </p>
+            </div>
+          </div>
+        ) : null}
 
-      <form onSubmit={handleSubmit} className="panel-card p-6 space-y-4">
         <div>
           <label className="field-label">Business Name</label>
-          <input className="neon-input" value={form.business_name} onChange={(event) => updateField('business_name', event.target.value)} />
+          <input
+            className="neon-input"
+            required
+            value={form.business_name}
+            onChange={(event) => updateField('business_name', event.target.value)}
+            disabled={readOnly}
+          />
         </div>
         <div>
           <label className="field-label">Registration Number</label>
-          <input className="neon-input" value={form.registration_number} onChange={(event) => updateField('registration_number', event.target.value)} />
+          <input
+            className="neon-input"
+            required
+            value={form.registration_number}
+            onChange={(event) => updateField('registration_number', event.target.value)}
+            disabled={readOnly}
+          />
         </div>
-        <div>
-          <label className="field-label">Address</label>
-          <input className="neon-input" value={form.address} onChange={(event) => updateField('address', event.target.value)} />
+
+        <div className="border-t border-[color:var(--border)] pt-4 mt-4">
+          <p className="text-sm text-[color:var(--muted)] mb-4">We'll use your profile contact information for this application:</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="field-label">Contact Email</p>
+              <p className="text-white">{authUser?.email || '-'}</p>
+            </div>
+            <div>
+              <p className="field-label">Contact Phone</p>
+              <p className="text-white">{authUser?.phone || '-'}</p>
+            </div>
+          </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <input className="neon-input" placeholder="City" value={form.city} onChange={(event) => updateField('city', event.target.value)} />
-          <input className="neon-input" placeholder="State" value={form.state} onChange={(event) => updateField('state', event.target.value)} />
-          <input className="neon-input" placeholder="Pincode" value={form.pincode} onChange={(event) => updateField('pincode', event.target.value)} />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <input className="neon-input" placeholder="Contact Phone" value={form.contact_phone} onChange={(event) => updateField('contact_phone', event.target.value)} />
-          <input className="neon-input" placeholder="Contact Email" value={form.contact_email} onChange={(event) => updateField('contact_email', event.target.value)} />
-        </div>
+
         {error ? <p className="text-[color:var(--danger)]">{error}</p> : null}
         {success ? <p className="text-[color:var(--accent)]">{success}</p> : null}
-        <button type="submit" className="neon-btn" disabled={loading}>
-          {loading ? 'Submitting...' : 'Submit Application'}
-        </button>
-      </form>
+
+        {readOnly ? (
+          <button type="button" className="neon-btn-secondary" disabled>
+            Application Submitted
+          </button>
+        ) : (
+          <button type="submit" className="neon-btn" disabled={loading}>
+            {loading ? 'Submitting...' : hasApplication && isRejected ? 'Resubmit Application' : 'Submit Application'}
+          </button>
+        )}
+        </form>
+      )}
     </div>
   )
 }

@@ -11,6 +11,14 @@ const api = axios.create({
   },
 })
 
+// Public API instance (no auth headers, no auth redirect interceptor)
+const publicApi = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config) => {
@@ -40,6 +48,7 @@ export default api
 // Admin API
 export const adminAPI = {
   getMetrics: () => api.get('/admin/metrics'),
+  getRoles: () => api.get('/admin/roles'),
 }
 
 // Auth API
@@ -48,6 +57,11 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   sendOTP: (data) => api.post('/auth/otp/send', data),
   verifyOTP: (data) => api.post('/auth/otp/verify', data),
+  profile: () => api.get('/auth/profile'),
+  updateProfile: (data) => api.patch('/auth/profile', data),
+  changePassword: (data) => api.post('/auth/change-password', data),
+  passwordResetRequest: (data) => api.post('/auth/password-reset', data),
+  passwordResetConfirm: (data) => api.post('/auth/password-reset/confirm', data),
   refreshToken: (refresh) => api.post('/auth/refresh', { refresh }),
   logout: () => api.post('/auth/logout'),
 }
@@ -74,6 +88,7 @@ export const userAPI = {
 // Inventory API
 export const inventoryAPI = {
   getBatteryModels: (params) => api.get('/inventory/models', { params }),
+  getBatteryModel: (id) => api.get(`/inventory/models/${id}`),
   createBatteryModel: (data) => api.post('/inventory/models', data),
   updateBatteryModel: (id, data) => api.patch(`/inventory/models/${id}`, data),
   deleteBatteryModel: (id) => api.delete(`/inventory/models/${id}`),
@@ -113,11 +128,21 @@ export const orderAPI = {
 
 // Warranty API
 export const warrantyAPI = {
-  getWarranties: (params) => api.get('/warranty', { params }),
-  claimWarranty: (data) => api.post('/warranty/claim', data),
-  issueWarranty: (data) => api.post('/warranty/issue', data),
-  verifyWarranty: (serial) => api.get(`/warranty/verify/${serial}`),
-  getCertificate: (id) => api.get(`/warranty/${id}/certificate`, { responseType: 'blob' }),
-  getWarrantyClaims: (params) => api.get('/warranty/claims', { params }),
-  createClaim: (data) => api.post('/warranty/claims', data),
+  getWarranties: (params) => api.get('/warranties/', { params }),
+  claimWarranty: (data) => api.post('/warranty-claims/', data),
+  issueWarranty: (data) => api.post('/warranties/', data),
+  verifyWarranty: (serial) => api.get(`/warranties/verify/${serial}/`),
+  getCertificate: (id) => api.get(`/warranties/${id}/certificate/`, { responseType: 'blob' }),
+  getWarrantyClaims: (params) => api.get('/warranty-claims/', { params }),
+  createClaim: (data) => api.post('/warranty-claims/', data),
+}
+
+// Public fitment lookup API
+export const fitmentAPI = {
+  registrationLookup: (data) => api.post('/fitment/registration-lookup/', data),
+  vehicleLookup: (data) => api.post('/fitment/vehicle-lookup/', data),
+}
+
+export const publicCatalogAPI = {
+  getBatteryModels: (params) => publicApi.get('/catalog/models/', { params }),
 }

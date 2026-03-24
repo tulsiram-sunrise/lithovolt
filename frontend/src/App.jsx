@@ -6,10 +6,13 @@ import AuthLayout from './components/layout/AuthLayout'
 import AdminLayout from './components/layout/AdminLayout'
 import WholesalerLayout from './components/layout/WholesalerLayout'
 import CustomerLayout from './components/layout/CustomerLayout'
+import GuestLayout from './components/layout/GuestLayout'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard'
@@ -34,6 +37,18 @@ import CustomerWarrantiesPage from './pages/customer/WarrantiesPage'
 import CustomerClaimPage from './pages/customer/ClaimWarrantyPage'
 import CustomerWholesalerRegister from './pages/customer/WholesalerRegisterPage'
 import CustomerProducts from './pages/customer/ProductsPage'
+import CustomerModelCatalogPage from './pages/customer/ModelCatalogPage'
+import CustomerModelDetailPage from './pages/customer/ModelDetailPage'
+import CustomerBatteryFinderPage from './pages/customer/BatteryFinderPage'
+import CustomerProfilePage from './pages/customer/ProfilePage'
+import CustomerEditProfilePage from './pages/customer/EditProfilePage'
+import CustomerChangePasswordPage from './pages/customer/ChangePasswordPage'
+
+// Guest Pages
+import GuestLandingPage from './pages/guest/GuestLandingPage'
+import GuestModelCatalogPage from './pages/guest/GuestModelCatalogPage'
+import GuestModelDetailPage from './pages/guest/GuestModelDetailPage'
+import GuestBatteryFinderPage from './pages/guest/GuestBatteryFinderPage'
 
 function App() {
   return (
@@ -42,7 +57,22 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
+
+      {/* Public Browsing Routes (No /guest prefix) */}
+      <Route element={<GuestLayout />}>
+        <Route path="/" element={<GuestLandingPage />} />
+        <Route path="/models" element={<GuestModelCatalogPage />} />
+        <Route path="/models/:id" element={<GuestModelDetailPage />} />
+        <Route path="/find-battery" element={<GuestBatteryFinderPage />} />
+      </Route>
+
+      {/* Legacy /guest redirects */}
+      <Route path="/guest" element={<Navigate to="/" replace />} />
+      <Route path="/guest/models" element={<Navigate to="/models" replace />} />
+      <Route path="/guest/find-battery" element={<Navigate to="/find-battery" replace />} />
 
       {/* Admin Routes */}
       <Route
@@ -89,6 +119,12 @@ function App() {
         }
       >
         <Route index element={<CustomerDashboard />} />
+        <Route path="profile" element={<CustomerProfilePage />} />
+        <Route path="profile/edit" element={<CustomerEditProfilePage />} />
+        <Route path="profile/change-password" element={<CustomerChangePasswordPage />} />
+        <Route path="models" element={<CustomerModelCatalogPage />} />
+        <Route path="models/:id" element={<CustomerModelDetailPage />} />
+        <Route path="find-battery" element={<CustomerBatteryFinderPage />} />
         <Route path="warranties" element={<CustomerWarrantiesPage />} />
         <Route path="claim" element={<CustomerClaimPage />} />
         <Route path="products" element={<CustomerProducts />} />
@@ -96,8 +132,7 @@ function App() {
       </Route>
 
       {/* Default Route */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

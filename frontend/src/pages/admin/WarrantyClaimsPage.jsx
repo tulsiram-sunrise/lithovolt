@@ -8,7 +8,7 @@ import {
   Select,
   Input,
   Empty,
-  Spin,
+  Skeleton,
   message,
   Tag,
   Drawer,
@@ -231,7 +231,19 @@ export default function WarrantyClaimsPage() {
     },
   ];
 
-  if (claimsLoading || staffLoading) return <Spin />;
+  if (claimsLoading || staffLoading) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <Skeleton.Input active style={{ width: 280, marginBottom: '12px' }} />
+          <Skeleton.Button active style={{ width: 200 }} />
+        </div>
+        <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+          <Skeleton active paragraph={{ rows: 10 }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

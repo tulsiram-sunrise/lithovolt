@@ -21,10 +21,11 @@ const wholesalerMenu = [
 
 const customerMenu = [
   { name: 'Dashboard', path: '/customer' },
+  { name: 'Model Catalog', path: '/customer/models' },
+  { name: 'Find Battery', path: '/customer/find-battery' },
   { name: 'My Warranties', path: '/customer/warranties' },
   { name: 'Claim Warranty', path: '/customer/claim' },
   { name: 'Products', path: '/customer/products' },
-  { name: 'Wholesaler Signup', path: '/customer/wholesaler-register' },
 ]
 
 export default function Sidebar({ role }) {

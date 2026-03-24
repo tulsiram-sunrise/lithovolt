@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
+import PasswordInput from '../../components/common/PasswordInput'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -81,9 +82,8 @@ export default function LoginPage() {
           </div>
           <div>
             <label htmlFor="login-password" className="field-label">Password</label>
-            <input
+            <PasswordInput
               id="login-password"
-              type="password"
               className="neon-input"
               placeholder="Enter your password"
               value={password}
@@ -99,8 +99,8 @@ export default function LoginPage() {
             Use OTP Login
           </button>
           <div className="flex items-center justify-between text-sm text-[color:var(--muted)]">
-            <span>Forgot password?</span>
-            <span className="text-[color:var(--accent)]">Create account</span>
+            <Link to="/forgot-password" className="hover:underline">Forgot password?</Link>
+            <Link to="/register" className="text-[color:var(--accent)] hover:underline">Create account</Link>
           </div>
         </form>
       </div>

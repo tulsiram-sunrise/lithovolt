@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 const emptyForm = {
   name: '',
@@ -180,7 +181,8 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {(isLoading ? [] : products).map((product) => (
+              {isLoading ? <ShimmerTableRows rows={6} columns={6} /> : null}
+              {products.map((product) => (
                 <tr key={product.id}>
                   <td>{product.name}</td>
                   <td>{product.sku}</td>
@@ -201,7 +203,6 @@ export default function ProductsPage() {
               ))}
             </tbody>
           </table>
-          {isLoading ? <p className="mt-3 text-sm text-[color:var(--muted)]">Loading products...</p> : null}
           {!isLoading && products.length === 0 ? (
             <p className="mt-3 text-sm text-[color:var(--muted)]">No products added yet.</p>
           ) : null}
