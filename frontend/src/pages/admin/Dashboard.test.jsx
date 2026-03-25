@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { TestWrapper, mockBatteryModel, mockOrder } from '../../test/helpers'
+import { TestWrapper, mockOrder } from '../../test/helpers'
 import AdminDashboard from './Dashboard'
 import * as api from '../../services/api'
 
@@ -93,7 +93,7 @@ describe('AdminDashboard', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/Unable to load metrics/i)).toBeInTheDocument()
+      expect(screen.getByText(/Metrics unavailable/i)).toBeInTheDocument()
     })
   })
 })
