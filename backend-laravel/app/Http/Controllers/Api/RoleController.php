@@ -14,7 +14,7 @@ class RoleController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:jwt');
         $this->middleware('admin');
     }
 

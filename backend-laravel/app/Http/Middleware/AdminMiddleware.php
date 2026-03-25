@@ -10,8 +10,9 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
+        $roleName = strtoupper((string) ($user?->role?->name ?? $user?->role ?? ''));
 
-        if (!$user || !$user->role || $user->role->name !== 'admin') {
+        if (!$user || $roleName !== 'ADMIN') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

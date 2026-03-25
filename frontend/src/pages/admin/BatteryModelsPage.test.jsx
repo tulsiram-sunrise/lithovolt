@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { TestWrapper, mockBatteryModel } from '../../test/helpers'
 import BatteryModelsPage from './BatteryModelsPage'
 import * as api from '../../services/api'
@@ -40,12 +40,9 @@ describe('BatteryModelsPage', () => {
     expect(document.querySelectorAll('tbody tr').length).toBeGreaterThan(0)
   })
 
-  it('submits new battery model', async () => {
+  it('shows add new model navigation', async () => {
     api.inventoryAPI.getBatteryModels = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
-    )
-    api.inventoryAPI.createBatteryModel = vi.fn(() =>
-      Promise.resolve({ data: mockBatteryModel })
     )
 
     render(
@@ -55,28 +52,7 @@ describe('BatteryModelsPage', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/Name/i)).toBeInTheDocument()
-    })
-
-    fireEvent.change(screen.getByLabelText(/Name/i), {
-      target: { value: 'LV 200Ah' },
-    })
-    fireEvent.change(screen.getByLabelText(/SKU/i), {
-      target: { value: 'LV-200' },
-    })
-    fireEvent.change(screen.getByLabelText(/Warranty/i), {
-      target: { value: '24' },
-    })
-
-    fireEvent.click(screen.getByText('Add Model'))
-
-    await waitFor(() => {
-      expect(api.inventoryAPI.createBatteryModel).toHaveBeenCalledWith({
-        name: 'LV 200Ah',
-        sku: 'LV-200',
-        warranty_months: 24,
-        is_active: true,
-      })
+      expect(screen.getByRole('link', { name: 'Add New Model' })).toHaveAttribute('href', '/admin/battery-models/new')
     })
   })
 })

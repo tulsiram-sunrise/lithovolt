@@ -219,6 +219,11 @@ class UserController extends Controller
             $validated['role_id'] = $consumerRole->id;
         }
 
+        // Admin-created users are treated as email verified and active by default.
+        $validated['is_verified'] = true;
+        $validated['email_verified_at'] = now();
+        $validated['is_active'] = true;
+
         $validated['password'] = Hash::make($validated['password']);
 
         $user = User::create($validated);
@@ -246,7 +251,27 @@ class UserController extends Controller
 
     public function verifyEmail(User $user)
     {
-        $user->update(['is_verified' => true]);
+        $user->update([
+            'is_verified' => true,
+            'email_verified_at' => now(),
+        ]);
         return response()->json(['message' => 'User verified successfully']);
+    }
+
+    public function toggleActive(User $user)
+    {
+        $requestUser = request()->user();
+        if (!$this->isAdmin($requestUser)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $user->update([
+            'is_active' => !$user->is_active,
+        ]);
+
+        return response()->json([
+            'message' => $user->is_active ? 'User activated successfully' : 'User deactivated successfully',
+            'user' => $user,
+        ]);
     }
 }

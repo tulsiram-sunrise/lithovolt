@@ -55,6 +55,7 @@ export const adminAPI = {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
+  verifyEmailToken: (token) => publicApi.get('/auth/verify-email/', { params: { token } }),
   sendOTP: (data) => api.post('/auth/otp/send', data),
   verifyOTP: (data) => api.post('/auth/otp/verify', data),
   profile: () => api.get('/auth/profile'),

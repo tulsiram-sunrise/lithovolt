@@ -27,10 +27,11 @@ export default function WholesalerDashboard() {
   }, [serialsData])
 
   const stats = useMemo(() => {
-    const pending = orders.filter((order) => order.status === 'PENDING').length
-    const accepted = orders.filter((order) => order.status === 'ACCEPTED').length
-    const fulfilled = orders.filter((order) => order.status === 'FULFILLED').length
-    const allocatedStock = serials.filter((item) => item.status === 'ALLOCATED').length
+    const normalizeStatus = (value) => String(value || '').toUpperCase()
+    const pending = orders.filter((order) => normalizeStatus(order.status) === 'PENDING').length
+    const accepted = orders.filter((order) => normalizeStatus(order.status) === 'ACCEPTED').length
+    const fulfilled = orders.filter((order) => normalizeStatus(order.status) === 'FULFILLED').length
+    const allocatedStock = serials.filter((item) => normalizeStatus(item.status) === 'ALLOCATED').length
 
     return [
       { label: 'Pending Orders', value: pending },

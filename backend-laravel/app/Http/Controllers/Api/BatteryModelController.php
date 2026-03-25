@@ -30,9 +30,44 @@ class BatteryModelController extends Controller
         return response()->json($models);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $batteries = BatteryModel::paginate(15);
+        $query = BatteryModel::query();
+
+        if ($request->filled('q')) {
+            $q = trim((string) $request->query('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', '%' . $q . '%')
+                    ->orWhere('sku', 'like', '%' . $q . '%')
+                    ->orWhere('brand', 'like', '%' . $q . '%')
+                    ->orWhere('model_code', 'like', '%' . $q . '%')
+                    ->orWhere('series', 'like', '%' . $q . '%')
+                    ->orWhere('application_segment', 'like', '%' . $q . '%');
+            });
+        }
+
+        $allowedOrderFields = ['created_at', 'name', 'sku', 'price', 'available_quantity'];
+        $ordering = (string) $request->query('ordering', '-created_at');
+        $direction = str_starts_with($ordering, '-') ? 'desc' : 'asc';
+        $field = ltrim($ordering, '-');
+
+        if (!in_array($field, $allowedOrderFields, true)) {
+            $field = 'created_at';
+            $direction = 'desc';
+        }
+
+        $perPage = (int) $request->query('per_page', 15);
+        if ($perPage <= 0) {
+            $perPage = 15;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        $batteries = $query
+            ->orderBy($field, $direction)
+            ->paginate($perPage);
+
         return response()->json($batteries);
     }
 

@@ -44,25 +44,9 @@ export default function UsersPage() {
     select: (response) => response.data,
   })
 
-  const { data: applicationsData, isLoading: appsLoading } = useQuery({
-    queryKey: ['wholesaler-applications'],
-    queryFn: () => userAPI.getWholesalerApplications({ ordering: '-created_at' }),
-    select: (response) => response.data,
-  })
-
   const toggleActive = useMutation({
     mutationFn: (id) => userAPI.toggleActive(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-  })
-
-  const approveApp = useMutation({
-    mutationFn: (id) => userAPI.approveWholesalerApplication(id, {}),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wholesaler-applications'] }),
-  })
-
-  const rejectApp = useMutation({
-    mutationFn: (id) => userAPI.rejectWholesalerApplication(id, {}),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wholesaler-applications'] }),
   })
 
   const createUser = useMutation({
@@ -86,20 +70,18 @@ export default function UsersPage() {
   })
 
   const users = useMemo(() => {
-    const list = Array.isArray(usersData) ? usersData : usersData?.results || []
+    const list = Array.isArray(usersData) ? usersData : usersData?.results || usersData?.data || []
     if (!filter) {
       return list
     }
-    return list.filter((item) => item.role === filter)
+    return list.filter((item) => {
+      const roleName = String(item.role?.name || item.role || '').toUpperCase()
+      return roleName === filter
+    })
   }, [usersData, filter])
 
-  const applications = useMemo(() => {
-    const list = Array.isArray(applicationsData) ? applicationsData : applicationsData?.results || []
-    return list.slice(0, 6)
-  }, [applicationsData])
-
   const roleOptions = useMemo(() => {
-    const list = Array.isArray(rolesData) ? rolesData : rolesData?.results || []
+    const list = Array.isArray(rolesData) ? rolesData : rolesData?.results || rolesData?.data || []
     return list
   }, [rolesData])
 
@@ -269,8 +251,7 @@ export default function UsersPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[2fr,1fr]">
-        <div className="panel-card p-6">
+      <div className="panel-card p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <input className="neon-input md:max-w-xs" placeholder="Search users" />
             <div className="flex gap-2">
@@ -295,7 +276,7 @@ export default function UsersPage() {
                 {users.map((user) => (
                   <tr key={user.id}>
                     <td>{user.full_name || `${user.first_name} ${user.last_name}`.trim()}</td>
-                    <td><span className="tag">{user.role}</span></td>
+                    <td><span className="tag">{String(user.role?.name || user.role || 'UNKNOWN').toUpperCase()}</span></td>
                     <td>{user.is_active ? 'Active' : 'Inactive'}</td>
                     <td>{user.email}</td>
                     <td>
@@ -312,37 +293,6 @@ export default function UsersPage() {
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div className="panel-card panel-card-strong p-6">
-          <h2 className="text-lg font-semibold">Wholesaler Applications</h2>
-          <div className="mt-4 space-y-4 text-sm text-[color:var(--muted)]">
-            {appsLoading
-              ? Array.from({ length: 3 }).map((_, index) => (
-                <div key={`app-shimmer-${index}`} className="panel-card p-4 animate-pulse" aria-hidden="true">
-                  <div className="h-4 w-36 rounded bg-white/10" />
-                  <div className="mt-2 h-3 w-44 rounded bg-white/10" />
-                  <div className="mt-2 h-3 w-28 rounded bg-white/10" />
-                </div>
-              ))
-              : applications.map((app) => (
-              <div key={app.id} className="panel-card p-4">
-                <p className="text-[color:var(--text)]">{app.business_name}</p>
-                <p>Reg: {app.registration_number}</p>
-                <p>Status: {app.status}</p>
-                <div className="mt-2 flex gap-2">
-                  <button className="neon-btn-ghost" onClick={() => approveApp.mutate(app.id)}>
-                    Approve
-                  </button>
-                  <button className="neon-btn-ghost" onClick={() => rejectApp.mutate(app.id)}>
-                    Reject
-                  </button>
-                </div>
-              </div>
-              ))}
-            {!appsLoading && !applications.length ? <p>No applications yet.</p> : null}
-          </div>
-        </div>
       </div>
     </div>
   )

@@ -9,6 +9,8 @@ vi.mock('../../services/api')
 describe('Wholesaler OrdersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    api.inventoryAPI.getAccessories = vi.fn(() => Promise.resolve({ data: { results: [] } }))
+    api.inventoryAPI.getProducts = vi.fn(() => Promise.resolve({ data: { results: [] } }))
   })
 
   it('renders orders page with form and list', async () => {
@@ -50,13 +52,13 @@ describe('Wholesaler OrdersPage', () => {
     })
 
     // Initially one item row
-    expect(screen.getAllByLabelText(/Battery Model/i)).toHaveLength(1)
+    expect(screen.getAllByLabelText(/Item/i)).toHaveLength(1)
 
     // Add another item
     fireEvent.click(screen.getByText('Add Item'))
 
     // Now should have two item rows
-    expect(screen.getAllByLabelText(/Battery Model/i)).toHaveLength(2)
+    expect(screen.getAllByLabelText(/Item/i)).toHaveLength(2)
   })
 
   it('submits order with items', async () => {
@@ -78,10 +80,11 @@ describe('Wholesaler OrdersPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Submit Order')).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: mockBatteryModel.name })).toBeInTheDocument()
     })
 
     // Select battery model
-    const modelSelect = screen.getByLabelText(/Battery Model/i)
+    const modelSelect = screen.getByLabelText(/Item/i)
     fireEvent.change(modelSelect, { target: { value: mockBatteryModel.id } })
 
     // Set quantity

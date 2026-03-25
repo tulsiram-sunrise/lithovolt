@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
-import { useAuthStore } from '../../store/authStore'
 import PasswordInput from '../../components/common/PasswordInput'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const setAuth = useAuthStore((state) => state.setAuth)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -16,6 +14,7 @@ export default function RegisterPage() {
     password_confirmation: '',
   })
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (event) => {
@@ -26,6 +25,7 @@ export default function RegisterPage() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+    setSuccessMessage('')
 
     if (formData.password !== formData.password_confirmation) {
       setError('Passwords do not match.')
@@ -35,9 +35,10 @@ export default function RegisterPage() {
     setIsSubmitting(true)
     try {
       const response = await authAPI.register(formData)
-      const { access, user } = response.data
-      setAuth(user, access)
-      navigate('/customer', { replace: true })
+      setSuccessMessage(response.data?.message || 'Registration successful. Please verify your email before login.')
+      setTimeout(() => {
+        navigate('/login', { replace: true })
+      }, 2000)
     } catch (err) {
       const details = err.response?.data?.details
       if (details && typeof details === 'object') {
@@ -137,6 +138,7 @@ export default function RegisterPage() {
                 required
               />
             </div>
+            {successMessage ? <p className="text-sm text-[color:var(--success,#4ade80)]">{successMessage}</p> : null}
             {error ? <p className="text-sm text-[color:var(--danger)]">{error}</p> : null}
             <div className="space-y-3 pt-1">
               <button type="submit" className="neon-btn w-full" disabled={isSubmitting}>

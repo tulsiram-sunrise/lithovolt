@@ -23,7 +23,7 @@ export default function InventoryPage() {
 
   const { data: wholesalersData } = useQuery({
     queryKey: ['admin-wholesalers'],
-    queryFn: () => userAPI.getWholesalers(),
+    queryFn: () => userAPI.getUsers({ ordering: '-created_at' }),
     select: (response) => response.data,
   })
 
@@ -41,11 +41,18 @@ export default function InventoryPage() {
 
   const models = Array.isArray(modelsData) ? modelsData : modelsData?.results || []
   const allocations = Array.isArray(allocationsData) ? allocationsData : allocationsData?.results || []
-  const wholesalers = Array.isArray(wholesalersData) ? wholesalersData : wholesalersData?.results || []
+  const wholesalers = (Array.isArray(wholesalersData) ? wholesalersData : wholesalersData?.results || [])
+    .filter((item) => {
+      const roleName = String(item.role?.name || item.role || '').toUpperCase()
+      return roleName === 'WHOLESALER'
+    })
+
+  const getAvailableQuantity = (item) => Number(item.available_quantity ?? item.available_stock ?? 0)
+  const getAllocatedQuantity = (item) => Number(item.allocated_stock ?? ((item.total_quantity ?? 0) - getAvailableQuantity(item)) ?? 0)
 
   const totals = useMemo(() => {
-    const available = models.reduce((sum, item) => sum + (item.available_stock || 0), 0)
-    const allocated = models.reduce((sum, item) => sum + (item.allocated_stock || 0), 0)
+    const available = models.reduce((sum, item) => sum + getAvailableQuantity(item), 0)
+    const allocated = models.reduce((sum, item) => sum + getAllocatedQuantity(item), 0)
     return { available, allocated }
   }, [models])
 
@@ -76,7 +83,7 @@ export default function InventoryPage() {
         </div>
         <div className="stat-card">
           <p className="stat-label">Low Stock Alerts</p>
-          <p className="stat-value">{models.filter((item) => (item.available_stock || 0) <= (item.low_stock_threshold || 0)).length}</p>
+          <p className="stat-value">{models.filter((item) => getAvailableQuantity(item) <= Number(item.low_stock_threshold ?? 0)).length}</p>
         </div>
       </div>
 
@@ -103,7 +110,9 @@ export default function InventoryPage() {
           >
             <option value="">Select wholesaler</option>
             {wholesalers.map((wholesaler) => (
-              <option key={wholesaler.id} value={wholesaler.id}>{wholesaler.company_name || wholesaler.full_name}</option>
+              <option key={wholesaler.id} value={wholesaler.id}>
+                {wholesaler.full_name || `${wholesaler.first_name || ''} ${wholesaler.last_name || ''}`.trim() || wholesaler.email}
+              </option>
             ))}
           </select>
         </div>

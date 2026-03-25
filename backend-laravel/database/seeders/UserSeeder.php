@@ -19,6 +19,8 @@ class UserSeeder extends Seeder
                 'role_id' => 1,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
+                'email_verified_at' => now(),
+                'is_active' => true,
             ]
         );
 
@@ -31,6 +33,8 @@ class UserSeeder extends Seeder
                 'role_id' => 2,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
+                'email_verified_at' => now(),
+                'is_active' => true,
             ]
         );
 
@@ -43,6 +47,8 @@ class UserSeeder extends Seeder
                 'role_id' => 3,
                 'password' => Hash::make('password123'),
                 'is_verified' => true,
+                'email_verified_at' => now(),
+                'is_active' => true,
             ]
         );
 
@@ -55,6 +61,8 @@ class UserSeeder extends Seeder
                 'role_id' => 4,
                 'password' => Hash::make('password123'),
                 'is_verified' => false,
+                'email_verified_at' => null,
+                'is_active' => true,
             ]
         );
     }

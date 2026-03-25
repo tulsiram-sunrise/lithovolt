@@ -41,6 +41,9 @@ Route::prefix('auth')->group(function () {
     // Password Reset
     Route::post('/password-reset/', [AuthController::class, 'passwordResetRequest']);
     Route::post('/password-reset/confirm/', [AuthController::class, 'passwordResetConfirm']);
+
+    // Email Verification
+    Route::get('/verify-email/', [AuthController::class, 'verifyEmail']);
 });
 
 // Public fitment lookup (throttled)
@@ -74,6 +77,7 @@ Route::middleware('auth:jwt')->group(function () {
         Route::put('/{user}/', [UserController::class, 'update']);
         Route::delete('/{user}/', [UserController::class, 'destroy']);
         Route::post('/{user}/verify/', [UserController::class, 'verifyEmail']);
+        Route::post('/{user}/toggle_active', [UserController::class, 'toggleActive']);
     });
     
     // Inventory - Battery Models

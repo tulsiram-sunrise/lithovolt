@@ -13,16 +13,21 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard'
 import UsersPage from './pages/admin/UsersPage'
 import BatteryModelsPage from './pages/admin/BatteryModelsPage'
+import BatteryModelCreatePage from './pages/admin/BatteryModelCreatePage'
+import BatteryModelDetailPage from './pages/admin/BatteryModelDetailPage'
+import BatteryModelEditPage from './pages/admin/BatteryModelEditPage'
 import InventoryPage from './pages/admin/InventoryPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
 import OrdersPage from './pages/admin/OrdersPage'
 import WarrantiesPage from './pages/admin/WarrantiesPage'
+import WholesalerApplicationsPage from './pages/admin/WholesalerApplicationsPage'
 
 // Wholesaler Pages
 import WholesalerDashboard from './pages/wholesaler/Dashboard'
@@ -59,6 +64,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="verify-email" element={<VerifyEmailPage />} />
       </Route>
 
       {/* Public Browsing Routes (No /guest prefix) */}
@@ -86,11 +92,15 @@ function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="battery-models" element={<BatteryModelsPage />} />
+        <Route path="battery-models/new" element={<BatteryModelCreatePage />} />
+        <Route path="battery-models/:id" element={<BatteryModelDetailPage />} />
+        <Route path="battery-models/:id/edit" element={<BatteryModelEditPage />} />
         <Route path="inventory" element={<InventoryPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="warranties" element={<WarrantiesPage />} />
+        <Route path="wholesaler-applications" element={<WholesalerApplicationsPage />} />
       </Route>
 
       {/* Wholesaler Routes */}

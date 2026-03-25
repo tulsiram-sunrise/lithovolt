@@ -15,6 +15,11 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    private function isUserEmailVerified(User $user): bool
+    {
+        return (bool) $user->is_verified || !is_null($user->email_verified_at);
+    }
+
     /**
      * Register a new user
      */
@@ -43,6 +48,8 @@ class AuthController extends Controller
                 ], 500);
             }
 
+            $verificationToken = \Illuminate\Support\Str::random(64);
+
             $user = User::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
@@ -51,24 +58,41 @@ class AuthController extends Controller
                 'phone' => $request->phone,
                 'role_id' => $consumerRole->id,
                 'is_verified' => false,
+                'email_verified_at' => null,
+                'is_active' => true,
+                'verification_code' => $verificationToken,
             ]);
 
-            // Generate JWT tokens
-            $access_token = JWTAuth::fromUser($user);
-            $refresh_token = JWTAuth::fromUser($user, ['exp' => now()->addDays(30)->timestamp]);
+            $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
+            $verificationLink = $frontendUrl . '/verify-email?token=' . urlencode($verificationToken);
+
+            try {
+                Mail::raw(
+                    "Welcome to Lithovolt.\n\n" .
+                    "Please verify your email by clicking the link below:\n" .
+                    $verificationLink . "\n\n" .
+                    "If you did not create this account, you can ignore this message.",
+                    function ($message) use ($user) {
+                        $message->to($user->email)
+                            ->subject('Verify your Lithovolt email');
+                    }
+                );
+            } catch (\Throwable $mailError) {
+                if (config('app.debug')) {
+                    return response()->json([
+                        'message' => 'Registration successful. Email failed in debug mode; use verification link manually.',
+                        'verification_link' => $verificationLink,
+                        'mail_error' => $mailError->getMessage(),
+                    ], 201);
+                }
+
+                return response()->json([
+                    'error' => 'Registration successful but verification email could not be sent.'
+                ], 500);
+            }
 
             return response()->json([
-                'access' => $access_token,
-                'refresh' => $refresh_token,
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
-                    'phone' => $user->phone,
-                    'is_verified' => $user->is_verified,
-                    'role' => $user->role,
-                ]
+                'message' => 'Registration successful. Please verify your email before logging in.',
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -76,6 +100,41 @@ class AuthController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Verify email from verification link token.
+     */
+    public function verifyEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'details' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('verification_code', $request->token)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'Invalid or expired verification link.'
+            ], 400);
+        }
+
+        $user->update([
+            'is_verified' => true,
+            'email_verified_at' => now(),
+            'verification_code' => null,
+        ]);
+
+        return response()->json([
+            'message' => 'Email verified successfully. You can now login.'
+        ]);
     }
 
     /**
@@ -104,6 +163,18 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            if (!$user->is_active) {
+                return response()->json([
+                    'error' => 'Your account is inactive. Please contact support.'
+                ], 403);
+            }
+
+            if (!$this->isUserEmailVerified($user)) {
+                return response()->json([
+                    'error' => 'Email verification required before login.'
+                ], 403);
+            }
+
             // Generate JWT tokens
             $access_token = JWTAuth::fromUser($user);
             $refresh_token = JWTAuth::fromUser($user, ['exp' => now()->addDays(30)->timestamp]);
@@ -118,6 +189,8 @@ class AuthController extends Controller
                     'last_name' => $user->last_name,
                     'phone' => $user->phone,
                     'is_verified' => $user->is_verified,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_active' => $user->is_active,
                     'role' => $user->role,
                 ]
             ]);
@@ -167,6 +240,8 @@ class AuthController extends Controller
                     'last_name' => $user->last_name,
                     'phone' => $user->phone,
                     'is_verified' => $user->is_verified,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_active' => $user->is_active,
                     'role' => $user->role,
                 ]
             ]);
@@ -196,6 +271,8 @@ class AuthController extends Controller
                 'state' => $user->state,
                 'postal_code' => $user->postal_code,
                 'is_verified' => $user->is_verified,
+                'email_verified_at' => $user->email_verified_at,
+                'is_active' => $user->is_active,
                 'role' => $user->role,
             ]);
         } catch (\Exception $e) {
@@ -256,6 +333,8 @@ class AuthController extends Controller
                     'state' => $user->state,
                     'postal_code' => $user->postal_code,
                     'is_verified' => $user->is_verified,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_active' => $user->is_active,
                     'role' => $user->role,
                 ]
             ]);
@@ -390,7 +469,10 @@ class AuthController extends Controller
             }
 
             // Mark user as verified
-            $user->update(['is_verified' => true]);
+            $user->update([
+                'is_verified' => true,
+                'email_verified_at' => now(),
+            ]);
 
             // Clear OTP from cache
             \Illuminate\Support\Facades\Cache::forget('otp_' . $request->phone);
@@ -410,6 +492,8 @@ class AuthController extends Controller
                     'last_name' => $user->last_name,
                     'phone' => $user->phone,
                     'is_verified' => $user->is_verified,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_active' => $user->is_active,
                     'role' => $user->role,
                 ]
             ]);

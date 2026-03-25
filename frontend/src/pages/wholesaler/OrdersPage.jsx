@@ -14,19 +14,19 @@ export default function OrdersPage() {
 
   const { data: modelsData } = useQuery({
     queryKey: ['wholesaler-models'],
-    queryFn: () => inventoryAPI.getBatteryModels({ ordering: 'name', is_active: true }),
+    queryFn: () => inventoryAPI.getBatteryModels({ ordering: 'name', status: 'active', is_active: true }),
     select: (response) => response.data,
   })
 
   const { data: accessoriesData } = useQuery({
     queryKey: ['wholesaler-accessories'],
-    queryFn: () => inventoryAPI.getAccessories({ ordering: 'name', is_active: true }),
+    queryFn: () => inventoryAPI.getAccessories({ ordering: 'name', status: 'active', is_active: true }),
     select: (response) => response.data,
   })
 
   const { data: productsData } = useQuery({
     queryKey: ['wholesaler-products'],
-    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', is_active: true }),
+    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', status: 'active', is_active: true }),
     select: (response) => response.data,
   })
 
@@ -53,6 +53,7 @@ export default function OrdersPage() {
   const accessories = Array.isArray(accessoriesData) ? accessoriesData : accessoriesData?.results || []
   const products = Array.isArray(productsData) ? productsData : productsData?.results || []
   const orders = useMemo(() => (Array.isArray(ordersData) ? ordersData : ordersData?.results || []), [ordersData])
+  const isFulfilledStatus = (value) => String(value || '').toUpperCase() === 'FULFILLED'
 
   const handleItemChange = (index, field, value) => {
     setItems((prev) => prev.map((item, idx) => {
@@ -224,7 +225,7 @@ export default function OrdersPage() {
                 <td><span className="tag">{order.status}</span></td>
                 <td>{order.total_items}</td>
                 <td>
-                  {order.status === 'FULFILLED' ? (
+                  {isFulfilledStatus(order.status) ? (
                     <button className="neon-btn-secondary" type="button" onClick={() => handleDownloadInvoice(order.id)}>
                       Invoice
                     </button>

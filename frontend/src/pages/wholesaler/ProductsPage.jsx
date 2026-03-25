@@ -7,7 +7,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('')
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['wholesaler-products'],
-    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', is_active: true }),
+    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', status: 'active', is_active: true }),
     select: (response) => response.data,
   })
 

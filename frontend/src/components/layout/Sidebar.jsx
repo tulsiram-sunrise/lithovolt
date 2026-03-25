@@ -9,6 +9,7 @@ const adminMenu = [
   { name: 'Categories', path: '/admin/categories' },
   { name: 'Orders', path: '/admin/orders' },
   { name: 'Warranties', path: '/admin/warranties' },
+  { name: 'Wholesaler Applications', path: '/admin/wholesaler-applications' },
 ]
 
 const wholesalerMenu = [
