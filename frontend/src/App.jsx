@@ -54,6 +54,9 @@ import GuestLandingPage from './pages/guest/GuestLandingPage'
 import GuestModelCatalogPage from './pages/guest/GuestModelCatalogPage'
 import GuestModelDetailPage from './pages/guest/GuestModelDetailPage'
 import GuestBatteryFinderPage from './pages/guest/GuestBatteryFinderPage'
+import GuestAboutPage from './pages/guest/GuestAboutPage'
+import GuestContactPage from './pages/guest/GuestContactPage'
+import GuestSupportPage from './pages/guest/GuestSupportPage'
 
 function App() {
   return (
@@ -70,6 +73,9 @@ function App() {
       {/* Public Browsing Routes (No /guest prefix) */}
       <Route element={<GuestLayout />}>
         <Route path="/" element={<GuestLandingPage />} />
+        <Route path="/about" element={<GuestAboutPage />} />
+        <Route path="/contact" element={<GuestContactPage />} />
+        <Route path="/support" element={<GuestSupportPage />} />
         <Route path="/models" element={<GuestModelCatalogPage />} />
         <Route path="/models/:id" element={<GuestModelDetailPage />} />
         <Route path="/find-battery" element={<GuestBatteryFinderPage />} />
