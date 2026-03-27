@@ -48,10 +48,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle authentication errors
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
       redirectToLogin()
+      return Promise.reject(error)
     }
+
+    // Handle entity access denial (403 Forbidden)
+    if (error.response?.status === 403) {
+      const errorMessage = error.response.data?.message || 'Access denied'
+      
+      // Create a more user-friendly error for entity access failures
+      if (errorMessage.includes('permission')) {
+        error.isEntityAccessDenial = true
+        error.userFriendlyMessage = 'You do not have permission to access this resource'
+      }
+    }
+
     return Promise.reject(error)
   }
 )
@@ -61,7 +75,21 @@ export default api
 // Admin API
 export const adminAPI = {
   getMetrics: () => api.get('/admin/metrics'),
-  getRoles: () => api.get('/admin/roles'),
+  getRoles: (params) => api.get('/admin/roles', { params }),
+  createRole: (data) => api.post('/admin/roles', data),
+  updateRole: (id, data) => api.put(`/admin/roles/${id}`, data),
+  deleteRole: (id) => api.delete(`/admin/roles/${id}`),
+  getPermissions: (params) => api.get('/admin/permissions', { params }),
+  createPermission: (data) => api.post('/admin/permissions', data),
+  updatePermission: (id, data) => api.put(`/admin/permissions/${id}`, data),
+  deletePermission: (id) => api.delete(`/admin/permissions/${id}`),
+  bulkAssignPermissions: (data) => api.post('/admin/permissions/bulk-assign', data),
+  getStaff: (params) => api.get('/admin/staff', { params }),
+  createStaff: (data) => api.post('/admin/staff', data),
+  updateStaff: (id, data) => api.put(`/admin/staff/${id}`, data),
+  deleteStaff: (id) => api.delete(`/admin/staff/${id}`),
+  getActivity: (params) => api.get('/admin/activity', { params }),
+  getAudit: (params) => api.get('/admin/audit', { params }),
   inviteWholesaler: (data) => api.post('/users/invite-wholesaler', data),
 }
 

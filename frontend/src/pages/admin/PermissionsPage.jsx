@@ -1,192 +1,176 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api';
-import { Button, Select, Table, Spin, message, Card, Space, Checkbox } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { adminAPI } from '../../services/api'
 
-const RESOURCES = ['INVENTORY', 'ORDERS', 'WARRANTY_CLAIMS', 'USERS', 'REPORTS', 'SETTINGS'];
-const ACTIONS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE', 'APPROVE', 'ASSIGN'];
+const RESOURCES = ['INVENTORY', 'ORDERS', 'WARRANTY_CLAIMS', 'USERS', 'REPORTS', 'SETTINGS']
+const ACTIONS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE', 'APPROVE', 'ASSIGN']
 
 export default function PermissionsPage() {
-  const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [selectedPermissions, setSelectedPermissions] = useState(new Set());
-  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient()
+  const [selectedRole, setSelectedRole] = useState('')
+  const [selectedPermissions, setSelectedPermissions] = useState(new Set())
+  const [feedback, setFeedback] = useState('')
+  const [error, setError] = useState('')
 
-  const { data: roles = [], isLoading: rolesLoading } = useQuery({
-    queryKey: ['roles'],
-    queryFn: () => api.get('/users/roles/').then((res) => res.data),
-  });
+  const { data: rolesData, isLoading: rolesLoading } = useQuery({
+    queryKey: ['admin-roles'],
+    queryFn: () => adminAPI.getRoles({ page: 1, page_size: 200 }),
+    select: (response) => response.data,
+  })
 
-  const { data: permissions = [], isLoading: permissionsLoading } = useQuery({
-    queryKey: ['permissions', selectedRole],
-    queryFn: () =>
-      selectedRole ? api.get(`/users/permissions/?role=${selectedRole}`).then((res) => res.data) : Promise.resolve([]),
-    enabled: !!selectedRole,
-  });
+  const roles = useMemo(() => {
+    const list = Array.isArray(rolesData) ? rolesData : rolesData?.results || rolesData?.data || []
+    return list
+  }, [rolesData])
 
-  const createPermissionMutation = useMutation({
-    mutationFn: (data) => api.post('/users/permissions/', data),
+  const selectedRoleId = selectedRole ? Number(selectedRole) : null
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useQuery({
+    queryKey: ['admin-permissions', selectedRoleId],
+    queryFn: () => adminAPI.getPermissions({ role_id: selectedRoleId }),
+    select: (response) => response.data,
+    enabled: !!selectedRoleId,
+  })
+
+  const permissions = useMemo(() => {
+    const list = Array.isArray(permissionsData) ? permissionsData : permissionsData?.results || permissionsData?.data || []
+    return list
+  }, [permissionsData])
+
+  useEffect(() => {
+    const mapped = permissions.map((permission) => `${permission.resource}:${permission.action}`)
+    setSelectedPermissions(new Set(mapped))
+  }, [permissions])
+
+  const savePermissions = useMutation({
+    mutationFn: (payload) => adminAPI.bulkAssignPermissions(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions', selectedRole] });
+      setFeedback('Permission matrix updated successfully.')
+      setError('')
+      queryClient.invalidateQueries({ queryKey: ['admin-permissions', selectedRoleId] })
+      queryClient.invalidateQueries({ queryKey: ['admin-roles'] })
     },
-    onError: (error) => {
-      if (error.response?.status !== 400 || !error.response?.data?.message?.includes('already exists')) {
-        message.error('Error creating permission');
+    onError: (err) => {
+      setError(err.response?.data?.message || err.response?.data?.error || 'Unable to update permissions.')
+      setFeedback('')
+    },
+  })
+
+  const eventRole = roles.find((role) => role.id === selectedRoleId)
+
+  const togglePermission = (resource, action) => {
+    const key = `${resource}:${action}`
+    setSelectedPermissions((previous) => {
+      const next = new Set(previous)
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
       }
-    },
-  });
+      return next
+    })
+  }
 
-  const deletePermissionMutation = useMutation({
-    mutationFn: (id) => api.delete(`/users/permissions/${id}/`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions', selectedRole] });
-    },
-    onError: () => message.error('Error deleting permission'),
-  });
-
-  const handleRoleChange = (roleId) => {
-    const role = roles.find((r) => r.id === roleId);
-    setSelectedRole(roleId);
-    if (role?.permissions) {
-      const permSet = new Set(role.permissions.map((p) => `${p.resource}:${p.action}`));
-      setSelectedPermissions(permSet);
-    }
-  };
-
-  const handlePermissionToggle = (resource, action) => {
-    const key = `${resource}:${action}`;
-    const newSet = new Set(selectedPermissions);
-    const previousSet = new Set(selectedPermissions);
-
-    if (newSet.has(key)) {
-      newSet.delete(key);
-      const perm = permissions.find((p) => p.resource === resource && p.action === action);
-      if (perm) {
-        deletePermissionMutation.mutate(perm.id, {
-          onError: () => {
-            // Rollback on error
-            setSelectedPermissions(previousSet);
-            message.error('Failed to remove permission');
-          },
-        });
-      }
-    } else {
-      newSet.add(key);
-      createPermissionMutation.mutate(
-        { role: selectedRole, resource, action },
-        {
-          onError: () => {
-            // Rollback on error
-            setSelectedPermissions(previousSet);
-            message.error('Failed to add permission');
-          },
-        }
-      );
+  const handleSave = () => {
+    if (!selectedRoleId) {
+      setError('Select a role group first.')
+      return
     }
 
-    setSelectedPermissions(newSet);
-  };
+    savePermissions.mutate({
+      role_id: selectedRoleId,
+      permissions: Array.from(selectedPermissions).sort(),
+    })
+  }
 
-  const isLoading = rolesLoading || permissionsLoading || isSaving;
+  const roleLoading = rolesLoading || permissionsLoading
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h1 style={{ marginBottom: '24px' }}>Roles & Permissions Matrix</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold neon-title">Permissions Matrix</h1>
+          <p className="text-[color:var(--muted)]">Control which actions each role group can perform.</p>
+        </div>
+        <div className="w-full md:w-80">
+          <select
+            className="neon-input"
+            value={selectedRole}
+            onChange={(event) => {
+              setSelectedRole(event.target.value)
+              setFeedback('')
+              setError('')
+            }}
+          >
+            <option value="">Select role group</option>
+            {roles.map((role) => (
+              <option key={role.id} value={role.id}>{role.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      <Card style={{ marginBottom: '24px' }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
-              Select Role
-            </label>
-            <Select
-              value={selectedRole}
-              onChange={handleRoleChange}
-              options={roles.map((role) => ({
-                label: `${role.name} (${role.staff_count} staff)`,
-                value: role.id,
-              }))}
-              placeholder="Choose a role to manage permissions"
-              style={{ width: '300px' }}
-            />
-          </div>
+      {feedback ? <p className="text-sm text-[color:var(--accent)]">{feedback}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--danger)]">{error}</p> : null}
 
-          {selectedRole && (
-            <div style={{ marginTop: '24px' }}>
-              <h3>Permissions for {roles.find((r) => r.id === selectedRole)?.name}</h3>
-
-              {isLoading ? (
-                <Spin />
-              ) : (
-                <div style={{ marginTop: '16px' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>
-                          Resource
-                        </th>
-                        {ACTIONS.map((action) => (
-                          <th key={action} style={{ padding: '12px', textAlign: 'center' }}>
-                            {action}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {RESOURCES.map((resource, idx) => (
-                        <tr
-                          key={resource}
-                          style={{
-                            borderBottom: '1px solid #f0f0f0',
-                            backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white',
-                          }}
-                        >
-                          <td style={{ padding: '12px', fontWeight: 500 }}>{resource}</td>
-                          {ACTIONS.map((action) => {
-                            const isChecked = selectedPermissions.has(`${resource}:${action}`);
-                            return (
-                              <td key={action} style={{ padding: '12px', textAlign: 'center' }}>
-                                <Checkbox
-                                  checked={isChecked}
-                                  onChange={() => handlePermissionToggle(resource, action)}
-                                  disabled={
-                                    createPermissionMutation.isPending || deletePermissionMutation.isPending
-                                  }
-                                />
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  <div style={{ marginTop: '24px' }}>
-                    <h4>Selected Permissions ({selectedPermissions.size}):</h4>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                      {Array.from(selectedPermissions).sort().map((perm) => (
-                        <span
-                          key={perm}
-                          style={{
-                            backgroundColor: '#1890ff',
-                            color: 'white',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                          }}
-                        >
-                          {perm}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+      <div className="panel-card p-6">
+        {!selectedRoleId ? (
+          <p className="text-[color:var(--muted)]">Select a role group to view and edit permissions.</p>
+        ) : (
+          <>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <h2 className="text-lg font-semibold">{eventRole?.name || 'Role'} Permission Grid</h2>
+              <span className="tag">{selectedPermissions.size} selected</span>
             </div>
-          )}
-        </Space>
-      </Card>
+
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Resource</th>
+                    {ACTIONS.map((action) => (
+                      <th key={action} className="text-center">{action}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {RESOURCES.map((resource) => (
+                    <tr key={resource}>
+                      <td><span className="tag">{resource}</span></td>
+                      {ACTIONS.map((action) => {
+                        const key = `${resource}:${action}`
+                        return (
+                          <td key={action} className="text-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedPermissions.has(key)}
+                              onChange={() => togglePermission(resource, action)}
+                              disabled={roleLoading || savePermissions.isPending}
+                              className="h-4 w-4"
+                            />
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {Array.from(selectedPermissions).sort().map((perm) => (
+                <span key={perm} className="tag">{perm}</span>
+              ))}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button className="neon-btn" onClick={handleSave} disabled={savePermissions.isPending || roleLoading}>
+                {savePermissions.isPending ? 'Saving...' : 'Save Permissions'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  );
+  )
 }

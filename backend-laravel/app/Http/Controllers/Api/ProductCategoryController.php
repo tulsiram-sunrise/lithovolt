@@ -10,7 +10,10 @@ class ProductCategoryController extends Controller
 {
     public function index()
     {
-        $categories = ProductCategory::with('parent')->paginate(15);
+        $user = auth()->user();
+        $categories = ProductCategory::with('parent')
+            ->visibleToUser($user)
+            ->paginate(15);
         return response()->json($categories);
     }
 

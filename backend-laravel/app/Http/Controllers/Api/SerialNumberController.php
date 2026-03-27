@@ -12,7 +12,9 @@ class SerialNumberController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
         $serials = SerialNumber::with('batteryModel', 'product', 'allocatedToUser', 'soldToUser')
+            ->visibleToUser($user)
             ->orderByDesc('created_at')
             ->paginate(20);
 

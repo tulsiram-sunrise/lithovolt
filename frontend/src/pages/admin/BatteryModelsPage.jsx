@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import PaginationControls from '../../components/common/PaginationControls'
 
 const SERVER_PAGE_SIZE = 15
 

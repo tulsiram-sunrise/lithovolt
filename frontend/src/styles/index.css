@@ -223,6 +223,42 @@
     padding-bottom: 1rem;
   }
 
+  .sidebar-group {
+    margin-bottom: 0.45rem;
+  }
+
+  .sidebar-group-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    color: var(--muted);
+    padding: 0.35rem 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+  }
+
+  .sidebar-group-trigger:hover,
+  .sidebar-group-trigger.active {
+    color: rgba(188, 255, 208, 0.92);
+  }
+
+  .sidebar-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .sidebar-submenu .sidebar-item {
+    padding-left: 1.5rem;
+  }
+
+  .sidebar-submenu.collapsed .sidebar-item {
+    padding-left: 0.5rem;
+  }
+
   .sidebar-item {
     display: flex;
     align-items: center;
@@ -296,10 +332,31 @@
     .sidebar-nav {
       margin-top: 0;
       padding: 0.25rem 0.8rem 0.8rem;
-      display: flex;
-      gap: 0.5rem;
+      display: block;
       overflow-x: auto;
       scrollbar-width: thin;
+    }
+
+    .sidebar-group {
+      margin-bottom: 0.65rem;
+    }
+
+    .sidebar-group-trigger {
+      padding-left: 0.3rem;
+      padding-right: 0.3rem;
+    }
+
+    .sidebar-submenu {
+      display: flex;
+      flex-direction: row;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.15rem;
+      scrollbar-width: thin;
+    }
+
+    .sidebar-submenu .sidebar-item {
+      padding-left: 0.85rem;
     }
 
     .sidebar-nav::-webkit-scrollbar {
@@ -369,6 +426,22 @@
     color: var(--accent);
     font-size: 0.75rem;
     font-weight: 600;
+  }
+
+  .access-state {
+    border: 1px solid transparent;
+  }
+
+  .access-state-allowed {
+    background: rgba(18, 198, 96, 0.2);
+    border-color: rgba(93, 255, 138, 0.45);
+    color: #8bffb2;
+  }
+
+  .access-state-blocked {
+    background: rgba(255, 107, 107, 0.18);
+    border-color: rgba(255, 107, 107, 0.45);
+    color: #ffc0c0;
   }
 
   .auth-shell {

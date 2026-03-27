@@ -67,19 +67,19 @@ Route::middleware('auth:jwt')->group(function () {
     
     // Users
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'index']);
-        Route::post('/', [UserController::class, 'store']);
+        Route::get('/', [UserController::class, 'index'])->middleware('backoffice.permission:USERS,VIEW');
+        Route::post('/', [UserController::class, 'store'])->middleware('backoffice.permission:USERS,CREATE');
         Route::get('/wholesaler-applications', [UserController::class, 'getWholesalerApplications']);
         Route::post('/wholesaler-applications', [UserController::class, 'submitWholesalerApplication']);
         Route::get('/wholesaler-applications/{id}', [UserController::class, 'getWholesalerApplication']);
-        Route::post('/wholesaler-applications/{id}/approve', [UserController::class, 'approveWholesalerApplication']);
-        Route::post('/wholesaler-applications/{id}/reject', [UserController::class, 'rejectWholesalerApplication']);
-        Route::post('/invite-wholesaler/', [UserController::class, 'inviteWholesaler']);
-        Route::get('/{user}/', [UserController::class, 'show']);
-        Route::put('/{user}/', [UserController::class, 'update']);
-        Route::delete('/{user}/', [UserController::class, 'destroy']);
-        Route::post('/{user}/verify/', [UserController::class, 'verifyEmail']);
-        Route::post('/{user}/toggle_active', [UserController::class, 'toggleActive']);
+        Route::post('/wholesaler-applications/{id}/approve', [UserController::class, 'approveWholesalerApplication'])->middleware('backoffice.permission:USERS,APPROVE');
+        Route::post('/wholesaler-applications/{id}/reject', [UserController::class, 'rejectWholesalerApplication'])->middleware('backoffice.permission:USERS,APPROVE');
+        Route::post('/invite-wholesaler/', [UserController::class, 'inviteWholesaler'])->middleware('backoffice.permission:USERS,CREATE');
+        Route::get('/{user}/', [UserController::class, 'show'])->middleware('backoffice.permission:USERS,VIEW');
+        Route::put('/{user}/', [UserController::class, 'update'])->middleware('backoffice.permission:USERS,UPDATE');
+        Route::delete('/{user}/', [UserController::class, 'destroy'])->middleware('backoffice.permission:USERS,DELETE');
+        Route::post('/{user}/verify/', [UserController::class, 'verifyEmail'])->middleware('backoffice.permission:USERS,UPDATE');
+        Route::post('/{user}/toggle_active', [UserController::class, 'toggleActive'])->middleware('backoffice.permission:USERS,UPDATE');
     });
     
     // Inventory - Battery Models
@@ -190,6 +190,8 @@ Route::middleware('auth:jwt')->group(function () {
     Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('/metrics/', [AdminController::class, 'metrics']);
         Route::get('/dashboard/', [AdminController::class, 'dashboard']);
+        Route::get('/activity/', [AdminController::class, 'activity']);
+        Route::get('/audit/', [AdminController::class, 'activity']);
         Route::get('/users/stats/', [AdminController::class, 'userStats']);
         Route::get('/orders/stats/', [AdminController::class, 'orderStats']);
         Route::get('/warranties/stats/', [AdminController::class, 'warrantyStats']);
@@ -197,29 +199,29 @@ Route::middleware('auth:jwt')->group(function () {
         
         // Role Management
         Route::prefix('roles')->group(function () {
-            Route::get('/', [RoleController::class, 'index']);
-            Route::post('/', [RoleController::class, 'store']);
-            Route::get('/{role}/', [RoleController::class, 'show']);
-            Route::put('/{role}/', [RoleController::class, 'update']);
-            Route::delete('/{role}/', [RoleController::class, 'destroy']);
+            Route::get('/', [RoleController::class, 'index'])->middleware('backoffice.permission:SETTINGS,VIEW');
+            Route::post('/', [RoleController::class, 'store'])->middleware('backoffice.permission:SETTINGS,UPDATE');
+            Route::get('/{role}/', [RoleController::class, 'show'])->middleware('backoffice.permission:SETTINGS,VIEW');
+            Route::put('/{role}/', [RoleController::class, 'update'])->middleware('backoffice.permission:SETTINGS,UPDATE');
+            Route::delete('/{role}/', [RoleController::class, 'destroy'])->middleware('backoffice.permission:SETTINGS,UPDATE');
         });
         
         // Permission Management
         Route::prefix('permissions')->group(function () {
-            Route::get('/', [PermissionController::class, 'index']);
-            Route::post('/', [PermissionController::class, 'store']);
-            Route::put('/{permission}/', [PermissionController::class, 'update']);
-            Route::delete('/{permission}/', [PermissionController::class, 'destroy']);
-            Route::post('/bulk-assign/', [PermissionController::class, 'bulkAssign']);
+            Route::get('/', [PermissionController::class, 'index'])->middleware('backoffice.permission:SETTINGS,VIEW');
+            Route::post('/', [PermissionController::class, 'store'])->middleware('backoffice.permission:SETTINGS,UPDATE');
+            Route::put('/{permission}/', [PermissionController::class, 'update'])->middleware('backoffice.permission:SETTINGS,UPDATE');
+            Route::delete('/{permission}/', [PermissionController::class, 'destroy'])->middleware('backoffice.permission:SETTINGS,UPDATE');
+            Route::post('/bulk-assign/', [PermissionController::class, 'bulkAssign'])->middleware('backoffice.permission:SETTINGS,UPDATE');
         });
         
         // Staff User Management
         Route::prefix('staff')->group(function () {
-            Route::get('/', [StaffUserController::class, 'index']);
-            Route::post('/', [StaffUserController::class, 'store']);
-            Route::get('/{staff}/', [StaffUserController::class, 'show']);
-            Route::put('/{staff}/', [StaffUserController::class, 'update']);
-            Route::delete('/{staff}/', [StaffUserController::class, 'destroy']);
+            Route::get('/', [StaffUserController::class, 'index'])->middleware('backoffice.permission:USERS,VIEW');
+            Route::post('/', [StaffUserController::class, 'store'])->middleware('backoffice.permission:USERS,ASSIGN');
+            Route::get('/{staff}/', [StaffUserController::class, 'show'])->middleware('backoffice.permission:USERS,VIEW');
+            Route::put('/{staff}/', [StaffUserController::class, 'update'])->middleware('backoffice.permission:USERS,ASSIGN');
+            Route::delete('/{staff}/', [StaffUserController::class, 'destroy'])->middleware('backoffice.permission:USERS,ASSIGN');
         });
     });
 });

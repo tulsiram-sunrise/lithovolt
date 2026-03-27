@@ -14,7 +14,10 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('user', 'items.itemable', 'items.product')->paginate(10);
+        $user = auth()->user();
+        $orders = Order::with('user', 'items.itemable', 'items.product')
+            ->visibleToUser($user)
+            ->paginate(10);
         return response()->json($orders);
     }
 

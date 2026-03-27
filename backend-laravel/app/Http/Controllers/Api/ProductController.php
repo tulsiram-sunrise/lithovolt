@@ -12,7 +12,10 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::with('category')->paginate(15);
+        $user = auth()->user();
+        $products = Product::with('category')
+            ->visibleToUser($user)
+            ->paginate(15);
         return response()->json($products);
     }
 

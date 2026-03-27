@@ -9,6 +9,7 @@ use App\Models\WholesalerApplication;
 use App\Services\WholesalerInvitationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -48,7 +49,76 @@ class UserController extends Controller
 
     public function index()
     {
-        $users = User::with('role')->paginate(10);
+        $request = request();
+        $pageSize = min(max((int) $request->query('page_size', 10), 1), 100);
+
+        $query = User::with('role', 'staffUser.role');
+
+        if ($request->filled('scope')) {
+            $scope = strtolower(trim((string) $request->query('scope')));
+
+            if ($scope === 'backoffice') {
+                $query->whereHas('role', function ($roleQuery) {
+                    $roleQuery->whereRaw('UPPER(name) = ?', ['ADMIN']);
+                });
+            }
+
+            if ($scope === 'consumers') {
+                $query->whereHas('role', function ($roleQuery) {
+                    $roleQuery->whereRaw('UPPER(name) = ?', ['CONSUMER']);
+                });
+            }
+
+            if ($scope === 'wholesalers') {
+                $query->whereHas('role', function ($roleQuery) {
+                    $roleQuery->whereRaw('UPPER(name) = ?', ['WHOLESALER']);
+                });
+            }
+        }
+
+        if ($request->filled('search')) {
+            $term = trim((string) $request->query('search'));
+            $query->where(function ($inner) use ($term) {
+                $inner->where('first_name', 'like', "%{$term}%")
+                    ->orWhere('last_name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%")
+                    ->orWhere('phone', 'like', "%{$term}%");
+            });
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->filled('staff_status')) {
+            $staffStatus = strtolower(trim((string) $request->query('staff_status')));
+
+            if ($staffStatus === 'assigned') {
+                $query->whereHas('staffUser');
+            }
+
+            if ($staffStatus === 'unassigned') {
+                $query->whereDoesntHave('staffUser');
+            }
+
+            if ($staffStatus === 'active') {
+                $query->whereHas('staffUser', function ($staffQuery) {
+                    $staffQuery->where('is_active', true);
+                });
+            }
+
+            if ($staffStatus === 'inactive') {
+                $query->whereHas('staffUser', function ($staffQuery) {
+                    $staffQuery->where('is_active', false);
+                });
+            }
+        }
+
+        $users = $query
+            ->orderByDesc('updated_at')
+            ->paginate($pageSize)
+            ->appends($request->query());
+
         return response()->json($users);
     }
 
@@ -224,7 +294,7 @@ class UserController extends Controller
                 ],
             ], 201);
         } catch (\Exception $e) {
-            \Log::error('Failed to invite wholesaler', [
+            Log::error('Failed to invite wholesaler', [
                 'email' => $validated['email'],
                 'error' => $e->getMessage(),
             ]);
@@ -252,25 +322,27 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'required|string|unique:users,phone',
-            'role_id' => 'nullable|integer|exists:roles,id',
             'password' => 'required|string|min:6',
         ]);
 
         $requestUser = $request->user();
         $isAdmin = strtoupper((string) $requestUser?->role) === 'ADMIN';
-        $consumerRole = Role::where('name', 'CONSUMER')->first();
+        $adminRole = Role::where('name', 'ADMIN')->first();
 
-        if (!$consumerRole) {
+        if (!$adminRole) {
             return response()->json([
-                'message' => 'Default consumer role is not configured.'
+                'message' => 'ADMIN role is not configured.'
             ], 500);
         }
 
         if (!$isAdmin) {
-            $validated['role_id'] = $consumerRole->id;
-        } elseif (empty($validated['role_id'])) {
-            $validated['role_id'] = $consumerRole->id;
+            return response()->json([
+                'message' => 'Forbidden'
+            ], 403);
         }
+
+        // Admin-created users are reserved for backoffice onboarding.
+        $validated['role_id'] = $adminRole->id;
 
         // Admin-created users are treated as email verified and active by default.
         $validated['is_verified'] = true;

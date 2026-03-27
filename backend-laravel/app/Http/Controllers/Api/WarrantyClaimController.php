@@ -10,7 +10,10 @@ class WarrantyClaimController extends Controller
 {
     public function index()
     {
-        $claims = WarrantyClaim::with('warranty', 'user', 'attachments')->paginate(10);
+        $user = auth()->user();
+        $claims = WarrantyClaim::with('warranty', 'user', 'attachments')
+            ->visibleToUser($user)
+            ->paginate(10);
         return response()->json($claims);
     }
 

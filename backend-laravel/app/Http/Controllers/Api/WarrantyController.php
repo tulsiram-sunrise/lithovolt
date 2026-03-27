@@ -16,8 +16,10 @@ class WarrantyController extends Controller
     public function index(Request $request)
     {
         $perPage = max(1, min((int) $request->query('per_page', 10), 100));
+        $user = auth()->user();
 
         $warranties = Warranty::with('batteryModel', 'product', 'user', 'claims')
+            ->visibleToUser($user)
             ->orderByDesc('created_at')
             ->paginate($perPage);
 

@@ -18,6 +18,7 @@ class PermissionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Permission::with('role');
+        $pageSize = min(max((int) $request->query('page_size', 20), 1), 200);
 
         if ($request->has('role_id')) {
             $query->where('role_id', $request->role_id);
@@ -31,7 +32,20 @@ class PermissionController extends Controller
             $query->where('action', $request->action);
         }
 
-        $permissions = $query->get();
+        if ($request->filled('search')) {
+            $term = trim((string) $request->query('search'));
+            $query->where(function ($inner) use ($term) {
+                $inner->where('resource', 'like', "%{$term}%")
+                    ->orWhere('action', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            });
+        }
+
+        $permissions = $query
+            ->orderByDesc('updated_at')
+            ->paginate($pageSize)
+            ->appends($request->query());
+
         return response()->json($permissions);
     }
 
@@ -85,7 +99,7 @@ class PermissionController extends Controller
         $validated = $request->validate([
             'role_id' => 'required|exists:roles,id',
             'permissions' => 'required|array',
-            'permissions.*' => 'string|in:INVENTORY:VIEW,INVENTORY:CREATE,INVENTORY:UPDATE,INVENTORY:DELETE,ORDERS:VIEW,ORDERS:CREATE,ORDERS:UPDATE,ORDERS:DELETE,WARRANTY_CLAIMS:VIEW,WARRANTY_CLAIMS:APPROVE,WARRANTY_CLAIMS:ASSIGN,USERS:VIEW,USERS:CREATE,USERS:UPDATE,USERS:DELETE,REPORTS:VIEW,SETTINGS:UPDATE',
+            'permissions.*' => 'string|in:INVENTORY:VIEW,INVENTORY:CREATE,INVENTORY:UPDATE,INVENTORY:DELETE,ORDERS:VIEW,ORDERS:CREATE,ORDERS:UPDATE,ORDERS:DELETE,WARRANTY_CLAIMS:VIEW,WARRANTY_CLAIMS:APPROVE,WARRANTY_CLAIMS:ASSIGN,USERS:VIEW,USERS:CREATE,USERS:UPDATE,USERS:DELETE,USERS:APPROVE,USERS:ASSIGN,REPORTS:VIEW,SETTINGS:VIEW,SETTINGS:UPDATE',
         ]);
 
         $role = Role::findOrFail($validated['role_id']);

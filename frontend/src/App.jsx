@@ -18,6 +18,9 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard'
 import UsersPage from './pages/admin/UsersPage'
+import RolesPage from './pages/admin/RolesPage'
+import PermissionsPage from './pages/admin/PermissionsPage'
+import ActivityPage from './pages/admin/ActivityPage'
 import BatteryModelsPage from './pages/admin/BatteryModelsPage'
 import BatteryModelCreatePage from './pages/admin/BatteryModelCreatePage'
 import BatteryModelDetailPage from './pages/admin/BatteryModelDetailPage'
@@ -27,7 +30,8 @@ import ProductsPage from './pages/admin/ProductsPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
 import OrdersPage from './pages/admin/OrdersPage'
 import WarrantiesPage from './pages/admin/WarrantiesPage'
-import WholesalerApplicationsPage from './pages/admin/WholesalerApplicationsPage'
+import WholesalerManagementPage from './pages/admin/WholesalerManagementPage'
+import ConsumersPage from './pages/admin/ConsumersPage'
 
 // Wholesaler Pages
 import WholesalerDashboard from './pages/wholesaler/Dashboard'
@@ -99,7 +103,13 @@ function App() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="profile/edit" element={<CustomerEditProfilePage />} />
         <Route path="profile/change-password" element={<CustomerChangePasswordPage />} />
-        <Route path="users" element={<UsersPage />} />
+        <Route path="users" element={<UsersPage defaultTab="users" />} />
+        <Route path="consumers" element={<ConsumersPage />} />
+        <Route path="wholesalers" element={<WholesalerManagementPage />} />
+        <Route path="roles" element={<RolesPage />} />
+        <Route path="permissions" element={<PermissionsPage />} />
+        <Route path="staff" element={<UsersPage defaultTab="staff" />} />
+        <Route path="activity" element={<ActivityPage />} />
         <Route path="battery-models" element={<BatteryModelsPage />} />
         <Route path="battery-models/new" element={<BatteryModelCreatePage />} />
         <Route path="battery-models/:id" element={<BatteryModelDetailPage />} />
@@ -109,7 +119,6 @@ function App() {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="warranties" element={<WarrantiesPage />} />
-        <Route path="wholesaler-applications" element={<WholesalerApplicationsPage />} />
       </Route>
 
       {/* Wholesaler Routes */}

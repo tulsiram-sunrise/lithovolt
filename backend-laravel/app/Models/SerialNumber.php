@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\EntityAccessService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,5 +40,18 @@ class SerialNumber extends Model
     public function soldToUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sold_to');
+    }
+
+    /**
+     * Scope to apply entity visibility based on user's permissions.
+     *
+     * @param Builder $query
+     * @param User $user
+     * @return Builder
+     */
+    public function scopeVisibleToUser(Builder $query, User $user): Builder
+    {
+        $accessService = new EntityAccessService();
+        return $accessService->applyVisibility($user, 'INVENTORY', $query);
     }
 }

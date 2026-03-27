@@ -12,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class RoleController extends Controller
 {
+    private const RESERVED_CORE_ROLES = ['ADMIN', 'WHOLESALER', 'CONSUMER', 'RETAILER'];
+
     public function __construct()
     {
         $this->middleware('auth:jwt');
@@ -20,7 +22,28 @@ class RoleController extends Controller
 
     public function index(): JsonResponse
     {
-        $roles = Role::with('permissions', 'staffUsers')->get();
+        $request = request();
+        $pageSize = min(max((int) $request->query('page_size', 10), 1), 100);
+
+        $query = Role::with('permissions', 'staffUsers');
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->filled('search')) {
+            $term = trim((string) $request->query('search'));
+            $query->where(function ($inner) use ($term) {
+                $inner->where('name', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            });
+        }
+
+        $roles = $query
+            ->orderByDesc('updated_at')
+            ->paginate($pageSize)
+            ->appends($request->query());
+
         return response()->json($roles);
     }
 
@@ -35,8 +58,20 @@ class RoleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|unique:roles',
             'description' => 'nullable|string',
-            'is_active' => 'boolean|default:true',
+            'is_active' => 'sometimes|boolean',
         ]);
+
+        if (!array_key_exists('is_active', $validated)) {
+            $validated['is_active'] = true;
+        }
+
+        $validated['name'] = strtoupper(trim($validated['name']));
+
+        if (in_array($validated['name'], self::RESERVED_CORE_ROLES, true)) {
+            throw ValidationException::withMessages([
+                'name' => ['Core platform role names are reserved. Create a dedicated limited role group name.'],
+            ]);
+        }
 
         $role = Role::create($validated);
         return response()->json($role, 201);

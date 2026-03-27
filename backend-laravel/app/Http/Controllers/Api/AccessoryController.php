@@ -10,7 +10,8 @@ class AccessoryController extends Controller
 {
     public function index()
     {
-        $accessories = Accessory::paginate(15);
+        $user = auth()->user();
+        $accessories = Accessory::visibleToUser($user)->paginate(15);
         return response()->json($accessories);
     }
 
