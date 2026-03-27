@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import lithovoltLogo from '../../assets/lithovolt-logo.png'
 import { publicCatalogAPI } from '../../services/api'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 function normalizeList(data) {
   return Array.isArray(data) ? data : data?.results || data?.data || []
@@ -48,11 +49,12 @@ export default function GuestLandingPage() {
       <section className="panel-card guest-hero p-6 md:p-8">
         <div className="grid items-center gap-8 lg:grid-cols-[1.25fr_0.75fr]">
           <div className="animate-fade-up">
-            <p className="text-xs uppercase tracking-[0.32em] text-[color:var(--muted)]">LithoVolt Guest Access</p>
-            <h1 className="mt-2 text-3xl font-semibold neon-title md:text-5xl">Powering smarter battery choices</h1>
-            <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
-              Compare models, find vehicle-compatible options, and understand fitment with a faster, cleaner decision flow for both drivers and trade partners. Lithovolt combines practical battery data with simple decision tools, so you can move from uncertainty to the right battery in minutes.
-            </p>
+            <PublicSectionHeader
+              eyebrow="LithoVolt Guest Access"
+              title="Powering smarter battery choices"
+              description="Compare models, find vehicle-compatible options, and understand fitment with a faster, cleaner decision flow for both drivers and trade partners. Lithovolt combines practical battery data with simple decision tools, so you can move from uncertainty to the right battery in minutes."
+              className="neon-title"
+            />
             <div className="mt-5 flex flex-wrap gap-3">
               <Link to="/find-battery" className="neon-btn">Find by Vehicle</Link>
               <Link to="/models" className="neon-btn-secondary">Browse Models</Link>
@@ -179,10 +181,10 @@ export default function GuestLandingPage() {
 
       <section className="panel-card p-5 md:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Top Performance Picks</p>
-            <h2 className="mt-2 text-2xl font-semibold">Ranked by CCA and capacity</h2>
-          </div>
+          <PublicSectionHeader
+            eyebrow="Top Performance Picks"
+            title="Ranked by CCA and capacity"
+          />
           <Link to="/models" className="neon-btn-ghost">View Full Catalog</Link>
         </div>
 

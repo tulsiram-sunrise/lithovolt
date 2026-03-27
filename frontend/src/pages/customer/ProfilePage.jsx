@@ -3,8 +3,21 @@ import { Link } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
 
+function resolvePanelBasePath(role) {
+  if (role === 'ADMIN') {
+    return '/admin'
+  }
+
+  if (role === 'WHOLESALER') {
+    return '/wholesaler'
+  }
+
+  return '/customer'
+}
+
 export default function CustomerProfilePage() {
   const authUser = useAuthStore((state) => state.user)
+  const basePath = resolvePanelBasePath(authUser?.role)
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -117,15 +130,17 @@ export default function CustomerProfilePage() {
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/customer/profile/edit" className="neon-btn">Edit Profile</Link>
-          <Link to="/customer/profile/change-password" className="neon-btn-secondary">Change Password</Link>
-          <Link
-            to="/customer/wholesaler-register"
-            className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--accent)] bg-[color:var(--accent)]/15 px-4 py-2 font-semibold text-[color:var(--accent)] shadow-[0_0_18px_rgba(102,255,190,0.35)] transition hover:-translate-y-0.5 hover:bg-[color:var(--accent)]/25"
-          >
-            <span aria-hidden="true">★</span>
-            <span>Become Wholesaler</span>
-          </Link>
+          <Link to={`${basePath}/profile/edit`} className="neon-btn">Edit Profile</Link>
+          <Link to={`${basePath}/profile/change-password`} className="neon-btn-secondary">Change Password</Link>
+          {(authUser?.role === 'CONSUMER' || authUser?.role === 'RETAILER') ? (
+            <Link
+              to="/customer/wholesaler-register"
+              className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--accent)] bg-[color:var(--accent)]/15 px-4 py-2 font-semibold text-[color:var(--accent)] shadow-[0_0_18px_rgba(102,255,190,0.35)] transition hover:-translate-y-0.5 hover:bg-[color:var(--accent)]/25"
+            >
+              <span aria-hidden="true">★</span>
+              <span>Become Wholesaler</span>
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

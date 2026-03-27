@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 const faqs = [
   {
@@ -23,11 +24,12 @@ export default function GuestSupportPage() {
   return (
     <div className="space-y-6 md:space-y-7">
       <section className="panel-card guest-hero p-6 md:p-8">
-        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Support Center</p>
-        <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Answers, onboarding, and assistance</h1>
-        <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
-          Find quick answers for fitment and account flows, then connect with the team when you need deeper help.
-        </p>
+        <PublicSectionHeader
+          eyebrow="Support Center"
+          title="Answers, onboarding, and assistance"
+          description="Find quick answers for fitment and account flows, then connect with the team when you need deeper help."
+          className="neon-title"
+        />
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">

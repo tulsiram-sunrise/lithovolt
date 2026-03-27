@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import lithovoltLogo from '../../assets/lithovolt-logo.png'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 const values = [
   {
@@ -43,11 +44,12 @@ export default function GuestAboutPage() {
             <img src={lithovoltLogo} alt="Lithovolt" className="mx-auto h-24 w-auto object-contain md:h-28" />
           </div>
           <div className="animate-fade-up" style={{ animationDelay: '120ms' }}>
-            <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">About Lithovolt</p>
-            <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Energy products with practical confidence</h1>
-            <p className="mt-3 text-sm text-[color:var(--muted)] md:text-base">
-              Lithovolt builds dependable battery solutions and a cleaner digital journey around selection, fitment, and post-purchase support.
-            </p>
+            <PublicSectionHeader
+              eyebrow="About Lithovolt"
+              title="Energy products with practical confidence"
+              description="Lithovolt builds dependable battery solutions and a cleaner digital journey around selection, fitment, and post-purchase support."
+              className="neon-title"
+            />
           </div>
         </div>
       </section>

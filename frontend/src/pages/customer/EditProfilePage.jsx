@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import { useAuthStore } from '../../store/authStore'
 
+function resolvePanelBasePath(pathname) {
+  if (pathname.startsWith('/admin')) {
+    return '/admin'
+  }
+
+  if (pathname.startsWith('/wholesaler')) {
+    return '/wholesaler'
+  }
+
+  return '/customer'
+}
+
 export default function EditProfilePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const basePath = resolvePanelBasePath(location.pathname)
   const authUser = useAuthStore((state) => state.user)
   const updateUser = useAuthStore((state) => state.updateUser)
 
@@ -66,7 +80,7 @@ export default function EditProfilePage() {
       const response = await authAPI.updateProfile(form)
       updateUser(response.data.user)
       setSuccess('Profile updated successfully.')
-      setTimeout(() => navigate('/customer/profile'), 700)
+      setTimeout(() => navigate(`${basePath}/profile`), 700)
     } catch (err) {
       const details = err.response?.data?.details
       if (details && typeof details === 'object') {
@@ -133,7 +147,7 @@ export default function EditProfilePage() {
 
         <div className="flex gap-3">
           <button className="neon-btn" type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</button>
-          <button className="neon-btn-secondary" type="button" onClick={() => navigate('/customer/profile')}>Cancel</button>
+          <button className="neon-btn-secondary" type="button" onClick={() => navigate(`${basePath}/profile`)}>Cancel</button>
         </div>
       </form>
     </div>

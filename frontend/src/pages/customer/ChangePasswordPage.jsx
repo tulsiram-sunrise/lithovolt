@@ -1,10 +1,24 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import PasswordInput from '../../components/common/PasswordInput'
 
+function resolvePanelBasePath(pathname) {
+  if (pathname.startsWith('/admin')) {
+    return '/admin'
+  }
+
+  if (pathname.startsWith('/wholesaler')) {
+    return '/wholesaler'
+  }
+
+  return '/customer'
+}
+
 export default function ChangePasswordPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const basePath = resolvePanelBasePath(location.pathname)
   const [form, setForm] = useState({
     current_password: '',
     new_password: '',
@@ -39,7 +53,7 @@ export default function ChangePasswordPage() {
         new_password: '',
         new_password_confirmation: '',
       })
-      setTimeout(() => navigate('/customer/profile'), 700)
+      setTimeout(() => navigate(`${basePath}/profile`), 700)
     } catch (err) {
       const details = err.response?.data?.details
       if (details && typeof details === 'object') {
@@ -108,7 +122,7 @@ export default function ChangePasswordPage() {
           <button className="neon-btn-secondary" type="submit" disabled={loading}>
             {loading ? 'Updating...' : 'Update Password'}
           </button>
-          <button className="neon-btn" type="button" onClick={() => navigate('/customer/profile')}>Cancel</button>
+          <button className="neon-btn" type="button" onClick={() => navigate(`${basePath}/profile`)}>Cancel</button>
         </div>
       </form>
     </div>

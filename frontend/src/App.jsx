@@ -96,6 +96,9 @@ function App() {
         }
       >
         <Route index element={<AdminDashboard />} />
+        <Route path="profile" element={<CustomerProfilePage />} />
+        <Route path="profile/edit" element={<CustomerEditProfilePage />} />
+        <Route path="profile/change-password" element={<CustomerChangePasswordPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="battery-models" element={<BatteryModelsPage />} />
         <Route path="battery-models/new" element={<BatteryModelCreatePage />} />
@@ -119,6 +122,9 @@ function App() {
         }
       >
         <Route index element={<WholesalerDashboard />} />
+        <Route path="profile" element={<CustomerProfilePage />} />
+        <Route path="profile/edit" element={<CustomerEditProfilePage />} />
+        <Route path="profile/change-password" element={<CustomerChangePasswordPage />} />
         <Route path="inventory" element={<WholesalerInventory />} />
         <Route path="products" element={<WholesalerProducts />} />
         <Route path="orders" element={<WholesalerOrders />} />

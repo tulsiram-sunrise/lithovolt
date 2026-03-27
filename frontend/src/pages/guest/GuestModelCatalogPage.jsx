@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { publicCatalogAPI } from '../../services/api'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 function normalizeList(data) {
   return Array.isArray(data) ? data : data?.results || data?.data || []
@@ -40,11 +41,15 @@ export default function GuestModelCatalogPage() {
   }, [data, query])
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold neon-title">Guest Model Browser</h1>
-        <p className="text-[color:var(--muted)]">Search LithoVolt battery models by code, segment, and battery type.</p>
-      </div>
+    <div className="space-y-6 md:space-y-7">
+      <section className="panel-card guest-hero p-6 md:p-8">
+        <PublicSectionHeader
+          eyebrow="Model Catalog"
+          title="Guest Model Browser"
+          description="Search LithoVolt battery models by code, segment, and battery type."
+          className="neon-title"
+        />
+      </section>
 
       <div className="panel-card p-5">
         <input

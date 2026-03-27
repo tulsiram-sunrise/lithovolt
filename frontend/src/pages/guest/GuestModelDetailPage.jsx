@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { publicCatalogAPI } from '../../services/api'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 function valueOrDash(value) {
   return value === null || value === undefined || value === '' ? '-' : value
@@ -23,12 +24,13 @@ export default function GuestModelDetailPage() {
   const model = normalizeList(data).find((item) => String(item.id) === String(id))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-7">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold neon-title">Battery Model Details</h1>
-          <p className="text-[color:var(--muted)]">Public view of detailed battery specifications.</p>
-        </div>
+        <PublicSectionHeader
+          title="Battery Model Details"
+          description="Public view of detailed battery specifications."
+          className="neon-title"
+        />
         <Link to="/models" className="neon-btn-secondary">Back to Models</Link>
       </div>
 

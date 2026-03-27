@@ -2,7 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
-export default function Navbar() {
+function titleCase(segment) {
+  return segment
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function buildBreadcrumb(pathname) {
+  const segments = pathname.split('/').filter(Boolean)
+  if (segments.length === 0) {
+    return ['Home']
+  }
+
+  return segments.map((segment) => titleCase(segment))
+}
+
+export default function Navbar({ isSidebarCollapsed = false, onToggleSidebar }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
@@ -20,7 +37,19 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  const isCustomerPanel = location.pathname.startsWith('/customer')
+  const basePanelPath = location.pathname.startsWith('/admin')
+    ? '/admin'
+    : location.pathname.startsWith('/wholesaler')
+      ? '/wholesaler'
+      : location.pathname.startsWith('/customer')
+        ? '/customer'
+        : null
+  const panelName = location.pathname.startsWith('/admin')
+    ? 'Admin Panel'
+    : location.pathname.startsWith('/wholesaler')
+      ? 'Wholesaler Panel'
+      : 'Customer Panel'
+  const breadcrumb = buildBreadcrumb(location.pathname)
 
   const handleLogout = () => {
     logout()
@@ -29,29 +58,39 @@ export default function Navbar() {
 
   return (
     <header className="topbar">
-      <div className="flex flex-col gap-3 px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Lithovolt Platform</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Lithovolt Platform · {panelName}</p>
+          <p className="mt-1 text-xs text-[color:var(--muted)]">
+            {breadcrumb.join(' / ')}
+          </p>
           <h2 className="text-2xl font-semibold neon-title">Welcome, {user?.first_name || 'Partner'}</h2>
         </div>
         <div className="relative flex flex-wrap items-center gap-3" ref={dropdownRef}>
+          <button
+            type="button"
+            className="neon-btn-ghost hidden lg:inline-flex"
+            onClick={onToggleSidebar}
+          >
+            {isSidebarCollapsed ? 'Expand Menu' : 'Collapse Menu'}
+          </button>
           <span className="tag">{user?.role || 'USER'}</span>
           <button
             className="neon-btn-secondary text-sm"
             onClick={() => setOpen((prev) => !prev)}
             type="button"
           >
-            {user?.email || 'Account'}
+            Account
           </button>
 
           {open ? (
             <div className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-56 panel-card p-2">
-              {isCustomerPanel ? (
+              {basePanelPath ? (
                 <>
-                  <Link to="/customer/profile" className="block rounded-lg px-3 py-2 text-sm hover:bg-white/5" onClick={() => setOpen(false)}>
+                  <Link to={`${basePanelPath}/profile`} className="block rounded-lg px-3 py-2 text-sm hover:bg-white/5" onClick={() => setOpen(false)}>
                     View Profile
                   </Link>
-                  <Link to="/customer/profile/change-password" className="block rounded-lg px-3 py-2 text-sm hover:bg-white/5" onClick={() => setOpen(false)}>
+                  <Link to={`${basePanelPath}/profile/change-password`} className="block rounded-lg px-3 py-2 text-sm hover:bg-white/5" onClick={() => setOpen(false)}>
                     Change Password
                   </Link>
                 </>

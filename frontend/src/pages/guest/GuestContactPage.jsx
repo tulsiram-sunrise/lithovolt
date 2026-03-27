@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 const initialForm = {
   name: '',
@@ -29,11 +30,12 @@ export default function GuestContactPage() {
   return (
     <div className="space-y-6 md:space-y-7">
       <section className="panel-card guest-hero p-6 md:p-8">
-        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Contact Us</p>
-        <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Let us help you pick the right setup</h1>
-        <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
-          Reach out for battery recommendations, wholesaler onboarding, or product support. We usually reply within one business day.
-        </p>
+        <PublicSectionHeader
+          eyebrow="Contact Us"
+          title="Let us help you pick the right setup"
+          description="Reach out for battery recommendations, wholesaler onboarding, or product support. We usually reply within one business day."
+          className="neon-title"
+        />
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">

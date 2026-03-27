@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { fitmentAPI } from '../../services/api'
+import PublicSectionHeader from '../../components/public/PublicSectionHeader'
 
 export default function GuestBatteryFinderPage() {
   const [mode, setMode] = useState('vehicle')
@@ -44,13 +45,14 @@ export default function GuestBatteryFinderPage() {
       : Boolean(form.registration_number.trim() && form.state_code.trim())
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-7">
       <section className="panel-card guest-hero p-6 md:p-8">
-        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Battery Finder</p>
-        <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Find My LithoVolt Battery</h1>
-        <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
-          Choose a lookup mode below. Start with vehicle details or use registration + state for faster fitment recommendations.
-        </p>
+        <PublicSectionHeader
+          eyebrow="Battery Finder"
+          title="Find My LithoVolt Battery"
+          description="Choose a lookup mode below. Start with vehicle details or use registration + state for faster fitment recommendations."
+          className="neon-title"
+        />
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
