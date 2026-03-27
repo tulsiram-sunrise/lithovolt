@@ -19,6 +19,19 @@ const publicApi = axios.create({
   },
 })
 
+const redirectToLogin = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (import.meta.env.MODE === 'test') {
+    window.history.pushState({}, '', '/login')
+    return
+  }
+
+  window.location.assign('/login')
+}
+
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config) => {
@@ -37,7 +50,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
-      window.location.href = '/login'
+      redirectToLogin()
     }
     return Promise.reject(error)
   }
@@ -49,6 +62,7 @@ export default api
 export const adminAPI = {
   getMetrics: () => api.get('/admin/metrics'),
   getRoles: () => api.get('/admin/roles'),
+  inviteWholesaler: (data) => api.post('/users/invite-wholesaler', data),
 }
 
 // Auth API

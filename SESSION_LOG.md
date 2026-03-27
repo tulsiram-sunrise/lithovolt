@@ -1,5 +1,37 @@
 # 📋 Session Log - February 19, 2026
 
+## Post-Readiness Continuation - March 27, 2026
+
+**Status:** ✅ Hardening slice continued (test-noise cleanup + route/doc drift alignment)
+
+### Completed in this continuation
+- ✅ Frontend warning-noise hardening validated:
+  - Router future flags enabled in runtime and tests.
+  - jsdom navigation noise suppressed for test download-link clicks.
+  - Frontend tests remain green (`20` files, `97` tests).
+- ✅ Route/doc drift cleanup:
+  - Updated Postman profile request from `/api/users/me/` to canonical `/api/auth/profile/`.
+- ✅ Non-interactive backend verification hardened on `:8001`:
+  - Added reusable root script `verify_laravel_auth_matrix.sh` and wired task `Laravel Remaining Endpoint Checks` to it.
+  - Initial `000` indicated server not reachable.
+  - Subsequent `401` indicated stale credential state.
+  - Re-seeded baseline data (`php artisan db:seed`) and re-ran matrix.
+  - Final authenticated endpoints all returned `200`.
+
+### Current operational state
+- Laravel authenticated smoke matrix on `127.0.0.1:8001` is green again.
+- Canonical profile endpoint remains `/api/auth/profile/`.
+
+### Deployment hardening continuation (SMTP)
+- ✅ Added `verify_wholesaler_invite_mail.sh` for invitation-email smoke checks.
+- ✅ Added VS Code task `Laravel Invite Mail Smoke`.
+- ✅ Hardened mail transport timeout via `MAIL_TIMEOUT` support in `config/mail.php`.
+- ✅ Normalized runtime SMTP from blocked port `25` to authenticated SMTP (`2525/tls`) in local env.
+- ✅ Verified invite endpoint mail path returns:
+  - `INVITE_HTTP_STATUS=201`
+  - `MAIL_SEND_STATUS=PASS`
+  - `MAIL_SENT_AT=<timestamp>`
+
 ## Release Readiness Snapshot - March 26, 2026
 
 **Status:** ✅ Cross-stack release verification complete

@@ -320,7 +320,7 @@
       "name": "Users",
       "item": [
         {
-          "name": "Get Me",
+          "name": "Get Profile",
           "request": {
             "method": "GET",
             "header": [
@@ -330,14 +330,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/users/me/",
+              "raw": "{{base_url}}/api/auth/profile/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "users",
-                "me",
+                "auth",
+                "profile",
                 ""
               ]
             }

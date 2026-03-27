@@ -28,7 +28,7 @@ describe('OtpLoginScreen', () => {
 
     fireEvent.press(getByText('Send OTP'));
 
-    expect(getByText('Email or phone is required.')).toBeTruthy();
+    expect(getByText('Phone number is required.')).toBeTruthy();
   });
 
   it('moves to verify step after sending OTP', async () => {
@@ -37,11 +37,11 @@ describe('OtpLoginScreen', () => {
       <OtpLoginScreen navigation={navigation} />
     );
 
-    fireEvent.changeText(getByPlaceholderText('Email or phone'), 'consumer1@lithovolt.com');
+    fireEvent.changeText(getByPlaceholderText('Phone number'), '900000001');
     fireEvent.press(getByText('Send OTP'));
 
     await waitFor(() => {
-      expect(authAPI.sendOTP).toHaveBeenCalled();
+      expect(authAPI.sendOTP).toHaveBeenCalledWith({ phone: '900000001' });
       expect(queryByPlaceholderText('OTP code')).toBeTruthy();
     });
   });
@@ -58,7 +58,7 @@ describe('OtpLoginScreen', () => {
 
     const { getByText, getByPlaceholderText } = render(<OtpLoginScreen navigation={navigation} />);
 
-    fireEvent.changeText(getByPlaceholderText('Email or phone'), 'consumer1@lithovolt.com');
+    fireEvent.changeText(getByPlaceholderText('Phone number'), '900000001');
     fireEvent.press(getByText('Send OTP'));
 
     await waitFor(() => getByPlaceholderText('OTP code'));
@@ -67,11 +67,28 @@ describe('OtpLoginScreen', () => {
     fireEvent.press(getByText('Verify & Login'));
 
     await waitFor(() => {
+      expect(authAPI.verifyOTP).toHaveBeenCalledWith({ phone: '900000001', otp: '123456' });
       expect(mockSetAuth).toHaveBeenCalledWith(
         { id: 2, role: 'CONSUMER' },
         'access',
         'refresh'
       );
     });
+  });
+
+  it('shows OTP length validation', async () => {
+    authAPI.sendOTP.mockResolvedValue({});
+
+    const { getByText, getByPlaceholderText } = render(<OtpLoginScreen navigation={navigation} />);
+
+    fireEvent.changeText(getByPlaceholderText('Phone number'), '900000001');
+    fireEvent.press(getByText('Send OTP'));
+
+    await waitFor(() => getByPlaceholderText('OTP code'));
+
+    fireEvent.changeText(getByPlaceholderText('OTP code'), '1234');
+    fireEvent.press(getByText('Verify & Login'));
+
+    expect(getByText('OTP must be 6 digits.')).toBeTruthy();
   });
 });

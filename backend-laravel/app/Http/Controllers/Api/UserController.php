@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WholesalerApplication;
+use App\Services\WholesalerInvitationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -184,6 +185,58 @@ class UserController extends Controller
             'message' => 'Wholesaler application rejected',
             'application' => $this->toWholesalerApplication($application->fresh('user'), $wholesalerRoleId),
         ]);
+    }
+
+    public function inviteWholesaler(Request $request, WholesalerInvitationService $invitationService)
+    {
+        // Admin-only
+        if (!$this->isAdmin($request->user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        // Validate request
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'name' => 'nullable|string|max:255',
+            'company_name' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $invitation = $invitationService->sendInvitation(
+                $validated['email'],
+                $request->user(),
+                $validated['name'] ?? null,
+                $validated['company_name'] ?? null,
+                $validated['notes'] ?? null
+            );
+
+            return response()->json([
+                'message' => 'Invitation sent successfully',
+                'invitation' => [
+                    'id' => $invitation->id,
+                    'email' => $invitation->email,
+                    'name' => $invitation->name,
+                    'company_name' => $invitation->company_name,
+                    'sent_at' => $invitation->sent_at,
+                    'expires_at' => $invitation->expires_at,
+                    'status' => $invitation->accepted_at ? 'accepted' : ($invitation->isSent() ? 'sent' : 'pending'),
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Failed to invite wholesaler', [
+                'email' => $validated['email'],
+                'error' => $e->getMessage(),
+            ]);
+
+            // Return 409 Conflict if user already exists
+            $statusCode = str_contains($e->getMessage(), 'already exists') ? 409 : 500;
+            
+            return response()->json([
+                'error' => 'Failed to send invitation',
+                'message' => config('app.debug') ? $e->getMessage() : 'Please contact support',
+            ], $statusCode);
+        }
     }
 
     public function show($id)

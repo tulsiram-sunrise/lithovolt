@@ -14,11 +14,9 @@ export default function OtpLoginScreen({ navigation }) {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
 
-  const isEmail = (value) => value.includes('@');
-
   const handleSendOtp = async () => {
     if (!contact) {
-      setError('Email or phone is required.');
+      setError('Phone number is required.');
       return;
     }
 
@@ -26,10 +24,10 @@ export default function OtpLoginScreen({ navigation }) {
       setLoading(true);
       setError('');
       setInfo('');
-      const payload = isEmail(contact) ? { email: contact, otp_type: 'LOGIN' } : { phone: contact, otp_type: 'LOGIN' };
+      const payload = { phone: contact.trim() };
       await authAPI.sendOTP(payload);
       setStep('VERIFY');
-      setInfo('OTP sent. Please check your messages.');
+      setInfo('OTP sent to your phone.');
     } catch (err) {
       const message = err.response?.data?.detail || 'Failed to send OTP.';
       setError(message);
@@ -44,11 +42,16 @@ export default function OtpLoginScreen({ navigation }) {
       return;
     }
 
+    if (otp.trim().length !== 6) {
+      setError('OTP must be 6 digits.');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
       setInfo('');
-      const payload = isEmail(contact) ? { email: contact, otp_code: otp } : { phone: contact, otp_code: otp };
+      const payload = { phone: contact.trim(), otp: otp.trim() };
       const response = await authAPI.verifyOTP(payload);
       const { access, refresh, user } = response.data;
       setAuth(user, access, refresh);
@@ -63,15 +66,15 @@ export default function OtpLoginScreen({ navigation }) {
   return (
     <NeonBackground style={styles.container}>
       <Text style={styles.title}>OTP Login</Text>
-      <Text style={styles.subtitle}>Enter your email or phone to receive an OTP.</Text>
+      <Text style={styles.subtitle}>Enter your phone number to receive an OTP.</Text>
 
       <View style={styles.form}>
         <TextInput
           style={styles.input}
-          placeholder="Email or phone"
+          placeholder="Phone number"
           placeholderTextColor="#94a3b8"
           autoCapitalize="none"
-          keyboardType={isEmail(contact) ? 'email-address' : 'default'}
+          keyboardType="phone-pad"
           value={contact}
           onChangeText={setContact}
           editable={step === 'REQUEST'}
@@ -96,9 +99,32 @@ export default function OtpLoginScreen({ navigation }) {
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send OTP</Text>}
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.button} onPress={handleVerifyOtp} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Verify & Login</Text>}
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={styles.button} onPress={handleVerifyOtp} disabled={loading}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Verify & Login</Text>}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={handleSendOtp}
+              disabled={loading}
+            >
+              <Text style={styles.linkText}>Resend OTP</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => {
+                setStep('REQUEST');
+                setOtp('');
+                setError('');
+                setInfo('');
+              }}
+              disabled={loading}
+            >
+              <Text style={styles.linkText}>Change phone number</Text>
+            </TouchableOpacity>
+          </>
         )}
 
         <TouchableOpacity style={styles.linkButton} onPress={() => navigation.goBack()}>

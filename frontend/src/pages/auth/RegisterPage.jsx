@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import PasswordInput from '../../components/common/PasswordInput'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const invitationToken = searchParams.get('invitation') || ''
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -12,6 +14,7 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     password_confirmation: '',
+    invitation: invitationToken,
   })
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -34,7 +37,10 @@ export default function RegisterPage() {
 
     setIsSubmitting(true)
     try {
-      const response = await authAPI.register(formData)
+      const payload = invitationToken
+        ? { ...formData, invitation: invitationToken }
+        : { ...formData }
+      const response = await authAPI.register(payload)
       setSuccessMessage(response.data?.message || 'Registration successful. Please verify your email before login.')
       setTimeout(() => {
         navigate('/login', { replace: true })
@@ -61,6 +67,12 @@ export default function RegisterPage() {
         <div className="auth-card">
           <h2 className="text-3xl font-semibold neon-title">Create Account</h2>
           <p className="mt-2 text-[color:var(--muted)]">Join Lithovolt to manage orders and warranties.</p>
+
+          {invitationToken ? (
+            <p className="mt-3 text-sm text-[color:var(--accent)]">
+              You are registering via a wholesaler invitation. Use the invited email address to continue.
+            </p>
+          ) : null}
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div className="grid gap-4 md:grid-cols-2">

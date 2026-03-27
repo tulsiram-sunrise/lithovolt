@@ -1,5 +1,59 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 27, 2026 (Post-Readiness Hardening Pass)
+
+### Invitation Workflow Hardening (March 27, 2026)
+- Added existing-user protection in wholesaler invite flow: invitation is rejected when email already belongs to a registered user.
+- API behavior for existing users: `POST /api/users/invite-wholesaler/` now returns `409 Conflict`.
+- API behavior for new users: `POST /api/users/invite-wholesaler/` returns `201 Created` and sends invite email.
+- Invitation registration behavior: invited users are auto-verified on registration and assigned `WHOLESALER` role.
+- Role resolution behavior: canonical `role_id` mapping now takes precedence over legacy direct `role` text.
+
+Validation snapshot:
+- `INVITING_EXISTING_USER=409`
+- `INVITING_NEW_USER=201`
+- `LOGIN_ROLE=WHOLESALER` for an invited user after registration.
+
+### SMTP Invite Validation (March 27, 2026)
+- Added deploy-safe mail smoke verifier: `verify_wholesaler_invite_mail.sh`.
+- Initial invite mail failures traced to blocked SMTP port `25` in runtime env.
+- Updated Laravel runtime SMTP to authenticated transport settings (`MAIL_PORT=2525`, `MAIL_ENCRYPTION=tls`) and configured transport timeout.
+- Validation result:
+	- `INVITE_HTTP_STATUS=201`
+	- `INVITE_MESSAGE=Invitation sent successfully`
+	- `MAIL_SEND_STATUS=PASS`
+	- `MAIL_SENT_AT` populated in API response.
+
+This confirms wholesaler invitation emails are now sending successfully from the Laravel API path.
+
+### What was executed
+- Added consolidated verifier script `verify_laravel_auth_matrix.sh` and switched VS Code task `Laravel Remaining Endpoint Checks` to use it.
+- Started Laravel API on `127.0.0.1:8001` for a non-interactive verification pass.
+- Ran authenticated smoke matrix after restoring baseline credentials with `php artisan db:seed`.
+- Corrected Postman profile route drift in `backend/docs/postman/Lithovolt.postman_collection.json`:
+	- Updated `Get Me` request to canonical `GET /api/auth/profile/`.
+
+### Authenticated Smoke Results (Port 8001)
+- ✅ LOGIN - `PASS`
+- ✅ GET /api/auth/profile/ - `200`
+- ✅ GET /api/inventory/categories/ - `200`
+- ✅ GET /api/inventory/products/ - `200`
+- ✅ GET /api/inventory/accessories/ - `200`
+- ✅ GET /api/inventory/serials/ - `200`
+- ✅ GET /api/inventory/catalog/ - `200`
+- ✅ GET /api/orders/ - `200`
+- ✅ GET /api/warranties/ - `200`
+- ✅ GET /api/warranty-claims/ - `200`
+- ✅ GET /api/notifications/ - `200`
+- ✅ GET /api/admin/metrics/ - `200`
+- ✅ GET /api/admin/roles/ - `200`
+- ✅ GET /api/admin/permissions/ - `200`
+- ✅ GET /api/admin/staff/ - `200`
+
+### Notes
+- Initial `000` and then `401` results were environment-state issues (server process and seeded credentials), not endpoint regressions.
+- Final matrix is green after runtime normalization.
+
 ## Update - March 26, 2026 (Final Closure Verification)
 
 ### Recovery Notes

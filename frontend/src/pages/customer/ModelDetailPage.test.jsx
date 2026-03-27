@@ -7,6 +7,11 @@ import * as api from '../../services/api'
 
 vi.mock('../../services/api')
 
+const routerFutureFlags = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+}
+
 function renderWithRoute(path = '/customer/models/1') {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -14,7 +19,7 @@ function renderWithRoute(path = '/customer/models/1') {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[path]}>
+      <MemoryRouter initialEntries={[path]} future={routerFutureFlags}>
         <Routes>
           <Route path="/customer/models/:id" element={<CustomerModelDetailPage />} />
         </Routes>

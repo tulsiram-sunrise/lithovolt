@@ -1,6 +1,11 @@
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+const routerFutureFlags = {
+  v7_startTransition: true,
+  v7_relativeSplatPath: true,
+}
+
 export const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
@@ -19,7 +24,7 @@ export function TestWrapper({ children, queryClient }) {
 
   return (
     <QueryClientProvider client={client}>
-      <BrowserRouter>
+      <BrowserRouter future={routerFutureFlags}>
         {children}
       </BrowserRouter>
     </QueryClientProvider>

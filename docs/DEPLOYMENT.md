@@ -257,6 +257,60 @@ sudo tail -f /var/log/nginx/error.log
 - Use New Relic or Datadog for APM
 - Configure Uptime monitoring
 
+## Laravel SMTP Hardening
+
+Use this when deploying or rotating mail credentials for invitation and auth emails.
+
+### 1. Set production mail env (backend-laravel/.env)
+
+```bash
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.your-mail-provider.com
+MAIL_PORT=587
+MAIL_USERNAME=your-mail-username
+MAIL_PASSWORD=your-mail-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@lithovolt.com
+MAIL_FROM_NAME="Lithovolt"
+FRONTEND_URL=https://www.lithovolt.com.au
+APP_ENV=production
+APP_DEBUG=false
+```
+
+### 2. Clear/rebuild config cache
+
+```bash
+cd backend-laravel
+php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
+```
+
+### 3. Run invite-mail smoke
+
+```bash
+cd /d/kiran-negi/lithovolt/project
+./verify_wholesaler_invite_mail.sh
+```
+
+Success criteria:
+- `LOGIN=PASS`
+- `INVITE_HTTP_STATUS=201`
+- `MAIL_SEND_STATUS=PASS`
+- `MAIL_SENT_AT` is populated
+
+### 4. Failure triage
+
+```bash
+cd backend-laravel
+tail -120 storage/logs/laravel.log
+```
+
+Common causes:
+- wrong SMTP host/port/encryption combo
+- provider requires app-password/API key
+- FROM address/domain not verified by provider
+
 ## Maintenance
 
 ### Update Application

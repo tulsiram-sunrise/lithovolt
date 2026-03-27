@@ -105,6 +105,33 @@ npm run dev
 # Runs on http://localhost:5173
 ```
 
+### Verify Laravel Auth Matrix (non-interactive)
+
+```bash
+cd /d/kiran-negi/lithovolt/project
+./verify_laravel_auth_matrix.sh
+```
+
+Expected: `LOGIN=PASS`, all listed endpoints return `200`, and `MATRIX_STATUS=PASS`.
+
+If it fails quickly:
+- `DIAGNOSIS=Server unreachable` -> start Laravel server on `:8001`.
+- `ERROR_MESSAGE=Invalid credentials` -> run `cd backend-laravel && php artisan db:seed` and retry.
+
+### Verify Wholesaler Invite Email (SMTP smoke)
+
+```bash
+cd /d/kiran-negi/lithovolt/project
+./verify_wholesaler_invite_mail.sh
+```
+
+Expected: `LOGIN=PASS`, `INVITE_HTTP_STATUS=201`, `MAIL_SEND_STATUS=PASS`, and a non-empty `MAIL_SENT_AT`.
+
+If it fails:
+- `LOGIN=FAIL` -> ensure Laravel server and admin seed data are available.
+- `INVITE_STATUS=FAIL` -> inspect `backend-laravel/storage/logs/laravel.log` and route/middleware config.
+- `MAIL_SEND_STATUS=UNKNOWN` -> verify `MAIL_*` env values and provider inbox/sandbox rules.
+
 ### Test the Workflow
 
 1. Go to http://localhost:5173/admin/warranty-claims

@@ -39,3 +39,6 @@ global.IntersectionObserver = class IntersectionObserver {
 // Mock URL.createObjectURL for file downloads
 global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
 global.URL.revokeObjectURL = vi.fn()
+
+// Prevent jsdom from attempting real navigation on programmatic anchor clicks.
+vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})

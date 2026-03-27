@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { TestWrapper, mockOrder } from '../../test/helpers'
 import AdminDashboard from './Dashboard'
 import * as api from '../../services/api'
@@ -9,6 +9,14 @@ vi.mock('../../services/api')
 describe('AdminDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    api.adminAPI.inviteWholesaler = vi.fn(() =>
+      Promise.resolve({
+        data: {
+          message: 'Invitation sent successfully',
+          invitation: { id: 1, sent_at: '2026-03-27T00:00:00.000000Z' },
+        },
+      })
+    )
   })
 
   it('renders loading state initially', () => {
@@ -94,6 +102,41 @@ describe('AdminDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Metrics unavailable/i)).toBeInTheDocument()
+    })
+  })
+
+  it('opens invite modal and submits invitation', async () => {
+    api.adminAPI.getMetrics = vi.fn(() =>
+      Promise.resolve({
+        data: {
+          users_by_role: {},
+          orders_by_status: {},
+          warranties_by_status: {},
+        },
+      })
+    )
+    api.orderAPI.getOrders = vi.fn(() =>
+      Promise.resolve({ data: { results: [] } })
+    )
+
+    render(
+      <TestWrapper>
+        <AdminDashboard />
+      </TestWrapper>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Invite Wholesaler' }))
+
+    fireEvent.change(screen.getByPlaceholderText('wholesaler@company.com'), {
+      target: { value: 'partner@example.com' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Send Invitation' }))
+
+    await waitFor(() => {
+      expect(api.adminAPI.inviteWholesaler).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'partner@example.com' })
+      )
     })
   })
 })

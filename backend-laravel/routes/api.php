@@ -74,6 +74,7 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/wholesaler-applications/{id}', [UserController::class, 'getWholesalerApplication']);
         Route::post('/wholesaler-applications/{id}/approve', [UserController::class, 'approveWholesalerApplication']);
         Route::post('/wholesaler-applications/{id}/reject', [UserController::class, 'rejectWholesalerApplication']);
+        Route::post('/invite-wholesaler/', [UserController::class, 'inviteWholesaler']);
         Route::get('/{user}/', [UserController::class, 'show']);
         Route::put('/{user}/', [UserController::class, 'update']);
         Route::delete('/{user}/', [UserController::class, 'destroy']);

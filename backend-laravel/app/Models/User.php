@@ -76,19 +76,20 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getRoleAttribute()
     {
-        // Check if role field exists directly in attributes
-        if ($this->attributes['role'] ?? null) {
-            return $this->attributes['role'];
-        }
-
-        // Otherwise, get from role relationship
+        // Prefer canonical role_id / roles table mapping.
+        // This prevents legacy role text from overriding invitation-assigned roles
+        // (for example, invited WHOLESALER users incorrectly reading as CONSUMER).
         if ($this->role_id) {
-            // If relation is loaded, use it
             if ($this->relationLoaded('role')) {
                 return $this->role?->name ?? 'customer';
             }
-            // Otherwise, query it
+
             return Role::find($this->role_id)?->name ?? 'customer';
+        }
+
+        // Fallback for legacy datasets that may still have a direct role string.
+        if ($this->attributes['role'] ?? null) {
+            return $this->attributes['role'];
         }
 
         return 'customer';

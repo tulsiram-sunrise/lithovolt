@@ -1,9 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { adminAPI, orderAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import WholesalerInviteModal from './WholesalerInviteModal'
 
 export default function AdminDashboard() {
+  const navigate = useNavigate()
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const {
     data: metrics,
     isLoading: metricsLoading,
@@ -53,8 +57,18 @@ export default function AdminDashboard() {
           <p className="text-[color:var(--muted)]">Monitor wholesale flows, warranties, and inventory.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button className="neon-btn">Create Allocation</button>
-          <button className="neon-btn-secondary">Invite Wholesaler</button>
+          <button
+            onClick={() => navigate('/admin/inventory')}
+            className="neon-btn"
+          >
+            Create Allocation
+          </button>
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="neon-btn-secondary"
+          >
+            Invite Wholesaler
+          </button>
         </div>
       </div>
 
@@ -74,7 +88,12 @@ export default function AdminDashboard() {
         <div className="panel-card p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Recent Orders</h2>
-            <button className="neon-btn-ghost">View all</button>
+            <button
+              onClick={() => navigate('/admin/orders')}
+              className="neon-btn-ghost"
+            >
+              View all
+            </button>
           </div>
           {ordersError ? (
             <p className="mt-4 text-sm text-[color:var(--danger)]">Failed to load orders.</p>
@@ -127,6 +146,11 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <WholesalerInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+      />
     </div>
   )
 }

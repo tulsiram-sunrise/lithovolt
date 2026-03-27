@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\WholesalerInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -31,6 +32,7 @@ class AuthController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users',
+            'invitation' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -48,7 +50,39 @@ class AuthController extends Controller
                 ], 500);
             }
 
-            $verificationToken = \Illuminate\Support\Str::random(64);
+            $invitation = null;
+            $isInvitedRegistration = false;
+
+            if ($request->filled('invitation')) {
+                $invitation = WholesalerInvitation::where('invitation_token', (string) $request->invitation)->first();
+
+                if (!$invitation || !$invitation->isValid()) {
+                    return response()->json([
+                        'error' => 'Invalid or expired invitation link.'
+                    ], 422);
+                }
+
+                if (strtolower((string) $invitation->email) !== strtolower((string) $request->email)) {
+                    return response()->json([
+                        'error' => 'Invitation email does not match registration email.'
+                    ], 422);
+                }
+
+                $isInvitedRegistration = true;
+            }
+
+            $verificationToken = $isInvitedRegistration ? null : \Illuminate\Support\Str::random(64);
+
+            $roleId = $consumerRole->id;
+            if ($isInvitedRegistration) {
+                $wholesalerRole = Role::where('name', 'WHOLESALER')->first();
+                if (!$wholesalerRole) {
+                    return response()->json([
+                        'error' => 'WHOLESALER role is not configured.'
+                    ], 500);
+                }
+                $roleId = $wholesalerRole->id;
+            }
 
             $user = User::create([
                 'first_name' => $request->first_name,
@@ -56,12 +90,22 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'phone' => $request->phone,
-                'role_id' => $consumerRole->id,
-                'is_verified' => false,
-                'email_verified_at' => null,
+                'role_id' => $roleId,
+                'is_verified' => $isInvitedRegistration,
+                'email_verified_at' => $isInvitedRegistration ? now() : null,
                 'is_active' => true,
                 'verification_code' => $verificationToken,
             ]);
+
+            if ($isInvitedRegistration && $invitation) {
+                $invitation->update([
+                    'accepted_at' => now(),
+                ]);
+
+                return response()->json([
+                    'message' => 'Registration successful. Your invitation has been accepted and you can now log in.',
+                ], 201);
+            }
 
             $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
             $verificationLink = $frontendUrl . '/verify-email?token=' . urlencode($verificationToken);
