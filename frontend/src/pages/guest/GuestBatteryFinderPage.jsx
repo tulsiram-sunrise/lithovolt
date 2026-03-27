@@ -45,10 +45,31 @@ export default function GuestBatteryFinderPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold neon-title">Find My LithoVolt Battery</h1>
-        <p className="text-[color:var(--muted)]">Pick lookup mode: vehicle details or registration with state.</p>
-      </div>
+      <section className="panel-card guest-hero p-6 md:p-8">
+        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Battery Finder</p>
+        <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Find My LithoVolt Battery</h1>
+        <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
+          Choose a lookup mode below. Start with vehicle details or use registration + state for faster fitment recommendations.
+        </p>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="panel-card p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Mode 1</p>
+          <h2 className="mt-2 text-lg font-semibold">Vehicle Details</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Best when you know make/model and want manual control.</p>
+        </article>
+        <article className="panel-card p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Mode 2</p>
+          <h2 className="mt-2 text-lg font-semibold">Registration + State</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Best for quick checks and everyday replacement flows.</p>
+        </article>
+        <article className="panel-card p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Support</p>
+          <h2 className="mt-2 text-lg font-semibold">Need verification?</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Use Contact page for edge cases and trade recommendations.</p>
+        </article>
+      </section>
 
       <div className="panel-card p-6">
         <div className="mb-4 flex flex-wrap gap-2">
@@ -122,6 +143,9 @@ export default function GuestBatteryFinderPage() {
                 ? `${lookup.data.vehicle.make} ${lookup.data.vehicle.model} ${lookup.data.vehicle.variant || ''}`.trim()
                 : 'No vehicle matched'}
             </p>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
+              These recommendations are based on available fitment data. Confirm terminal layout and dimensions before installation.
+            </p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -138,6 +162,16 @@ export default function GuestBatteryFinderPage() {
           </div>
         </div>
       ) : null}
+
+      <section className="panel-card p-5 md:p-6">
+        <h2 className="text-2xl font-semibold">Tips for better results</h2>
+        <ul className="mt-3 grid gap-3 text-sm text-[color:var(--muted)] md:grid-cols-2">
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">Double-check registration format and state code.</li>
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">For modified vehicles, compare dimensions and terminal layout.</li>
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">Prefer AGM/EFB for higher electrical load profiles.</li>
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">Contact support if you need trade or fleet guidance.</li>
+        </ul>
+      </section>
 
       {lookup.isError ? <p className="text-sm text-[color:var(--danger)]">Unable to fetch recommendations right now.</p> : null}
     </div>

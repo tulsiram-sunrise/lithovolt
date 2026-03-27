@@ -67,6 +67,11 @@ export default function GuestModelDetailPage() {
               </div>
               <span className="tag">{valueOrDash(model.series || 'LithoVolt')}</span>
             </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="tag">CCA {valueOrDash(model.cca)}</span>
+              <span className="tag">Capacity {valueOrDash(model.capacity_ah || model.capacity)}Ah</span>
+              <span className="tag">Type {valueOrDash(model.battery_type || model.chemistry)}</span>
+            </div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -114,6 +119,17 @@ export default function GuestModelDetailPage() {
               </dl>
             </section>
           </div>
+
+          <section className="panel-card p-6">
+            <h3 className="text-lg font-semibold">Before you buy</h3>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
+              Always verify group size, terminal layout, and dimension fit against your current battery tray. If your vehicle has high accessory load or start-stop behavior, consult support for the most suitable chemistry.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link to="/find-battery" className="neon-btn-secondary">Find by Vehicle</Link>
+              <Link to="/contact" className="neon-btn">Ask Support</Link>
+            </div>
+          </section>
         </div>
       ) : null}
     </div>

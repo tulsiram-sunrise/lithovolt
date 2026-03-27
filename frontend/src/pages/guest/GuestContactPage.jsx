@@ -27,13 +27,31 @@ export default function GuestContactPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-7">
       <section className="panel-card guest-hero p-6 md:p-8">
         <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Contact Us</p>
         <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Let us help you pick the right setup</h1>
         <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
           Reach out for battery recommendations, wholesaler onboarding, or product support. We usually reply within one business day.
         </p>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '50ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Response SLA</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[color:var(--accent)]">1 Day</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Most queries answered within one business day.</p>
+        </article>
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '100ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Priority Help</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[color:var(--accent)]">Fitment</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Fast support for time-sensitive compatibility cases.</p>
+        </article>
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '150ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Partnerships</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[color:var(--accent)]">Trade</h2>
+          <p className="mt-1 text-sm text-[color:var(--muted)]">Support for wholesale onboarding and account setup.</p>
+        </article>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
@@ -85,6 +103,7 @@ export default function GuestContactPage() {
           ) : null}
 
           <button type="submit" className="neon-btn">Send Message</button>
+          <p className="text-xs text-[color:var(--muted)]">By sending this form, you allow Lithovolt support to contact you about your request.</p>
         </form>
 
         <aside className="space-y-4">
@@ -101,6 +120,13 @@ export default function GuestContactPage() {
             <h2 className="text-xl font-semibold">Business Hours</h2>
             <p className="mt-2 text-sm text-[color:var(--muted)]">
               Monday - Friday, 9:00 AM - 6:00 PM AEST
+            </p>
+          </article>
+
+          <article className="panel-card animate-fade-up p-5" style={{ animationDelay: '220ms' }}>
+            <h2 className="text-xl font-semibold">Best Way to Reach Us</h2>
+            <p className="mt-2 text-sm text-[color:var(--muted)]">
+              Include vehicle make, model, year, and your intended usage. This helps us reply with accurate recommendations faster.
             </p>
           </article>
         </aside>

@@ -262,6 +262,7 @@
     border-radius: 0;
     border-left: none;
     border-right: none;
+    border-top-color: transparent;
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
     transition: box-shadow 160ms ease, border-color 160ms ease;
   }
@@ -269,6 +270,7 @@
   .public-header-shell.is-scrolled {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.34), 0 0 16px rgba(93, 255, 138, 0.08);
     border-color: rgba(93, 255, 138, 0.34);
+    border-top-color: rgba(93, 255, 138, 0.34);
   }
 
   .guest-nav-chip {

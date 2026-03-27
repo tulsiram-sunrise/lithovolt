@@ -21,13 +21,31 @@ const faqs = [
 
 export default function GuestSupportPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-7">
       <section className="panel-card guest-hero p-6 md:p-8">
         <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted)]">Support Center</p>
         <h1 className="mt-2 text-3xl font-semibold neon-title md:text-4xl">Answers, onboarding, and assistance</h1>
         <p className="mt-3 max-w-2xl text-sm text-[color:var(--muted)] md:text-base">
           Find quick answers for fitment and account flows, then connect with the team when you need deeper help.
         </p>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '60ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Support Track</p>
+          <h2 className="mt-2 text-xl font-semibold">Pre-Sales Advice</h2>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">Help choosing between compatible options and performance tiers.</p>
+        </article>
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '120ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Support Track</p>
+          <h2 className="mt-2 text-xl font-semibold">Fitment Verification</h2>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">Validation for edge cases where multiple battery options apply.</p>
+        </article>
+        <article className="panel-card animate-fade-up p-4" style={{ animationDelay: '180ms' }}>
+          <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">Support Track</p>
+          <h2 className="mt-2 text-xl font-semibold">Trade Onboarding</h2>
+          <p className="mt-2 text-sm text-[color:var(--muted)]">Wholesaler/account onboarding support and process guidance.</p>
+        </article>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
@@ -41,6 +59,24 @@ export default function GuestSupportPage() {
             <p className="mt-2 text-sm text-[color:var(--muted)]">{item.answer}</p>
           </article>
         ))}
+      </section>
+
+      <section className="panel-card p-5 md:p-6">
+        <h2 className="text-2xl font-semibold">Escalation path</h2>
+        <ol className="mt-3 space-y-2 text-sm text-[color:var(--muted)]">
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">
+            <p className="font-semibold text-[color:var(--text)]">1. Submit the details</p>
+            <p className="mt-1">Provide battery model or vehicle information and your use-case.</p>
+          </li>
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">
+            <p className="font-semibold text-[color:var(--text)]">2. Initial guidance</p>
+            <p className="mt-1">Support shares a recommendation or asks for any missing details.</p>
+          </li>
+          <li className="rounded-lg border border-[color:var(--border)] bg-black/15 p-3">
+            <p className="font-semibold text-[color:var(--text)]">3. Technical review</p>
+            <p className="mt-1">Complex fitment cases are escalated for deeper validation.</p>
+          </li>
+        </ol>
       </section>
 
       <section className="panel-card p-5 md:p-6">
