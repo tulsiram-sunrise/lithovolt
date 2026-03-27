@@ -14,7 +14,7 @@ class AdminControllerTest extends ApiTestCase
         $user = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/admin/dashboard')->assertStatus(403);
+        $this->getJson('/api/admin/dashboard')->assertStatus(403);
     }
 
     public function test_dashboard_returns_stats_for_admin(): void
@@ -27,7 +27,7 @@ class AdminControllerTest extends ApiTestCase
 
         $this->actingAsUser($admin);
 
-        $this->getJson('/api/v1/admin/dashboard')
+        $this->getJson('/api/admin/dashboard')
             ->assertOk()
             ->assertJsonStructure(['stats', 'recent_orders', 'recent_claims']);
     }
@@ -37,7 +37,7 @@ class AdminControllerTest extends ApiTestCase
         $admin = $this->createUser('admin');
         $this->actingAsUser($admin);
 
-        $this->getJson('/api/v1/admin/users/stats')
+        $this->getJson('/api/admin/users/stats')
             ->assertOk()
             ->assertJsonStructure(['total', 'verified', 'unverified', 'by_role']);
     }
@@ -48,7 +48,7 @@ class AdminControllerTest extends ApiTestCase
         Order::factory()->count(2)->create(['user_id' => $admin->id]);
         $this->actingAsUser($admin);
 
-        $this->getJson('/api/v1/admin/orders/stats')
+        $this->getJson('/api/admin/orders/stats')
             ->assertOk()
             ->assertJsonStructure(['total', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled']);
     }
@@ -59,7 +59,7 @@ class AdminControllerTest extends ApiTestCase
         Warranty::factory()->count(2)->create(['user_id' => $admin->id]);
         $this->actingAsUser($admin);
 
-        $this->getJson('/api/v1/admin/warranties/stats')
+        $this->getJson('/api/admin/warranties/stats')
             ->assertOk()
             ->assertJsonStructure(['total', 'active', 'expired', 'claimed']);
     }
@@ -69,7 +69,7 @@ class AdminControllerTest extends ApiTestCase
         $admin = $this->createUser('admin');
         $this->actingAsUser($admin);
 
-        $this->getJson('/api/v1/admin/export/users')
+        $this->getJson('/api/admin/export/users')
             ->assertOk();
     }
 }

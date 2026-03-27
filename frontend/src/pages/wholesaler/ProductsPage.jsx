@@ -7,12 +7,12 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('')
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['wholesaler-products'],
-    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', status: 'active', is_active: true }),
+    queryFn: () => inventoryAPI.getCatalogItems({ ordering: 'name', is_active: true, per_page: 200 }),
     select: (response) => response.data,
   })
 
   const products = useMemo(() => {
-    const list = Array.isArray(productsData) ? productsData : productsData?.results || []
+    const list = Array.isArray(productsData) ? productsData : productsData?.results || productsData?.data || []
     const term = search.trim().toLowerCase()
     if (!term) {
       return list

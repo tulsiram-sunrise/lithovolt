@@ -1,5 +1,58 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 26, 2026 (Final Closure Verification)
+
+### Recovery Notes
+- Cleared Laravel caches via `php artisan optimize:clear` after stale runtime guard behavior was observed.
+- Re-ran baseline seeders via `php artisan db:seed` to restore deterministic auth test users/roles.
+
+### Final Authenticated Smoke Results (Port 8001)
+- ✅ LOGIN - `PASS`
+- ✅ GET /api/auth/profile/ - `200`
+- ✅ GET /api/inventory/categories/ - `200`
+- ✅ GET /api/inventory/products/ - `200`
+- ✅ GET /api/inventory/accessories/ - `200`
+- ✅ GET /api/inventory/serials/ - `200`
+- ✅ GET /api/inventory/catalog/ - `200`
+- ✅ GET /api/orders/ - `200`
+- ✅ GET /api/warranties/ - `200`
+- ✅ GET /api/warranty-claims/ - `200`
+- ✅ GET /api/notifications/ - `200`
+- ✅ GET /api/admin/metrics/ - `200`
+- ✅ GET /api/admin/roles/ - `200`
+- ✅ GET /api/admin/permissions/ - `200`
+- ✅ GET /api/admin/staff/ - `200`
+
+### Final Status
+- ✅ Cross-stack verification closed with healthy auth + protected route access.
+
+## Update - March 26, 2026 (Latest Verification)
+
+### Runtime Verification Snapshot
+- Active Laravel API port detected: `8000`
+- Auth login (`POST /api/auth/login/`): ✅ `200`
+- Mobile CI (`npm run test:ci` in `mobile/`): ✅ `22 suites`, `33 tests` passed
+
+### Authenticated Smoke Results (March 26, 2026)
+- ✅ GET /api/inventory/categories/ - `200`
+- ✅ GET /api/inventory/products/ - `200`
+- ✅ GET /api/inventory/accessories/ - `200`
+- ✅ GET /api/inventory/serials/ - `200`
+- ✅ GET /api/inventory/catalog/ - `200`
+- ✅ GET /api/orders/ - `200`
+- ✅ GET /api/warranties/ - `200`
+- ✅ GET /api/warranty-claims/ - `200`
+- ✅ GET /api/notifications/ - `200`
+- ✅ GET /api/admin/metrics/ - `200`
+- ✅ GET /api/admin/roles/ - `200`
+- ✅ GET /api/admin/permissions/ - `200`
+- ✅ GET /api/admin/staff/ - `200`
+
+### Route Clarification
+- ⚠️ GET /api/users/me/ returns `404` on current backend.
+- ✅ Canonical profile endpoint: GET /api/auth/profile/ (`200`).
+- ✅ Frontend and mobile `getMe()` service calls updated to `/auth/profile` routes.
+
 ## Backend Status: ✅ OPERATIONAL
 
 ### Authentication Endpoints

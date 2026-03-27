@@ -159,81 +159,81 @@ NotificationSetting
 ## API Endpoints (40+)
 
 ### Authentication (Public)
-- `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
 
 ### Authentication (Protected)
-- `POST /api/v1/auth/logout` - User logout
-- `GET /api/v1/auth/profile` - Get current user profile
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/profile` - Get current user profile
 
 ### Users
-- `GET /api/v1/users` - List all users (paginated)
-- `GET /api/v1/users/{id}` - Get specific user with relationships
-- `POST /api/v1/users` - Create user (admin only)
-- `PUT /api/v1/users/{id}` - Update user
-- `DELETE /api/v1/users/{id}` - Delete user
-- `POST /api/v1/users/{id}/verify` - Verify user email
+- `GET /api/users` - List all users (paginated)
+- `GET /api/users/{id}` - Get specific user with relationships
+- `POST /api/users` - Create user (admin only)
+- `PUT /api/users/{id}` - Update user
+- `DELETE /api/users/{id}` - Delete user
+- `POST /api/users/{id}/verify` - Verify user email
 
 ### Battery Models
-- `GET /api/v1/battery-models` - List batteries (paginated)
-- `POST /api/v1/battery-models` - Create battery model
-- `GET /api/v1/battery-models/{id}` - Get battery with serial/warranty details
-- `PUT /api/v1/battery-models/{id}` - Update battery
-- `DELETE /api/v1/battery-models/{id}` - Delete battery
+- `GET /api/battery-models` - List batteries (paginated)
+- `POST /api/battery-models` - Create battery model
+- `GET /api/battery-models/{id}` - Get battery with serial/warranty details
+- `PUT /api/battery-models/{id}` - Update battery
+- `DELETE /api/battery-models/{id}` - Delete battery
 
 ### Serial Numbers
-- `GET /api/v1/serial-numbers` - List serials (paginated)
-- `POST /api/v1/serial-numbers` - Create serial
-- `GET /api/v1/serial-numbers/{id}` - Get serial details
-- `POST /api/v1/serial-numbers/{id}/allocate` - Allocate serial to user
-- `POST /api/v1/serial-numbers/{id}/mark-sold` - Mark serial as sold
-- `DELETE /api/v1/serial-numbers/{id}` - Delete serial
+- `GET /api/serial-numbers` - List serials (paginated)
+- `POST /api/serial-numbers` - Create serial
+- `GET /api/serial-numbers/{id}` - Get serial details
+- `POST /api/serial-numbers/{id}/allocate` - Allocate serial to user
+- `POST /api/serial-numbers/{id}/mark-sold` - Mark serial as sold
+- `DELETE /api/serial-numbers/{id}` - Delete serial
 
 ### Accessories
-- `GET /api/v1/accessories` - List accessories (paginated)
-- `POST /api/v1/accessories` - Create accessory
-- `GET /api/v1/accessories/{id}` - Get accessory details
-- `PUT /api/v1/accessories/{id}` - Update accessory
-- `DELETE /api/v1/accessories/{id}` - Delete accessory
+- `GET /api/accessories` - List accessories (paginated)
+- `POST /api/accessories` - Create accessory
+- `GET /api/accessories/{id}` - Get accessory details
+- `PUT /api/accessories/{id}` - Update accessory
+- `DELETE /api/accessories/{id}` - Delete accessory
 
 ### Orders
-- `GET /api/v1/orders` - List orders (paginated)
-- `POST /api/v1/orders` - Create order
-- `GET /api/v1/orders/{id}` - Get order with items
-- `PUT /api/v1/orders/{id}` - Update order status
-- `DELETE /api/v1/orders/{id}` - Delete order
-- `GET /api/v1/users/{userId}/orders` - Get user orders
+- `GET /api/orders` - List orders (paginated)
+- `POST /api/orders` - Create order
+- `GET /api/orders/{id}` - Get order with items
+- `PUT /api/orders/{id}` - Update order status
+- `DELETE /api/orders/{id}` - Delete order
+- `GET /api/users/{userId}/orders` - Get user orders
 
 ### Warranties
-- `GET /api/v1/warranties` - List warranties (paginated)
-- `POST /api/v1/warranties` - Create warranty
-- `GET /api/v1/warranties/{id}` - Get warranty with claims
-- `PUT /api/v1/warranties/{id}` - Update warranty status
-- `DELETE /api/v1/warranties/{id}` - Delete warranty
-- `GET /api/v1/warranties/qr/{qrCode}` - Validate QR code (public)
+- `GET /api/warranties` - List warranties (paginated)
+- `POST /api/warranties` - Create warranty
+- `GET /api/warranties/{id}` - Get warranty with claims
+- `PUT /api/warranties/{id}` - Update warranty status
+- `DELETE /api/warranties/{id}` - Delete warranty
+- `GET /api/warranties/qr/{qrCode}` - Validate QR code (public)
 
 ### Warranty Claims
-- `GET /api/v1/warranty-claims` - List claims (paginated)
-- `POST /api/v1/warranty-claims` - Create claim
-- `GET /api/v1/warranty-claims/{id}` - Get claim with attachments
-- `PUT /api/v1/warranty-claims/{id}` - Update claim status
-- `DELETE /api/v1/warranty-claims/{id}` - Delete claim
-- `GET /api/v1/warranties/{warrantyId}/claims` - Get warranty claims
+- `GET /api/warranty-claims` - List claims (paginated)
+- `POST /api/warranty-claims` - Create claim
+- `GET /api/warranty-claims/{id}` - Get claim with attachments
+- `PUT /api/warranty-claims/{id}` - Update claim status
+- `DELETE /api/warranty-claims/{id}` - Delete claim
+- `GET /api/warranties/{warrantyId}/claims` - Get warranty claims
 
 ### Notifications
-- `GET /api/v1/notifications` - List all notifications
-- `POST /api/v1/notifications` - Create notification
-- `GET /api/v1/notifications/{id}` - Get notification
-- `POST /api/v1/notifications/{id}/read` - Mark as read
-- `GET /api/v1/my-notifications` - Get current user notifications
-- `GET /api/v1/notifications/unread-count` - Get unread count
+- `GET /api/notifications` - List all notifications
+- `POST /api/notifications` - Create notification
+- `GET /api/notifications/{id}` - Get notification
+- `POST /api/notifications/{id}/read` - Mark as read
+- `GET /api/my-notifications` - Get current user notifications
+- `GET /api/notifications/unread-count` - Get unread count
 
 ### Admin (Protected + Admin Role Required)
-- `GET /api/v1/admin/dashboard` - Dashboard with stats & recent activity
-- `GET /api/v1/admin/users/stats` - User statistics by role
-- `GET /api/v1/admin/orders/stats` - Order statistics by status
-- `GET /api/v1/admin/warranties/stats` - Warranty statistics
-- `GET /api/v1/admin/export/{model}` - Export data (users/orders/warranties/claims)
+- `GET /api/admin/dashboard` - Dashboard with stats & recent activity
+- `GET /api/admin/users/stats` - User statistics by role
+- `GET /api/admin/orders/stats` - Order statistics by status
+- `GET /api/admin/warranties/stats` - Warranty statistics
+- `GET /api/admin/export/{model}` - Export data (users/orders/warranties/claims)
 
 ## Sample Data
 
@@ -298,14 +298,14 @@ Server runs on: `http://localhost:8000`
 
 ### Login & Get Token
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@lithovolt.com","password":"password123"}'
 ```
 
 Response includes `access_token` - use in subsequent requests:
 ```bash
-curl -X GET http://localhost:8000/api/v1/auth/profile \
+curl -X GET http://localhost:8000/api/auth/profile \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```

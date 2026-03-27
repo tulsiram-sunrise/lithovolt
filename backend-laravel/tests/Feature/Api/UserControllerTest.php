@@ -13,7 +13,7 @@ class UserControllerTest extends ApiTestCase
 
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/users')
+        $this->getJson('/api/users')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -21,10 +21,12 @@ class UserControllerTest extends ApiTestCase
     public function test_store_creates_user(): void
     {
         $admin = $this->createUser('admin');
+        $this->createRole('CONSUMER');
         $this->actingAsUser($admin);
 
-        $response = $this->postJson('/api/v1/users', [
-            'name' => 'New User',
+        $response = $this->postJson('/api/users', [
+            'first_name' => 'New',
+            'last_name' => 'User',
             'email' => 'newuser@example.com',
             'phone' => '8888888888',
             'company_name' => 'New Co',
@@ -43,7 +45,7 @@ class UserControllerTest extends ApiTestCase
 
         $user = $this->createUser('customer');
 
-        $this->getJson('/api/v1/users/' . $user->id)
+        $this->getJson('/api/users/' . $user->id)
             ->assertOk()
             ->assertJsonPath('id', $user->id);
     }
@@ -55,11 +57,12 @@ class UserControllerTest extends ApiTestCase
 
         $user = $this->createUser('customer');
 
-        $this->putJson('/api/v1/users/' . $user->id, [
-            'name' => 'Updated Name',
+        $this->putJson('/api/users/' . $user->id, [
+            'first_name' => 'Updated',
+            'last_name' => 'Name',
         ])->assertOk();
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Updated Name']);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'first_name' => 'Updated', 'last_name' => 'Name']);
     }
 
     public function test_verify_email_sets_verified(): void
@@ -69,7 +72,7 @@ class UserControllerTest extends ApiTestCase
 
         $user = $this->createUser('customer');
 
-        $this->postJson('/api/v1/users/' . $user->id . '/verify')
+        $this->postJson('/api/users/' . $user->id . '/verify')
             ->assertOk();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'is_verified' => true]);
@@ -82,7 +85,7 @@ class UserControllerTest extends ApiTestCase
 
         $user = $this->createUser('customer');
 
-        $this->deleteJson('/api/v1/users/' . $user->id)->assertOk();
+        $this->deleteJson('/api/users/' . $user->id)->assertOk();
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
 }

@@ -18,7 +18,7 @@ export default function BatteryModelEditPage() {
 
   const { data: model, isLoading } = useQuery({
     queryKey: ['battery-model', id],
-    queryFn: () => inventoryAPI.getBatteryModel(id),
+    queryFn: () => inventoryAPI.getCatalogItem(id),
     select: (response) => response.data,
   })
 
@@ -64,7 +64,7 @@ export default function BatteryModelEditPage() {
   }, [model])
 
   const updateModel = useMutation({
-    mutationFn: (payload) => inventoryAPI.updateBatteryModel(id, payload),
+    mutationFn: (payload) => inventoryAPI.updateCatalogItem(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battery-models'] })
       queryClient.invalidateQueries({ queryKey: ['battery-model', id] })
@@ -115,6 +115,7 @@ export default function BatteryModelEditPage() {
     }
 
     updateModel.mutate({
+      product_type: 'BATTERY',
       name: form.name,
       brand: form.brand || undefined,
       series: form.series || undefined,
@@ -147,7 +148,9 @@ export default function BatteryModelEditPage() {
       total_quantity: totalQty,
       available_quantity: availableQty,
       price: Number(form.price || 0),
+      low_stock_threshold: 5,
       warranty_months: asInteger(form.warranty_months) ?? 0,
+      default_warranty_months: asInteger(form.warranty_months) ?? 0,
       status: form.status,
     })
   }

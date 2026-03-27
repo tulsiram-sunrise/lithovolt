@@ -13,7 +13,7 @@ class BatteryModelControllerTest extends ApiTestCase
 
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/battery-models')
+        $this->getJson('/api/inventory/models')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -23,7 +23,7 @@ class BatteryModelControllerTest extends ApiTestCase
         $user = $this->createUser('admin');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/battery-models', [
+        $response = $this->postJson('/api/inventory/models', [
             'name' => 'LithoVolt X',
             'description' => 'Test model',
             'sku' => 'LV-X-001',
@@ -47,7 +47,7 @@ class BatteryModelControllerTest extends ApiTestCase
         $battery = BatteryModel::factory()->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/battery-models/' . $battery->id)
+        $this->getJson('/api/inventory/models/' . $battery->id)
             ->assertOk()
             ->assertJsonPath('id', $battery->id);
     }
@@ -58,7 +58,7 @@ class BatteryModelControllerTest extends ApiTestCase
         $battery = BatteryModel::factory()->create();
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/battery-models/' . $battery->id, [
+        $this->putJson('/api/inventory/models/' . $battery->id, [
             'name' => 'Updated Battery',
         ])->assertOk();
 
@@ -71,7 +71,7 @@ class BatteryModelControllerTest extends ApiTestCase
         $battery = BatteryModel::factory()->create();
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/battery-models/' . $battery->id)
+        $this->deleteJson('/api/inventory/models/' . $battery->id)
             ->assertOk();
 
         $this->assertSoftDeleted('battery_models', ['id' => $battery->id]);

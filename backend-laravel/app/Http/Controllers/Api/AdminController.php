@@ -11,6 +11,28 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    public function metrics()
+    {
+        $totalUsers = User::count();
+        $totalOrders = Order::count();
+        $totalProducts = BatteryModel::count();
+        $totalWarranties = Warranty::count();
+
+        $pendingOrders = Order::whereIn('status', ['pending', 'PENDING'])->count();
+        $claimedWarranties = Warranty::where('status', 'claimed')->count();
+
+        return response()->json([
+            'totals' => [
+                'users' => $totalUsers,
+                'orders' => $totalOrders,
+                'products' => $totalProducts,
+                'warranties' => $totalWarranties,
+            ],
+            'pending_orders' => $pendingOrders,
+            'claimed_warranties' => $claimedWarranties,
+        ]);
+    }
+
     public function dashboard()
     {
         $totalUsers = User::count();

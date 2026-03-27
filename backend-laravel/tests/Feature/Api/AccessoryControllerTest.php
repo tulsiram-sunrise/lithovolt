@@ -12,7 +12,7 @@ class AccessoryControllerTest extends ApiTestCase
         Accessory::factory()->count(2)->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/accessories')
+        $this->getJson('/api/inventory/accessories')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -22,7 +22,7 @@ class AccessoryControllerTest extends ApiTestCase
         $user = $this->createUser('admin');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/accessories', [
+        $response = $this->postJson('/api/inventory/accessories', [
             'name' => 'Accessory A',
             'description' => 'Test accessory',
             'sku' => 'ACC-001',
@@ -42,7 +42,7 @@ class AccessoryControllerTest extends ApiTestCase
         $accessory = Accessory::factory()->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/accessories/' . $accessory->id)
+        $this->getJson('/api/inventory/accessories/' . $accessory->id)
             ->assertOk()
             ->assertJsonPath('id', $accessory->id);
     }
@@ -53,7 +53,7 @@ class AccessoryControllerTest extends ApiTestCase
         $accessory = Accessory::factory()->create();
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/accessories/' . $accessory->id, [
+        $this->putJson('/api/inventory/accessories/' . $accessory->id, [
             'name' => 'Updated Accessory',
         ])->assertOk();
 
@@ -66,7 +66,7 @@ class AccessoryControllerTest extends ApiTestCase
         $accessory = Accessory::factory()->create();
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/accessories/' . $accessory->id)
+        $this->deleteJson('/api/inventory/accessories/' . $accessory->id)
             ->assertOk();
 
         $this->assertSoftDeleted('accessories', ['id' => $accessory->id]);

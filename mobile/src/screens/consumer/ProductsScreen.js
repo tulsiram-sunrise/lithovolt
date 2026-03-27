@@ -19,9 +19,9 @@ export default function ProductsScreen({ navigation }) {
 		try {
 			setLoading(true);
 			setError('');
-			const response = await inventoryAPI.getProducts();
+			const response = await inventoryAPI.getCatalogItems({ ordering: 'name', is_active: true, per_page: 300 });
 			const payload = response.data;
-			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
 			setProducts(list);
 		} catch (err) {
 			setError('Failed to load products.');

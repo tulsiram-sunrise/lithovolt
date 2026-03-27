@@ -12,7 +12,7 @@ class NotificationControllerTest extends ApiTestCase
         Notification::factory()->count(2)->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/notifications')
+        $this->getJson('/api/notifications')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -23,7 +23,7 @@ class NotificationControllerTest extends ApiTestCase
         $recipient = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/notifications', [
+        $response = $this->postJson('/api/notifications', [
             'user_id' => $recipient->id,
             'type' => 'email',
             'subject' => 'Test',
@@ -41,7 +41,7 @@ class NotificationControllerTest extends ApiTestCase
         $notification = Notification::factory()->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/notifications/' . $notification->id)
+        $this->getJson('/api/notifications/' . $notification->id)
             ->assertOk()
             ->assertJsonPath('id', $notification->id);
     }
@@ -52,7 +52,7 @@ class NotificationControllerTest extends ApiTestCase
         $notification = Notification::factory()->create(['user_id' => $user->id, 'status' => 'pending']);
         $this->actingAsUser($user);
 
-        $this->postJson('/api/v1/notifications/' . $notification->id . '/read')
+        $this->postJson('/api/notifications/' . $notification->id . '/read')
             ->assertOk();
 
         $this->assertDatabaseHas('notifications', ['id' => $notification->id, 'status' => 'sent']);
@@ -64,7 +64,7 @@ class NotificationControllerTest extends ApiTestCase
         Notification::factory()->count(2)->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/my-notifications')
+        $this->getJson('/api/notifications/my')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -75,7 +75,7 @@ class NotificationControllerTest extends ApiTestCase
         Notification::factory()->count(2)->create(['user_id' => $user->id, 'status' => 'pending']);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/notifications/unread-count')
+        $this->getJson('/api/notifications/unread-count')
             ->assertOk()
             ->assertJsonStructure(['unread_count']);
     }

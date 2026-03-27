@@ -40,8 +40,8 @@ describe('Customer WarrantiesPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(mockWarranty.warranty_number)).toBeInTheDocument()
-      expect(screen.getByText(mockWarranty.serial)).toBeInTheDocument()
-      expect(screen.getByText(mockWarranty.battery_model_name)).toBeInTheDocument()
+      expect(screen.getByText(mockWarranty.serial_number || mockWarranty.serial)).toBeInTheDocument()
+      expect(screen.getByText(mockWarranty.product_name || mockWarranty.battery_model_name)).toBeInTheDocument()
     })
   })
 

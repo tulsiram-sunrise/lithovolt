@@ -39,6 +39,13 @@ export default function ClaimDetailsScreen({ navigation, route }) {
           </>
         ) : null}
 
+        {claim.product_name || claim.battery_model_name || claim.battery_model ? (
+          <>
+            <Text style={styles.label}>Product</Text>
+            <Text style={styles.value}>{claim.product_name || claim.battery_model_name || claim.battery_model}</Text>
+          </>
+        ) : null}
+
         <Text style={styles.label}>Description</Text>
         <Text style={styles.value}>{claim.description || 'N/A'}</Text>
 

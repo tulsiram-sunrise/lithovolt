@@ -15,7 +15,7 @@ export default function SalesScreen() {
 			setError('');
 			const response = await ordersAPI.getOrders({ status: 'FULFILLED' });
 			const payload = response.data;
-			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
 			setOrders(list);
 		} catch (err) {
 			setError('Failed to load sales.');

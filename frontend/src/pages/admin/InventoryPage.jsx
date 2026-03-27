@@ -5,13 +5,13 @@ import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 export default function InventoryPage() {
-  const [allocation, setAllocation] = useState({ battery_model_id: '', wholesaler_id: '', quantity: '' })
+  const [allocation, setAllocation] = useState({ product_id: '', wholesaler_id: '', quantity: '' })
   const queryClient = useQueryClient()
   const addToast = useToastStore((state) => state.addToast)
 
   const { data: modelsData } = useQuery({
     queryKey: ['admin-models'],
-    queryFn: () => inventoryAPI.getBatteryModels({ ordering: '-created_at' }),
+    queryFn: () => inventoryAPI.getCatalogItems({ ordering: '-created_at', type: 'BATTERY' }),
     select: (response) => response.data,
   })
 
@@ -31,7 +31,7 @@ export default function InventoryPage() {
     mutationFn: (payload) => inventoryAPI.allocateStock(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-allocations'] })
-      setAllocation({ battery_model_id: '', wholesaler_id: '', quantity: '' })
+      setAllocation({ product_id: '', wholesaler_id: '', quantity: '' })
       addToast({ type: 'success', title: 'Stock allocated', message: 'Serial numbers allocated to wholesaler.' })
     },
     onError: (error) => {
@@ -39,8 +39,8 @@ export default function InventoryPage() {
     },
   })
 
-  const models = Array.isArray(modelsData) ? modelsData : modelsData?.results || []
-  const allocations = Array.isArray(allocationsData) ? allocationsData : allocationsData?.results || []
+  const models = Array.isArray(modelsData) ? modelsData : modelsData?.results || modelsData?.data || []
+  const allocations = Array.isArray(allocationsData) ? allocationsData : allocationsData?.results || allocationsData?.data || []
   const wholesalers = (Array.isArray(wholesalersData) ? wholesalersData : wholesalersData?.results || [])
     .filter((item) => {
       const roleName = String(item.role?.name || item.role || '').toUpperCase()
@@ -59,7 +59,7 @@ export default function InventoryPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     allocateStock.mutate({
-      battery_model_id: Number(allocation.battery_model_id),
+      product_id: Number(allocation.product_id),
       wholesaler_id: Number(allocation.wholesaler_id),
       quantity: Number(allocation.quantity || 0),
     })
@@ -89,15 +89,20 @@ export default function InventoryPage() {
 
       <form onSubmit={handleSubmit} className="panel-card p-6 grid gap-4 md:grid-cols-4">
         <div>
-          <label className="field-label">Battery Model</label>
+          <label className="field-label">Catalog Item</label>
           <select
             className="neon-input"
-            value={allocation.battery_model_id}
-            onChange={(event) => setAllocation((prev) => ({ ...prev, battery_model_id: event.target.value }))}
+            value={allocation.product_id}
+            onChange={(event) => setAllocation((prev) => ({ ...prev, product_id: event.target.value }))}
           >
             <option value="">Select model</option>
             {models.map((model) => (
-              <option key={model.id} value={model.id}>{model.name}</option>
+              <option
+                key={model.id}
+                value={model.id}
+              >
+                {model.name}
+              </option>
             ))}
           </select>
         </div>
@@ -149,7 +154,7 @@ export default function InventoryPage() {
               {allocationsLoading ? <ShimmerTableRows rows={6} columns={3} /> : null}
               {allocations.map((allocationItem) => (
                 <tr key={allocationItem.id}>
-                  <td>{allocationItem.battery_model_name}</td>
+                  <td>{allocationItem.product_name || allocationItem.battery_model_name || 'Unknown item'}</td>
                   <td>{allocationItem.wholesaler_email}</td>
                   <td>{allocationItem.quantity}</td>
                 </tr>

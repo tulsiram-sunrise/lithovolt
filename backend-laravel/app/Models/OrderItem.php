@@ -11,7 +11,7 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['order_id', 'itemable_type', 'itemable_id', 'quantity', 'unit_price', 'total_price'];
+    protected $fillable = ['order_id', 'itemable_type', 'itemable_id', 'product_id', 'quantity', 'unit_price', 'total_price'];
 
     protected $casts = [
         'unit_price' => 'float',
@@ -27,5 +27,10 @@ class OrderItem extends Model
     public function itemable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 }

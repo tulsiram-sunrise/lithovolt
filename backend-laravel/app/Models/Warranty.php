@@ -12,7 +12,7 @@ class Warranty extends Model
     use HasFactory;
 
     protected $fillable = [
-        'warranty_number', 'battery_model_id', 'user_id', 'serial_number',
+        'warranty_number', 'battery_model_id', 'product_id', 'user_id', 'serial_number',
         'issue_date', 'expiry_date', 'status', 'qr_code'
     ];
 
@@ -24,6 +24,11 @@ class Warranty extends Model
     public function batteryModel(): BelongsTo
     {
         return $this->belongsTo(BatteryModel::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function user(): BelongsTo

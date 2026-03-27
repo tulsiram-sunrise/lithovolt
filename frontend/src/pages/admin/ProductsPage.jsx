@@ -6,6 +6,7 @@ import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
 const emptyForm = {
   name: '',
+  product_type: 'GENERIC',
   sku: '',
   category_id: '',
   price: '',
@@ -22,7 +23,7 @@ export default function ProductsPage() {
 
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: () => inventoryAPI.getProducts({ ordering: '-created_at' }),
+    queryFn: () => inventoryAPI.getCatalogItems({ ordering: '-created_at' }),
     select: (response) => response.data,
   })
 
@@ -33,7 +34,7 @@ export default function ProductsPage() {
   })
 
   const createProduct = useMutation({
-    mutationFn: (payload) => inventoryAPI.createProduct(payload),
+    mutationFn: (payload) => inventoryAPI.createCatalogItem(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       setForm(emptyForm)
@@ -45,7 +46,7 @@ export default function ProductsPage() {
   })
 
   const deleteProduct = useMutation({
-    mutationFn: (id) => inventoryAPI.deleteProduct(id),
+    mutationFn: (id) => inventoryAPI.deleteCatalogItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] })
       addToast({ type: 'success', title: 'Product deleted', message: 'Product removed.' })
@@ -55,15 +56,17 @@ export default function ProductsPage() {
     },
   })
 
-  const products = Array.isArray(productsData) ? productsData : productsData?.results || []
+  const productsRaw = Array.isArray(productsData) ? productsData : productsData?.results || productsData?.data || []
+  const products = productsRaw.filter((item) => String(item.product_type || '').toUpperCase() !== 'BATTERY')
   const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData?.results || []
 
   const handleSubmit = (event) => {
     event.preventDefault()
     createProduct.mutate({
       name: form.name.trim(),
+      product_type: form.product_type,
       sku: form.sku.trim(),
-      category: form.category_id ? Number(form.category_id) : null,
+      category_id: form.category_id ? Number(form.category_id) : null,
       price: Number(form.price || 0),
       total_quantity: Number(form.total_quantity || 0),
       available_quantity: Number(form.available_quantity || 0),
@@ -88,6 +91,20 @@ export default function ProductsPage() {
             onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
             required
           />
+        </div>
+        <div>
+          <label className="field-label">Type</label>
+          <select
+            className="neon-input"
+            value={form.product_type}
+            onChange={(event) => setForm((prev) => ({ ...prev, product_type: event.target.value }))}
+          >
+            <option value="GENERIC">Generic</option>
+            <option value="ACCESSORY">Accessory</option>
+            <option value="PART">Part</option>
+            <option value="CONSUMABLE">Consumable</option>
+            <option value="SERVICE">Service</option>
+          </select>
         </div>
         <div>
           <label className="field-label">SKU</label>
@@ -173,6 +190,7 @@ export default function ProductsPage() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Type</th>
                 <th>SKU</th>
                 <th>Category</th>
                 <th>Available</th>
@@ -181,10 +199,11 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? <ShimmerTableRows rows={6} columns={6} /> : null}
+              {isLoading ? <ShimmerTableRows rows={6} columns={7} /> : null}
               {products.map((product) => (
                 <tr key={product.id}>
                   <td>{product.name}</td>
+                  <td><span className="tag">{String(product.product_type || 'GENERIC').toUpperCase()}</span></td>
                   <td>{product.sku}</td>
                   <td>{product.category_name || '-'}</td>
                   <td>{product.available_quantity}</td>

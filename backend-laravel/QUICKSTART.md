@@ -11,7 +11,7 @@ The full Laravel backend is now deployed and tested with all database tables, mo
 ### Quick Test
 ```bash
 # 1. Login
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@lithovolt.com","password":"password123"}'
 
@@ -21,7 +21,7 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 # - token_type: "Bearer"
 
 # 2. Use token for protected endpoints
-curl -X GET http://localhost:8000/api/v1/auth/profile \
+curl -X GET http://localhost:8000/api/auth/profile \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -164,7 +164,7 @@ See `IMPLEMENTATION.md` for:
 
 ### 1. Register New User
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "name": "New User",
@@ -177,14 +177,14 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
 
 ### 2. Get Battery Models
 ```bash
-curl -X GET http://localhost:8000/api/v1/battery-models \
+curl -X GET http://localhost:8000/api/battery-models \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json"
 ```
 
 ### 3. Create Order
 ```bash
-curl -X POST http://localhost:8000/api/v1/orders \
+curl -X POST http://localhost:8000/api/orders \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -198,7 +198,7 @@ curl -X POST http://localhost:8000/api/v1/orders \
 
 ### 4. Admin Dashboard
 ```bash
-curl -X GET http://localhost:8000/api/v1/admin/dashboard \
+curl -X GET http://localhost:8000/api/admin/dashboard \
   -H "Authorization: Bearer ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 ```

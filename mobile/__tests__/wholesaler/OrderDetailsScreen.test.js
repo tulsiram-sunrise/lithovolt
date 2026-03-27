@@ -15,11 +15,13 @@ jest.mock('../../src/store/authStore', () => ({
 }));
 
 jest.mock('expo-file-system', () => ({
+  __esModule: true,
   documentDirectory: 'file://',
   downloadAsync: jest.fn(() => Promise.resolve({ uri: 'file://invoice.pdf' })),
 }));
 
 jest.mock('expo-sharing', () => ({
+  __esModule: true,
   isAvailableAsync: jest.fn(() => Promise.resolve(false)),
   shareAsync: jest.fn(),
 }));
@@ -37,11 +39,16 @@ describe('OrderDetailsScreen', () => {
     ordersAPI.getOrder.mockResolvedValue({ data: { id: 12, status: 'PENDING' } });
     ordersAPI.getOrderItems.mockResolvedValue({ data: [] });
 
-    const { findByTestId } = render(
+    const { getByTestId } = render(
       <OrderDetailsScreen navigation={navigation} route={route} />
     );
 
-    const button = await findByTestId('order-download-invoice');
+    await waitFor(() => {
+      expect(ordersAPI.getOrder).toHaveBeenCalledWith(12);
+      expect(ordersAPI.getOrderItems).toHaveBeenCalledWith(12);
+    });
+
+    const button = getByTestId('order-download-invoice');
 
     fireEvent.press(button);
 

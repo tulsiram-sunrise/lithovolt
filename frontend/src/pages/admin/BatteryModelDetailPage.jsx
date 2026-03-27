@@ -8,7 +8,7 @@ export default function BatteryModelDetailPage() {
 
   const { data: model, isLoading, isError, error } = useQuery({
     queryKey: ['battery-model', id],
-    queryFn: () => inventoryAPI.getBatteryModel(id),
+    queryFn: () => inventoryAPI.getCatalogItem(id),
     select: (response) => response.data,
   })
 

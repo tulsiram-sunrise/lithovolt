@@ -69,7 +69,7 @@ export const authAPI = {
 
 // User API
 export const userAPI = {
-  getMe: () => api.get('/users/me'),
+  getMe: () => api.get('/auth/profile'),
   updateProfile: (data) => api.patch('/users/update_profile', data),
   getUsers: (params) => api.get('/users', { params }),
   createUser: (data) => api.post('/users', data),
@@ -88,6 +88,13 @@ export const userAPI = {
 
 // Inventory API
 export const inventoryAPI = {
+  getCatalogItems: (params) => api.get('/inventory/catalog', { params }),
+  getCatalogItem: (id) => api.get(`/inventory/catalog/${id}`),
+  getCatalogSummary: () => api.get('/inventory/catalog/summary/'),
+  createCatalogItem: (data) => api.post('/inventory/catalog/', data),
+  updateCatalogItem: (id, data) => api.put(`/inventory/catalog/${id}/`, data),
+  deleteCatalogItem: (id) => api.delete(`/inventory/catalog/${id}/`),
+
   getBatteryModels: (params) => api.get('/inventory/models', { params }),
   getBatteryModel: (id) => api.get(`/inventory/models/${id}`),
   createBatteryModel: (data) => api.post('/inventory/models', data),

@@ -5,8 +5,8 @@ namespace Tests\Feature\Api;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 abstract class ApiTestCase extends TestCase
 {
@@ -31,6 +31,7 @@ abstract class ApiTestCase extends TestCase
 
     protected function actingAsUser(User $user): void
     {
-        Sanctum::actingAs($user);
+        $token = JWTAuth::fromUser($user);
+        $this->withHeader('Authorization', 'Bearer ' . $token);
     }
 }

@@ -14,7 +14,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('user', 'items.itemable')->paginate(10);
+        $orders = Order::with('user', 'items.itemable', 'items.product')->paginate(10);
         return response()->json($orders);
     }
 
@@ -24,7 +24,7 @@ class OrderController extends Controller
             $validated = $request->validate([
                 'notes' => 'nullable|string',
                 'items' => 'required|array|min:1',
-                'items.*.product_type' => 'required|string|in:BATTERY_MODEL,ACCESSORY,PRODUCT',
+                'items.*.product_type' => 'nullable|string|in:BATTERY_MODEL,ACCESSORY,PRODUCT',
                 'items.*.battery_model_id' => 'nullable|integer|exists:battery_models,id',
                 'items.*.accessory_id' => 'nullable|integer|exists:accessories,id',
                 'items.*.product_id' => 'nullable|integer|exists:products,id',
@@ -42,17 +42,10 @@ class OrderController extends Controller
 
             $totalAmount = 0;
             foreach ($validated['items'] as $item) {
-                $productType = $item['product_type'];
                 $quantity = $item['quantity'];
-                $itemable = null;
-
-                if ($productType === 'BATTERY_MODEL') {
-                    $itemable = BatteryModel::findOrFail($item['battery_model_id']);
-                } elseif ($productType === 'ACCESSORY') {
-                    $itemable = Accessory::findOrFail($item['accessory_id']);
-                } else {
-                    $itemable = Product::findOrFail($item['product_id']);
-                }
+                $resolved = $this->resolveOrderItem($item);
+                $itemable = $resolved['itemable'];
+                $product = $resolved['product'];
 
                 $unitPrice = $itemable->price ?? 0;
                 $totalPrice = $unitPrice * $quantity;
@@ -62,6 +55,7 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'itemable_type' => get_class($itemable),
                     'itemable_id' => $itemable->id,
+                    'product_id' => $product?->id,
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
@@ -72,7 +66,7 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully',
-                'order' => $order->load('user', 'items')
+                'order' => $order->load('user', 'items.itemable', 'items.product')
             ], 201);
         }
 
@@ -91,7 +85,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        return response()->json($order->load('user', 'items.itemable'));
+        return response()->json($order->load('user', 'items.itemable', 'items.product'));
     }
 
     public function update(Request $request, Order $order)
@@ -115,7 +109,42 @@ class OrderController extends Controller
 
     public function ordersByUser($userId)
     {
-        $orders = Order::where('user_id', $userId)->with('items')->paginate(10);
+        $orders = Order::where('user_id', $userId)->with('items.itemable', 'items.product')->paginate(10);
         return response()->json($orders);
+    }
+
+    private function resolveOrderItem(array $item): array
+    {
+        if (!empty($item['product_id'])) {
+            $product = Product::findOrFail($item['product_id']);
+            return [
+                'itemable' => $product,
+                'product' => $product,
+            ];
+        }
+
+        $productType = $item['product_type'] ?? null;
+
+        if ($productType === 'BATTERY_MODEL' || !empty($item['battery_model_id'])) {
+            $battery = BatteryModel::findOrFail($item['battery_model_id']);
+            $product = Product::where('legacy_battery_model_id', $battery->id)->first();
+
+            return [
+                'itemable' => $battery,
+                'product' => $product,
+            ];
+        }
+
+        if ($productType === 'ACCESSORY' || !empty($item['accessory_id'])) {
+            $accessory = Accessory::findOrFail($item['accessory_id']);
+            $product = Product::where('legacy_accessory_id', $accessory->id)->first();
+
+            return [
+                'itemable' => $accessory,
+                'product' => $product,
+            ];
+        }
+
+        abort(422, 'Unable to resolve order item. Provide product_id or a valid legacy item reference.');
     }
 }

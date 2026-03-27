@@ -12,7 +12,7 @@ describe('BatteryModelsPage', () => {
   })
 
   it('renders battery models page', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [mockBatteryModel] } })
     )
 
@@ -29,7 +29,7 @@ describe('BatteryModelsPage', () => {
   })
 
   it('displays loading state', () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() => new Promise(() => {}))
+    api.inventoryAPI.getCatalogItems = vi.fn(() => new Promise(() => {}))
 
     render(
       <TestWrapper>
@@ -41,7 +41,7 @@ describe('BatteryModelsPage', () => {
   })
 
   it('shows add new model navigation', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
     )
 

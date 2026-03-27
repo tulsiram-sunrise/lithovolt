@@ -12,7 +12,7 @@ describe('BatteryModelCreatePage', () => {
   })
 
   it('submits battery model using full-form required fields', async () => {
-    api.inventoryAPI.createBatteryModel = vi.fn(() => Promise.resolve({ data: { id: 99 } }))
+    api.inventoryAPI.createCatalogItem = vi.fn(() => Promise.resolve({ data: { id: 99 } }))
 
     render(
       <TestWrapper>
@@ -32,11 +32,12 @@ describe('BatteryModelCreatePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Model' }))
 
     await waitFor(() => {
-      expect(api.inventoryAPI.createBatteryModel).toHaveBeenCalled()
+      expect(api.inventoryAPI.createCatalogItem).toHaveBeenCalled()
     })
 
-    const payload = api.inventoryAPI.createBatteryModel.mock.calls[0][0]
+    const payload = api.inventoryAPI.createCatalogItem.mock.calls[0][0]
     expect(payload).toMatchObject({
+      product_type: 'BATTERY',
       name: 'LV 200Ah Pro',
       sku: 'LV-200-PRO',
       voltage: 12,
@@ -45,6 +46,7 @@ describe('BatteryModelCreatePage', () => {
       available_quantity: 90,
       price: 799.5,
       warranty_months: 36,
+      default_warranty_months: 36,
       status: 'active',
     })
   })

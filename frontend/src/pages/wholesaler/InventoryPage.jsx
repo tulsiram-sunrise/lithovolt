@@ -10,14 +10,14 @@ export default function InventoryPage() {
     select: (response) => response.data,
   })
 
-  const serials = Array.isArray(serialsData) ? serialsData : serialsData?.results || []
+  const serials = Array.isArray(serialsData) ? serialsData : serialsData?.results || serialsData?.data || []
 
   const summary = useMemo(() => {
     const map = new Map()
     serials.forEach((item) => {
-      const key = item.battery_model_name || 'Unknown Model'
+      const key = item.product_name || item.battery_model_name || 'Unknown Item'
       if (!map.has(key)) {
-        map.set(key, { model: key, allocated: 0, sold: 0 })
+        map.set(key, { itemName: key, allocated: 0, sold: 0 })
       }
       const entry = map.get(key)
       if (item.status === 'ALLOCATED') {
@@ -41,7 +41,7 @@ export default function InventoryPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Battery Model</th>
+              <th>Catalog Item</th>
               <th>Allocated</th>
               <th>Sold</th>
             </tr>
@@ -49,8 +49,8 @@ export default function InventoryPage() {
           <tbody>
             {isLoading ? <ShimmerTableRows rows={5} columns={3} /> : null}
             {summary.map((item) => (
-              <tr key={item.model}>
-                <td>{item.model}</td>
+              <tr key={item.itemName}>
+                <td>{item.itemName}</td>
                 <td>{item.allocated}</td>
                 <td>{item.sold}</td>
               </tr>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 import ToastContainer from './ToastContainer'
 import { useToastStore } from '../../store/toastStore'
 
@@ -74,12 +74,10 @@ describe('ToastContainer', () => {
     expect(screen.getByText('Auto Remove')).toBeInTheDocument()
 
     act(() => {
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(1001)
     })
 
-    await waitFor(() => {
-      expect(screen.queryByText('Auto Remove')).not.toBeInTheDocument()
-    })
+    expect(screen.queryByText('Auto Remove')).not.toBeInTheDocument()
 
     vi.useRealTimers()
   })

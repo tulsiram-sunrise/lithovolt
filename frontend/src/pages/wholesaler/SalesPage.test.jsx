@@ -41,7 +41,7 @@ describe('Wholesaler SalesPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(mockWarranty.warranty_number)).toBeInTheDocument()
-      expect(screen.getByText(mockWarranty.battery_model_name)).toBeInTheDocument()
+      expect(screen.getByText(mockWarranty.product_name || mockWarranty.battery_model_name)).toBeInTheDocument()
     })
   })
 

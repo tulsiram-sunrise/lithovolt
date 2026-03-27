@@ -20,7 +20,7 @@ export default function HomeScreen({ navigation }) {
 			setError('');
 			const response = await warrantyAPI.getWarranties();
 			const payload = response.data;
-			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
 			setWarranties(list);
 		} catch (err) {
 			setError('Failed to load warranties.');
@@ -43,9 +43,9 @@ export default function HomeScreen({ navigation }) {
 		return warranties.filter((item) => {
 			const status = (item.status || '').toUpperCase();
 			const serial = (item.serial || item.serial_number || '').toLowerCase();
-			const model = (item.battery_model_name || item.battery_model || '').toLowerCase();
+			const itemName = (item.product_name || item.battery_model_name || item.battery_model || '').toLowerCase();
 			const statusMatch = statusFilter === 'ALL' || status === statusFilter;
-			const textMatch = !term || serial.includes(term) || model.includes(term);
+			const textMatch = !term || serial.includes(term) || itemName.includes(term);
 			return statusMatch && textMatch;
 		});
 	}, [search, statusFilter, warranties]);
@@ -102,7 +102,7 @@ export default function HomeScreen({ navigation }) {
 
 				<TextInput
 					style={styles.searchInput}
-					placeholder="Search by serial or model"
+					placeholder="Search by serial or product"
 					placeholderTextColor="#94a3b8"
 					value={search}
 					onChangeText={setSearch}
@@ -145,16 +145,16 @@ export default function HomeScreen({ navigation }) {
 						onPress={() => navigation.navigate('WarrantyDetails', { warranty: item })}
 						testID={`warranty-card-${item.id}`}
 					>
-						<Text style={styles.cardTitle}>{item.serial}</Text>
-						<Text style={styles.cardSubtitle}>{item.battery_model_name || item.battery_model}</Text>
+						<Text style={styles.cardTitle}>{item.serial || item.serial_number}</Text>
+						<Text style={styles.cardSubtitle}>{item.product_name || item.battery_model_name || item.battery_model}</Text>
 						<View style={[styles.badge, statusBadge(item.status)]}>
 							<Text style={styles.badgeText}>{item.status}</Text>
 						</View>
-						{item.start_date ? (
-							<Text style={styles.cardMeta}>Start: {formatDate(item.start_date)}</Text>
+						{(item.start_date || item.issue_date) ? (
+							<Text style={styles.cardMeta}>Start: {formatDate(item.start_date || item.issue_date)}</Text>
 						) : null}
-						{item.end_date ? (
-							<Text style={styles.cardMeta}>End: {formatDate(item.end_date)}</Text>
+						{(item.end_date || item.expiry_date) ? (
+							<Text style={styles.cardMeta}>End: {formatDate(item.end_date || item.expiry_date)}</Text>
 						) : null}
 					</TouchableOpacity>
 				))}

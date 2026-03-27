@@ -103,7 +103,7 @@ export default function OrderDetailsScreen({ navigation, route }) {
           items.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <Text style={styles.itemName}>
-                {item.battery_model_name || item.accessory_name}
+                {item.product_name || item.battery_model_name || item.accessory_name || item.item_name}
               </Text>
               <Text style={styles.itemMeta}>Qty: {item.quantity}</Text>
             </View>

@@ -97,7 +97,7 @@ export const authAPI = {
 };
 
 export const userAPI = {
-  getMe: () => api.get('/users/me/'),
+  getMe: () => api.get('/auth/profile/'),
   updateProfile: (data) => api.patch('/users/update_profile/', data),
   getWholesalerApplication: () => api.get('/users/wholesaler-applications/me/'),
   submitWholesalerApplication: (formData) =>
@@ -107,6 +107,7 @@ export const userAPI = {
 };
 
 export const inventoryAPI = {
+  getCatalogItems: (params) => api.get('/inventory/catalog/', { params }),
   getModels: (params) => api.get('/inventory/models/', { params }),
   getAccessories: (params) => api.get('/inventory/accessories/', { params }),
   getCategories: (params) => api.get('/inventory/categories/', { params }),

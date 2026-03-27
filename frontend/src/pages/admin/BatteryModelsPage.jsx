@@ -19,17 +19,18 @@ export default function BatteryModelsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['battery-models', currentPage, appliedQuery],
     queryFn: () =>
-      inventoryAPI.getBatteryModels({
+      inventoryAPI.getCatalogItems({
         ordering: '-created_at',
         page: currentPage,
         per_page: SERVER_PAGE_SIZE,
         q: appliedQuery || undefined,
+        type: 'BATTERY',
       }),
     select: (response) => response.data,
   })
 
   const deleteModel = useMutation({
-    mutationFn: (id) => inventoryAPI.deleteBatteryModel(id),
+    mutationFn: (id) => inventoryAPI.deleteCatalogItem(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battery-models'] })
       addToast({ type: 'success', title: 'Model deleted', message: 'Battery model deleted successfully.' })
@@ -166,18 +167,18 @@ export default function BatteryModelsPage() {
                     <td>{model.name}</td>
                     <td>{model.sku}</td>
                     <td>{model.available_quantity ?? model.available_stock ?? 0}</td>
-                    <td>{model.warranty_months} mo</td>
+                    <td>{model.warranty_months ?? model.default_warranty_months ?? 0} mo</td>
                     <td>
                       <div className="flex gap-2">
                         <button
                           className="neon-btn-ghost text-xs"
-                          onClick={() => navigate(`/admin/battery-models/${model.id}`)}
+                            onClick={() => navigate(`/admin/battery-models/${model.id}`)}
                         >
                           View
                         </button>
                         <button
                           className="neon-btn-ghost text-xs"
-                          onClick={() => navigate(`/admin/battery-models/${model.id}/edit`)}
+                            onClick={() => navigate(`/admin/battery-models/${model.id}/edit`)}
                         >
                           Edit
                         </button>
@@ -185,10 +186,10 @@ export default function BatteryModelsPage() {
                           className="neon-btn-ghost text-xs text-[color:var(--danger)]"
                           onClick={() => {
                             if (window.confirm(`Delete "${model.name}"?`)) {
-                              deleteModel.mutate(model.id)
+                                deleteModel.mutate(model.id)
                             }
                           }}
-                          disabled={deleteModel.isPending}
+                            disabled={deleteModel.isPending}
                         >
                           Delete
                         </button>

@@ -52,7 +52,7 @@ export default function BatteryModelCreatePage() {
   const navigate = useNavigate()
 
   const createModel = useMutation({
-    mutationFn: (payload) => inventoryAPI.createBatteryModel(payload),
+    mutationFn: (payload) => inventoryAPI.createCatalogItem(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['battery-models'] })
       addToast({ type: 'success', title: 'Battery model created', message: 'New battery model added successfully.' })
@@ -102,6 +102,7 @@ export default function BatteryModelCreatePage() {
     }
 
     createModel.mutate({
+      product_type: 'BATTERY',
       name: form.name,
       brand: form.brand || undefined,
       series: form.series || undefined,
@@ -134,7 +135,9 @@ export default function BatteryModelCreatePage() {
       total_quantity: totalQty,
       available_quantity: availableQty,
       price: Number(form.price || 0),
+      low_stock_threshold: 5,
       warranty_months: asInteger(form.warranty_months) ?? 0,
+      default_warranty_months: asInteger(form.warranty_months) ?? 0,
       status: form.status,
     })
   }

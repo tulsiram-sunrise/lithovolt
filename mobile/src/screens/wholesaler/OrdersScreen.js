@@ -18,7 +18,7 @@ export default function OrdersScreen({ navigation }) {
 			setError('');
 			const response = await ordersAPI.getOrders();
 			const payload = response.data;
-			const list = Array.isArray(payload) ? payload : payload?.results || [];
+			const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
 			setOrders(list);
 		} catch (err) {
 			setError('Failed to load orders.');

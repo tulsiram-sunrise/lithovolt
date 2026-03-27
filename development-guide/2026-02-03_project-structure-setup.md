@@ -312,7 +312,7 @@ mobile/
 
 ### Users
 - GET/POST `/api/users/` - User list/create
-- GET `/api/users/me/` - Current user
+- GET `/api/auth/profile/` - Current user
 - PATCH `/api/users/update_profile/` - Update profile
 - GET `/api/users/wholesalers/` - Wholesaler list
 

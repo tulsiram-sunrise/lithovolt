@@ -12,7 +12,7 @@ export default function WarrantiesPage() {
   })
 
   const warranties = useMemo(() => {
-    const list = Array.isArray(data) ? data : data?.results || []
+    const list = Array.isArray(data) ? data : data?.results || data?.data || []
     return list
   }, [data])
 
@@ -57,7 +57,7 @@ export default function WarrantiesPage() {
                   <td>{item.warranty_number}</td>
                   <td>{item.consumer_name}</td>
                   <td><span className="tag">{item.status}</span></td>
-                  <td>{item.battery_model_name}</td>
+                  <td>{item.product_name || item.battery_model_name || 'Unknown item'}</td>
                   <td>
                     <button
                       className="neon-btn-ghost"

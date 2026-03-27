@@ -22,8 +22,8 @@ export default function WarrantyDetailsScreen({ navigation, route }) {
 				<Text style={styles.label}>Serial Number</Text>
 				<Text style={styles.value}>{warranty.serial || warranty.serial_number}</Text>
 
-				<Text style={styles.label}>Battery Model</Text>
-				<Text style={styles.value}>{warranty.battery_model_name || warranty.battery_model}</Text>
+				<Text style={styles.label}>Product</Text>
+				<Text style={styles.value}>{warranty.product_name || warranty.battery_model_name || warranty.battery_model}</Text>
 
 				<Text style={styles.label}>Status</Text>
 				<View style={[styles.badge, statusBadge(warranty.status)]}>
@@ -31,10 +31,10 @@ export default function WarrantyDetailsScreen({ navigation, route }) {
 				</View>
 
 				<Text style={styles.label}>Start Date</Text>
-				<Text style={styles.value}>{formatDate(warranty.start_date)}</Text>
+				<Text style={styles.value}>{formatDate(warranty.start_date || warranty.issue_date)}</Text>
 
 				<Text style={styles.label}>End Date</Text>
-				<Text style={styles.value}>{formatDate(warranty.end_date)}</Text>
+				<Text style={styles.value}>{formatDate(warranty.end_date || warranty.expiry_date)}</Text>
 			</View>
 
 			<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')} testID="warranty-back-home">

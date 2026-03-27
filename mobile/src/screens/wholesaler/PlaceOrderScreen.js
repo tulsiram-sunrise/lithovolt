@@ -1,38 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Picker } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { inventoryAPI, ordersAPI } from '../../services/api';
 import { NeonScroll } from '../../components/layout/NeonBackground';
 import { neonTheme } from '../../styles/neonTheme';
 
 export default function PlaceOrderScreen({ navigation }) {
-  const [models, setModels] = useState([]);
-  const [accessories, setAccessories] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [catalogItems, setCatalogItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [productType, setProductType] = useState('BATTERY_MODEL');
+  const [productType, setProductType] = useState('BATTERY');
   const [cart, setCart] = useState([]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       setError('');
-      const [modelsRes, accessoriesRes, productsRes] = await Promise.all([
-        inventoryAPI.getModels({ is_active: true }),
-        inventoryAPI.getAccessories({ is_active: true }),
-        inventoryAPI.getProducts(),
-      ]);
-      
-      const parsePayload = (res) => {
-        const payload = res.data;
-        return Array.isArray(payload) ? payload : payload?.results || [];
-      };
-
-      setModels(parsePayload(modelsRes));
-      setAccessories(parsePayload(accessoriesRes));
-      setProducts(parsePayload(productsRes));
+      const catalogRes = await inventoryAPI.getCatalogItems({ is_active: true, ordering: 'name', per_page: 300 });
+      const payload = catalogRes.data;
+      const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
+      setCatalogItems(list);
     } catch (err) {
       setError('Unable to load inventory items.');
     } finally {
@@ -46,30 +35,29 @@ export default function PlaceOrderScreen({ navigation }) {
 
   // Get available items based on product type
   const availableItems = useMemo(() => {
-    const list =
-      productType === 'BATTERY_MODEL' ? models :
-      productType === 'ACCESSORY' ? accessories :
-      products;
+    const list = catalogItems.filter((item) => {
+      const type = String(item.product_type || 'BATTERY').toUpperCase();
+      if (productType === 'BATTERY') {
+        return type === 'BATTERY';
+      }
+      if (productType === 'ACCESSORY') {
+        return type === 'ACCESSORY';
+      }
+      return type !== 'BATTERY' && type !== 'ACCESSORY';
+    });
 
     const term = search.trim().toLowerCase();
     if (!term) {
       return list;
     }
-    return list.filter((item) => item.name.toLowerCase().includes(term) || item.sku.toLowerCase().includes(term));
-  }, [models, accessories, products, productType, search]);
+    return list.filter((item) => (item.name || '').toLowerCase().includes(term) || (item.sku || '').toLowerCase().includes(term));
+  }, [catalogItems, productType, search]);
 
   const getItemKey = (item, type) => `${type}-${item.id}`;
 
-  const updateQuantity = (itemId, value) => {
+  const updateQuantity = (key, value) => {
     const qty = Math.max(1, Number(value) || 1);
-    setCart((prev) => {
-      const key = getItemKey({ id: itemId }, productType);
-      const existing = prev.find((item) => item.key === key);
-      if (existing) {
-        return prev.map((item) => (item.key === key ? { ...item, quantity: qty } : item));
-      }
-      return [...prev, { key, itemId, productType, quantity: qty }];
-    });
+    setCart((prev) => prev.map((item) => (item.key === key ? { ...item, quantity: qty } : item)));
   };
 
   const handleAdd = (item) => {
@@ -98,13 +86,11 @@ export default function PlaceOrderScreen({ navigation }) {
     try {
       setSubmitting(true);
       setError('');
-      const items = cart.map((item) => {
-        const base = { product_type: item.productType, quantity: item.quantity };
-        if (item.productType === 'BATTERY_MODEL') base.battery_model_id = item.itemId;
-        if (item.productType === 'ACCESSORY') base.accessory_id = item.itemId;
-        if (item.productType === 'PRODUCT') base.product_id = item.itemId;
-        return base;
-      });
+      const items = cart.map((item) => ({
+        product_type: 'PRODUCT',
+        product_id: item.itemId,
+        quantity: item.quantity,
+      }));
       const response = await ordersAPI.createOrder({ items });
       navigation.navigate('Orders');
       return response.data;
@@ -129,9 +115,9 @@ export default function PlaceOrderScreen({ navigation }) {
             onValueChange={setProductType}
             style={styles.picker}
           >
-            <Picker.Item label="Battery Models" value="BATTERY_MODEL" />
+            <Picker.Item label="Battery Models" value="BATTERY" />
             <Picker.Item label="Accessories" value="ACCESSORY" />
-            <Picker.Item label="Products" value="PRODUCT" />
+            <Picker.Item label="Other Products" value="PRODUCT" />
           </Picker>
         </View>
       </View>
@@ -150,7 +136,7 @@ export default function PlaceOrderScreen({ navigation }) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          {productType === 'BATTERY_MODEL' ? 'Battery Models' : productType === 'ACCESSORY' ? 'Accessories' : 'Products'}
+          {productType === 'BATTERY' ? 'Battery Models' : productType === 'ACCESSORY' ? 'Accessories' : 'Other Products'}
         </Text>
         {availableItems.map((item) => (
           <View key={item.id} style={styles.card}>
@@ -169,21 +155,20 @@ export default function PlaceOrderScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Order Items ({cart.length})</Text>
         {cart.length === 0 ? <Text style={styles.emptyText}>No items added.</Text> : null}
         {cart.map((item) => {
-          const allItemsList = item.productType === 'BATTERY_MODEL' ? models : item.productType === 'ACCESSORY' ? accessories : products;
-          const itemData = allItemsList.find((m) => m.id === item.itemId);
+          const itemData = catalogItems.find((m) => m.id === item.itemId);
           return (
             <View key={item.key} style={styles.cartRow}>
               <View>
                 <Text style={styles.cartTitle}>{itemData?.name || 'Item'}</Text>
                 <Text style={styles.cartMeta}>SKU: {itemData?.sku || '-'}</Text>
-                <Text style={styles.cartMeta}>Type: {item.productType === 'BATTERY_MODEL' ? 'Battery' : item.productType === 'ACCESSORY' ? 'Accessory' : 'Product'}</Text>
+                <Text style={styles.cartMeta}>Type: {item.productType === 'BATTERY' ? 'Battery' : item.productType === 'ACCESSORY' ? 'Accessory' : 'Product'}</Text>
               </View>
               <View style={styles.cartActions}>
                 <TextInput
                   style={styles.qtyInput}
                   keyboardType="numeric"
                   value={String(item.quantity)}
-                  onChangeText={(value) => updateQuantity(item.itemId, value)}
+                  onChangeText={(value) => updateQuantity(item.key, value)}
                 />
                 <TouchableOpacity style={styles.removeButton} onPress={() => handleRemove(item.key)}>
                   <Text style={styles.removeButtonText}>Remove</Text>

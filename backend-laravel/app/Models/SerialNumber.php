@@ -11,7 +11,7 @@ class SerialNumber extends Model
     use HasFactory;
 
     protected $fillable = [
-        'battery_model_id', 'serial_number', 'status', 
+        'battery_model_id', 'product_id', 'serial_number', 'status', 
         'allocated_to', 'allocated_date', 'sold_date', 'sold_to'
     ];
 
@@ -23,6 +23,11 @@ class SerialNumber extends Model
     public function batteryModel(): BelongsTo
     {
         return $this->belongsTo(BatteryModel::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function allocatedToUser(): BelongsTo

@@ -12,7 +12,7 @@ class WarrantyControllerTest extends ApiTestCase
         Warranty::factory()->count(2)->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranties')
+        $this->getJson('/api/warranties')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -24,7 +24,7 @@ class WarrantyControllerTest extends ApiTestCase
         $customer = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/warranties', [
+        $response = $this->postJson('/api/warranties', [
             'warranty_number' => 'WAR-00001',
             'battery_model_id' => $battery->id,
             'user_id' => $customer->id,
@@ -44,7 +44,7 @@ class WarrantyControllerTest extends ApiTestCase
         $warranty = Warranty::factory()->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranties/' . $warranty->id)
+        $this->getJson('/api/warranties/' . $warranty->id)
             ->assertOk()
             ->assertJsonPath('id', $warranty->id);
     }
@@ -55,7 +55,7 @@ class WarrantyControllerTest extends ApiTestCase
         $warranty = Warranty::factory()->create();
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/warranties/' . $warranty->id, [
+        $this->putJson('/api/warranties/' . $warranty->id, [
             'status' => 'expired',
         ])->assertOk();
 
@@ -68,7 +68,7 @@ class WarrantyControllerTest extends ApiTestCase
         $warranty = Warranty::factory()->create();
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/warranties/' . $warranty->id)
+        $this->deleteJson('/api/warranties/' . $warranty->id)
             ->assertOk();
 
         $this->assertDatabaseMissing('warranties', ['id' => $warranty->id]);
@@ -77,10 +77,10 @@ class WarrantyControllerTest extends ApiTestCase
     public function test_validate_qr_code_returns_warranty(): void
     {
         $user = $this->createUser('admin');
-        $warranty = Warranty::factory()->create(['qr_code' => 'QR-TEST-001']);
+        $warranty = Warranty::factory()->create(['serial_number' => 'SN-VERIFY-001']);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranties/qr/QR-TEST-001')
+        $this->getJson('/api/warranties/verify/SN-VERIFY-001')
             ->assertOk()
             ->assertJsonPath('valid', true);
     }

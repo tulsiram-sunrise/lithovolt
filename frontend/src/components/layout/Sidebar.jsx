@@ -2,13 +2,13 @@ import { Link, useLocation } from 'react-router-dom'
 
 const adminMenu = [
   { name: 'Dashboard', path: '/admin' },
-  { name: 'Users', path: '/admin/users' },
   { name: 'Battery Models', path: '/admin/battery-models' },
   { name: 'Inventory', path: '/admin/inventory' },
   { name: 'Products', path: '/admin/products' },
   { name: 'Categories', path: '/admin/categories' },
   { name: 'Orders', path: '/admin/orders' },
   { name: 'Warranties', path: '/admin/warranties' },
+  { name: 'Users', path: '/admin/users' },
   { name: 'Wholesaler Applications', path: '/admin/wholesaler-applications' },
 ]
 

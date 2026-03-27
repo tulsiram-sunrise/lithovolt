@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\StaffUserController;
 use App\Http\Controllers\Api\VehicleFitmentController;
+use App\Http\Controllers\Api\CatalogItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,6 +101,12 @@ Route::middleware('auth:jwt')->group(function () {
         Route::post('/{serial}/allocate/', [SerialNumberController::class, 'allocate']);
         Route::post('/{serial}/mark-sold/', [SerialNumberController::class, 'markSold']);
     });
+
+    // Inventory - Allocations
+    Route::prefix('inventory/allocations')->group(function () {
+        Route::get('/', [SerialNumberController::class, 'allocationsIndex']);
+        Route::post('/', [SerialNumberController::class, 'allocateStock']);
+    });
     
     // Inventory - Accessories
     Route::prefix('inventory/accessories')->group(function () {
@@ -127,6 +134,16 @@ Route::middleware('auth:jwt')->group(function () {
         Route::put('/{product}/', [ProductController::class, 'update']);
         Route::delete('/{product}/', [ProductController::class, 'destroy']);
     });
+
+    // Unified Catalog (new backbone)
+    Route::prefix('inventory/catalog')->group(function () {
+        Route::get('/summary/', [CatalogItemController::class, 'summary']);
+        Route::get('/', [CatalogItemController::class, 'index']);
+        Route::post('/', [CatalogItemController::class, 'store']);
+        Route::get('/{catalogItem}/', [CatalogItemController::class, 'show']);
+        Route::put('/{catalogItem}/', [CatalogItemController::class, 'update']);
+        Route::delete('/{catalogItem}/', [CatalogItemController::class, 'destroy']);
+    });
     
     // Orders
     Route::prefix('orders')->group(function () {
@@ -152,6 +169,7 @@ Route::middleware('auth:jwt')->group(function () {
     Route::prefix('warranty-claims')->group(function () {
         Route::get('/', [WarrantyClaimController::class, 'index']);
         Route::post('/', [WarrantyClaimController::class, 'store']);
+        Route::get('/warranty/{warrantyId}/', [WarrantyClaimController::class, 'claimsByWarranty']);
         Route::get('/{claim}/', [WarrantyClaimController::class, 'show']);
         Route::put('/{claim}/', [WarrantyClaimController::class, 'update']);
         Route::delete('/{claim}/', [WarrantyClaimController::class, 'destroy']);
@@ -160,6 +178,8 @@ Route::middleware('auth:jwt')->group(function () {
     // Notifications
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/my/', [NotificationController::class, 'userNotifications']);
+        Route::get('/unread-count/', [NotificationController::class, 'unreadCount']);
         Route::post('/', [NotificationController::class, 'store']);
         Route::get('/{notification}/', [NotificationController::class, 'show']);
         Route::post('/{notification}/read/', [NotificationController::class, 'markAsRead']);

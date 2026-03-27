@@ -4,7 +4,7 @@ import { inventoryAPI, orderAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
-const createEmptyItem = () => ({ product_type: 'BATTERY_MODEL', item_id: '', quantity: 1 })
+const createEmptyItem = () => ({ product_type: 'BATTERY', item_id: '', quantity: 1 })
 
 export default function OrdersPage() {
   const [notes, setNotes] = useState('')
@@ -12,21 +12,9 @@ export default function OrdersPage() {
   const queryClient = useQueryClient()
   const addToast = useToastStore((state) => state.addToast)
 
-  const { data: modelsData } = useQuery({
-    queryKey: ['wholesaler-models'],
-    queryFn: () => inventoryAPI.getBatteryModels({ ordering: 'name', status: 'active', is_active: true }),
-    select: (response) => response.data,
-  })
-
-  const { data: accessoriesData } = useQuery({
-    queryKey: ['wholesaler-accessories'],
-    queryFn: () => inventoryAPI.getAccessories({ ordering: 'name', status: 'active', is_active: true }),
-    select: (response) => response.data,
-  })
-
-  const { data: productsData } = useQuery({
-    queryKey: ['wholesaler-products'],
-    queryFn: () => inventoryAPI.getProducts({ ordering: 'name', status: 'active', is_active: true }),
+  const { data: catalogData } = useQuery({
+    queryKey: ['wholesaler-catalog'],
+    queryFn: () => inventoryAPI.getCatalogItems({ ordering: 'name', is_active: true, per_page: 200 }),
     select: (response) => response.data,
   })
 
@@ -49,9 +37,7 @@ export default function OrdersPage() {
     },
   })
 
-  const models = Array.isArray(modelsData) ? modelsData : modelsData?.results || []
-  const accessories = Array.isArray(accessoriesData) ? accessoriesData : accessoriesData?.results || []
-  const products = Array.isArray(productsData) ? productsData : productsData?.results || []
+  const catalogItems = Array.isArray(catalogData) ? catalogData : catalogData?.results || catalogData?.data || []
   const orders = useMemo(() => (Array.isArray(ordersData) ? ordersData : ordersData?.results || []), [ordersData])
   const isFulfilledStatus = (value) => String(value || '').toUpperCase() === 'FULFILLED'
 
@@ -80,20 +66,11 @@ export default function OrdersPage() {
     const payloadItems = items
       .filter((item) => item.item_id)
       .map((item) => {
-        const payload = {
-          product_type: item.product_type,
+        return {
+          product_type: 'PRODUCT',
+          product_id: Number(item.item_id),
           quantity: Number(item.quantity || 1),
         }
-        if (item.product_type === 'BATTERY_MODEL') {
-          payload.battery_model_id = Number(item.item_id)
-        }
-        if (item.product_type === 'ACCESSORY') {
-          payload.accessory_id = Number(item.item_id)
-        }
-        if (item.product_type === 'PRODUCT') {
-          payload.product_id = Number(item.item_id)
-        }
-        return payload
       })
 
     if (!payloadItems.length) {
@@ -140,7 +117,7 @@ export default function OrdersPage() {
                 value={item.product_type}
                 onChange={(event) => handleItemChange(index, 'product_type', event.target.value)}
               >
-                <option value="BATTERY_MODEL">Battery Model</option>
+                <option value="BATTERY">Battery Model</option>
                 <option value="ACCESSORY">Accessory</option>
                 <option value="PRODUCT">Product</option>
               </select>
@@ -154,21 +131,20 @@ export default function OrdersPage() {
                 onChange={(event) => handleItemChange(index, 'item_id', event.target.value)}
               >
                 <option value="">Select item</option>
-                {item.product_type === 'BATTERY_MODEL'
-                  ? models.map((model) => (
-                    <option key={model.id} value={model.id}>{model.name}</option>
-                  ))
-                  : null}
-                {item.product_type === 'ACCESSORY'
-                  ? accessories.map((accessory) => (
-                    <option key={accessory.id} value={accessory.id}>{accessory.name}</option>
-                  ))
-                  : null}
-                {item.product_type === 'PRODUCT'
-                  ? products.map((product) => (
-                    <option key={product.id} value={product.id}>{product.name}</option>
-                  ))
-                  : null}
+                {catalogItems
+                  .filter((catalogItem) => {
+                    const type = String(catalogItem.product_type || 'BATTERY').toUpperCase()
+                    if (item.product_type === 'BATTERY') {
+                      return type === 'BATTERY'
+                    }
+                    if (item.product_type === 'ACCESSORY') {
+                      return type === 'ACCESSORY'
+                    }
+                    return type !== 'BATTERY' && type !== 'ACCESSORY'
+                  })
+                  .map((catalogItem) => (
+                    <option key={catalogItem.id} value={catalogItem.id}>{catalogItem.name}</option>
+                  ))}
               </select>
             </div>
             <div className="md:col-span-3">

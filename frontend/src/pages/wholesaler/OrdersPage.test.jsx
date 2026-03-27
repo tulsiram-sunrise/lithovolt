@@ -9,12 +9,11 @@ vi.mock('../../services/api')
 describe('Wholesaler OrdersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    api.inventoryAPI.getAccessories = vi.fn(() => Promise.resolve({ data: { results: [] } }))
-    api.inventoryAPI.getProducts = vi.fn(() => Promise.resolve({ data: { results: [] } }))
+    api.inventoryAPI.getCatalogItems = vi.fn(() => Promise.resolve({ data: { results: [] } }))
   })
 
   it('renders orders page with form and list', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [mockBatteryModel] } })
     )
     api.orderAPI.getOrders = vi.fn(() =>
@@ -34,7 +33,7 @@ describe('Wholesaler OrdersPage', () => {
   })
 
   it('allows adding multiple order items', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [mockBatteryModel] } })
     )
     api.orderAPI.getOrders = vi.fn(() =>
@@ -62,7 +61,7 @@ describe('Wholesaler OrdersPage', () => {
   })
 
   it('submits order with items', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [mockBatteryModel] } })
     )
     api.orderAPI.getOrders = vi.fn(() =>
@@ -99,8 +98,8 @@ describe('Wholesaler OrdersPage', () => {
         notes: '',
         items: [
           {
-            product_type: 'BATTERY_MODEL',
-            battery_model_id: mockBatteryModel.id,
+            product_type: 'PRODUCT',
+            product_id: mockBatteryModel.id,
             quantity: 10,
           },
         ],
@@ -109,7 +108,7 @@ describe('Wholesaler OrdersPage', () => {
   })
 
   it('displays existing orders', async () => {
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
     )
     api.orderAPI.getOrders = vi.fn(() =>
@@ -130,7 +129,7 @@ describe('Wholesaler OrdersPage', () => {
 
   it('shows invoice button for fulfilled orders', async () => {
     const fulfilledOrder = { ...mockOrder, status: 'FULFILLED' }
-    api.inventoryAPI.getBatteryModels = vi.fn(() =>
+    api.inventoryAPI.getCatalogItems = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
     )
     api.orderAPI.getOrders = vi.fn(() =>

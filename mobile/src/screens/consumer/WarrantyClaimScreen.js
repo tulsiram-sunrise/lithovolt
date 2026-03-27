@@ -98,7 +98,10 @@ export default function WarrantyClaimScreen({ navigation, route }) {
   return (
     <NeonBackground style={styles.container} testID="warranty-claim">
       <Text style={styles.title}>Warranty Claim</Text>
-      <Text style={styles.subtitle}>Serial: {warranty.serial || warranty.serial_number}</Text>
+      <Text style={styles.subtitle}>Serial: {warranty.serial_number || warranty.serial}</Text>
+      {(warranty.product_name || warranty.battery_model_name || warranty.battery_model) ? (
+        <Text style={styles.subtitle}>Product: {warranty.product_name || warranty.battery_model_name || warranty.battery_model}</Text>
+      ) : null}
 
       <View style={styles.form}>
         <Text style={styles.label}>Describe the issue</Text>

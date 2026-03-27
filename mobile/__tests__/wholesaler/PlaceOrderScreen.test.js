@@ -5,12 +5,20 @@ import { inventoryAPI, ordersAPI } from '../../src/services/api';
 
 jest.mock('../../src/services/api', () => ({
   inventoryAPI: {
-    getModels: jest.fn(),
+    getCatalogItems: jest.fn(),
   },
   ordersAPI: {
     createOrder: jest.fn(),
   },
 }));
+
+jest.mock('@react-native-picker/picker', () => {
+  const React = require('react');
+  const { View, Text } = require('react-native');
+  const MockPicker = ({ children, testID }) => <View testID={testID}>{children}</View>;
+  MockPicker.Item = ({ label }) => <Text>{label}</Text>;
+  return { Picker: MockPicker };
+});
 
 const navigation = { navigate: jest.fn(), goBack: jest.fn() };
 
@@ -20,8 +28,8 @@ describe('PlaceOrderScreen', () => {
   });
 
   it('loads models and submits an order', async () => {
-    inventoryAPI.getModels.mockResolvedValue({
-      data: [{ id: 1, name: 'LV 12V 150Ah', sku: 'LV-150', is_active: true }],
+    inventoryAPI.getCatalogItems.mockResolvedValue({
+      data: [{ id: 1, name: 'LV 12V 150Ah', sku: 'LV-150', is_active: true, product_type: 'BATTERY' }],
     });
     ordersAPI.createOrder.mockResolvedValue({ data: { id: 22 } });
 

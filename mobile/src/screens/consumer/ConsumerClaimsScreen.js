@@ -18,7 +18,7 @@ export default function ConsumerClaimsScreen({ navigation }) {
       setError('');
       const response = await warrantyAPI.getClaims();
       const payload = response.data;
-      const list = Array.isArray(payload) ? payload : payload?.results || [];
+      const list = Array.isArray(payload) ? payload : payload?.results || payload?.data || [];
       setClaims(list);
     } catch (err) {
       setError('Failed to load claims.');

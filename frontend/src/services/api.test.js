@@ -1,4 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const { mockClient, mockCreate } = vi.hoisted(() => {
+  const client = {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  }
+
+  return {
+    mockClient: client,
+    mockCreate: vi.fn(() => client),
+  }
+})
+
+vi.mock('axios', () => ({
+  default: { create: mockCreate },
+  create: mockCreate,
+}))
+
 import axios from 'axios'
 import {
   authAPI,
@@ -9,18 +34,22 @@ import {
   adminAPI,
 } from './api'
 
-vi.mock('axios')
-
 describe('API Services', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    axios.create.mockReturnValue(mockClient)
+    mockClient.get.mockReset()
+    mockClient.post.mockReset()
+    mockClient.patch.mockReset()
+    mockClient.put.mockReset()
+    mockClient.delete.mockReset()
   })
 
   describe('authAPI', () => {
     it('calls login endpoint', async () => {
       const credentials = { email: 'test@example.com', password: 'password' }
       const mockResponse = { data: { token: 'jwt-token', user: {} } }
-      axios.create().post = vi.fn(() => Promise.resolve(mockResponse))
+      mockClient.post.mockResolvedValue(mockResponse)
 
       const result = await authAPI.login(credentials)
 
@@ -29,33 +58,33 @@ describe('API Services', () => {
 
     it('calls register endpoint', async () => {
       const userData = { email: 'new@example.com', password: 'pass123' }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await authAPI.register(userData)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/auth/register', userData)
+      expect(mockClient.post).toHaveBeenCalledWith('/auth/register', userData)
     })
   })
 
   describe('inventoryAPI', () => {
     it('fetches battery models with params', async () => {
       const params = { ordering: '-created_at' }
-      axios.create().get = vi.fn(() => Promise.resolve({ data: { results: [] } }))
+      mockClient.get.mockResolvedValue({ data: { results: [] } })
 
       await inventoryAPI.getBatteryModels(params)
 
-      expect(axios.create().get).toHaveBeenCalledWith('/inventory/models', {
+      expect(mockClient.get).toHaveBeenCalledWith('/inventory/models', {
         params,
       })
     })
 
     it('creates battery model', async () => {
       const modelData = { name: 'LV 150Ah', sku: 'LV-150' }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: modelData }))
+      mockClient.post.mockResolvedValue({ data: modelData })
 
       await inventoryAPI.createBatteryModel(modelData)
 
-      expect(axios.create().post).toHaveBeenCalledWith(
+      expect(mockClient.post).toHaveBeenCalledWith(
         '/inventory/models',
         modelData
       )
@@ -67,11 +96,11 @@ describe('API Services', () => {
         wholesaler_id: 2,
         quantity: 10,
       }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await inventoryAPI.allocateStock(allocationData)
 
-      expect(axios.create().post).toHaveBeenCalledWith(
+      expect(mockClient.post).toHaveBeenCalledWith(
         '/inventory/allocations',
         allocationData
       )
@@ -80,46 +109,46 @@ describe('API Services', () => {
 
   describe('orderAPI', () => {
     it('fetches orders', async () => {
-      axios.create().get = vi.fn(() => Promise.resolve({ data: { results: [] } }))
+      mockClient.get.mockResolvedValue({ data: { results: [] } })
 
       await orderAPI.getOrders({ status: 'PENDING' })
 
-      expect(axios.create().get).toHaveBeenCalledWith('/orders', {
+      expect(mockClient.get).toHaveBeenCalledWith('/orders', {
         params: { status: 'PENDING' },
       })
     })
 
     it('creates order', async () => {
       const orderData = { items: [], notes: '' }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await orderAPI.createOrder(orderData)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders', orderData)
+      expect(mockClient.post).toHaveBeenCalledWith('/orders', orderData)
     })
 
     it('accepts order', async () => {
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await orderAPI.acceptOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/accept')
+      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/accept')
     })
 
     it('rejects order', async () => {
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await orderAPI.rejectOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/reject')
+      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/reject')
     })
 
     it('fulfills order', async () => {
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await orderAPI.fulfillOrder(1)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/orders/1/fulfill')
+      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/fulfill')
     })
   })
 
@@ -129,12 +158,12 @@ describe('API Services', () => {
         serial_number: 'LV000001',
         consumer_email: 'test@example.com',
       }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await warrantyAPI.claimWarranty(claimData)
 
-      expect(axios.create().post).toHaveBeenCalledWith(
-        '/warranty/claim',
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/warranty-claims/',
         claimData
       )
     })
@@ -144,23 +173,23 @@ describe('API Services', () => {
         serial_number: 'LV000001',
         consumer_email: 'test@example.com',
       }
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await warrantyAPI.issueWarranty(issueData)
 
-      expect(axios.create().post).toHaveBeenCalledWith(
-        '/warranty/issue',
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/warranties/',
         issueData
       )
     })
 
     it('gets certificate with blob response type', async () => {
-      axios.create().get = vi.fn(() => Promise.resolve({ data: new Blob() }))
+      mockClient.get.mockResolvedValue({ data: new Blob() })
 
       await warrantyAPI.getCertificate(1)
 
-      expect(axios.create().get).toHaveBeenCalledWith(
-        '/warranty/1/certificate',
+      expect(mockClient.get).toHaveBeenCalledWith(
+        '/warranties/1/certificate/',
         { responseType: 'blob' }
       )
     })
@@ -172,40 +201,40 @@ describe('API Services', () => {
         users_by_role: {},
         orders_by_status: {},
       }
-      axios.create().get = vi.fn(() => Promise.resolve({ data: mockMetrics }))
+      mockClient.get.mockResolvedValue({ data: mockMetrics })
 
       await adminAPI.getMetrics()
 
-      expect(axios.create().get).toHaveBeenCalledWith('/admin/metrics')
+      expect(mockClient.get).toHaveBeenCalledWith('/admin/metrics')
     })
   })
 
   describe('userAPI', () => {
     it('toggles user active status', async () => {
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await userAPI.toggleActive(5)
 
-      expect(axios.create().post).toHaveBeenCalledWith('/users/5/toggle_active')
+      expect(mockClient.post).toHaveBeenCalledWith('/users/5/toggle_active')
     })
 
     it('gets wholesaler applications', async () => {
-      axios.create().get = vi.fn(() => Promise.resolve({ data: { results: [] } }))
+      mockClient.get.mockResolvedValue({ data: { results: [] } })
 
       await userAPI.getWholesalerApplications({ status: 'PENDING' })
 
-      expect(axios.create().get).toHaveBeenCalledWith(
+      expect(mockClient.get).toHaveBeenCalledWith(
         '/users/wholesaler-applications',
         { params: { status: 'PENDING' } }
       )
     })
 
     it('approves wholesaler application', async () => {
-      axios.create().post = vi.fn(() => Promise.resolve({ data: {} }))
+      mockClient.post.mockResolvedValue({ data: {} })
 
       await userAPI.approveWholesalerApplication(1, { notes: 'Approved' })
 
-      expect(axios.create().post).toHaveBeenCalledWith(
+      expect(mockClient.post).toHaveBeenCalledWith(
         '/users/wholesaler-applications/1/approve',
         { notes: 'Approved' }
       )

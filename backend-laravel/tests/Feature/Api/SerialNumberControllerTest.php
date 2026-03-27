@@ -12,7 +12,7 @@ class SerialNumberControllerTest extends ApiTestCase
         SerialNumber::factory()->count(2)->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/serial-numbers')
+        $this->getJson('/api/inventory/serials')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -23,7 +23,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $battery = \App\Models\BatteryModel::factory()->create();
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/serial-numbers', [
+        $response = $this->postJson('/api/inventory/serials', [
             'battery_model_id' => $battery->id,
             'serial_number' => 'SN-12345678',
             'status' => 'unallocated',
@@ -39,7 +39,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $serial = SerialNumber::factory()->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/serial-numbers/' . $serial->id)
+        $this->getJson('/api/inventory/serials/' . $serial->id)
             ->assertOk()
             ->assertJsonPath('id', $serial->id);
     }
@@ -50,7 +50,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $serial = SerialNumber::factory()->create();
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/serial-numbers/' . $serial->id, [
+        $this->putJson('/api/inventory/serials/' . $serial->id, [
             'status' => 'allocated',
         ])->assertOk();
 
@@ -64,7 +64,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $allocatedTo = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $this->postJson('/api/v1/serial-numbers/' . $serial->id . '/allocate', [
+        $this->postJson('/api/inventory/serials/' . $serial->id . '/allocate', [
             'allocated_to' => $allocatedTo->id,
         ])->assertOk();
 
@@ -78,7 +78,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $soldTo = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $this->postJson('/api/v1/serial-numbers/' . $serial->id . '/mark-sold', [
+        $this->postJson('/api/inventory/serials/' . $serial->id . '/mark-sold', [
             'sold_to' => $soldTo->id,
         ])->assertOk();
 
@@ -91,7 +91,7 @@ class SerialNumberControllerTest extends ApiTestCase
         $serial = SerialNumber::factory()->create();
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/serial-numbers/' . $serial->id)
+        $this->deleteJson('/api/inventory/serials/' . $serial->id)
             ->assertOk();
 
         $this->assertDatabaseMissing('serial_numbers', ['id' => $serial->id]);

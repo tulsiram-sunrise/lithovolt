@@ -12,7 +12,7 @@ export default function CustomerWarrantiesPage() {
   })
 
   const warranties = useMemo(() => {
-    const list = Array.isArray(data) ? data : data?.results || []
+    const list = Array.isArray(data) ? data : data?.results || data?.data || []
     return list
   }, [data])
 
@@ -56,8 +56,8 @@ export default function CustomerWarrantiesPage() {
               {warranties.map((item) => (
                 <tr key={item.id}>
                   <td>{item.warranty_number || `WAR-${item.id}`}</td>
-                  <td>{item.serial}</td>
-                  <td>{item.battery_model_name}</td>
+                  <td>{item.serial_number || item.serial}</td>
+                  <td>{item.product_name || item.battery_model_name || 'Unknown item'}</td>
                   <td><span className="tag">{item.status}</span></td>
                   <td>
                     <button

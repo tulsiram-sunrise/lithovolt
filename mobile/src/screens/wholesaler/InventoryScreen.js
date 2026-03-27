@@ -23,8 +23,8 @@ export default function InventoryScreen() {
 			]);
 			const serialPayload = serialResponse.data;
 			const allocationPayload = allocationResponse.data;
-			setSerials(Array.isArray(serialPayload) ? serialPayload : serialPayload?.results || []);
-			setAllocations(Array.isArray(allocationPayload) ? allocationPayload : allocationPayload?.results || []);
+			setSerials(Array.isArray(serialPayload) ? serialPayload : serialPayload?.results || serialPayload?.data || []);
+			setAllocations(Array.isArray(allocationPayload) ? allocationPayload : allocationPayload?.results || allocationPayload?.data || []);
 		} catch (err) {
 			setError('Failed to load inventory.');
 		} finally {
@@ -46,9 +46,9 @@ export default function InventoryScreen() {
 		return serials.filter((item) => {
 			const status = (item.status || '').toUpperCase();
 			const serial = (item.serial_number || '').toLowerCase();
-			const model = (item.battery_model_name || '').toLowerCase();
+			const itemName = (item.product_name || item.battery_model_name || '').toLowerCase();
 			const statusMatch = statusFilter === 'ALL' || status === statusFilter;
-			const textMatch = !term || serial.includes(term) || model.includes(term);
+			const textMatch = !term || serial.includes(term) || itemName.includes(term);
 			return statusMatch && textMatch;
 		});
 	}, [search, statusFilter, serials]);
@@ -72,7 +72,7 @@ export default function InventoryScreen() {
 				<Text style={styles.sectionTitle}>Allocated Stock</Text>
 				{allocations.map((allocation) => (
 					<View key={allocation.id} style={styles.card}>
-						<Text style={styles.cardTitle}>{allocation.battery_model_name}</Text>
+						<Text style={styles.cardTitle}>{allocation.product_name || allocation.battery_model_name}</Text>
 						<Text style={styles.cardMeta}>Qty: {allocation.quantity}</Text>
 						{allocation.notes ? <Text style={styles.cardMeta}>Notes: {allocation.notes}</Text> : null}
 					</View>
@@ -83,7 +83,7 @@ export default function InventoryScreen() {
 				<Text style={styles.sectionTitle}>Serials</Text>
 				<TextInput
 					style={styles.searchInput}
-					placeholder="Search serial or model"
+					placeholder="Search serial or item"
 					placeholderTextColor="#94a3b8"
 					value={search}
 					onChangeText={setSearch}
@@ -111,7 +111,7 @@ export default function InventoryScreen() {
 				{filteredSerials.map((serial) => (
 					<View key={serial.id} style={styles.card}>
 						<Text style={styles.cardTitle}>{serial.serial_number}</Text>
-						<Text style={styles.cardMeta}>Model: {serial.battery_model_name}</Text>
+						<Text style={styles.cardMeta}>Item: {serial.product_name || serial.battery_model_name}</Text>
 						<View style={[styles.badge, statusBadge(serial.status)]}>
 							<Text style={styles.badgeText}>{serial.status}</Text>
 						</View>

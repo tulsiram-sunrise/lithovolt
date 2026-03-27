@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import HomeScreen from '../../src/screens/consumer/HomeScreen';
 import { warrantyAPI } from '../../src/services/api';
 
@@ -22,23 +22,33 @@ describe('HomeScreen', () => {
 
   it('renders warranties and navigates to details', async () => {
     warrantyAPI.getWarranties.mockResolvedValue({
-      data: [{ id: 1, serial: 'LV-100', battery_model_name: 'Model A', status: 'ACTIVE' }],
+      data: [{ id: 1, serial: 'LV-100', product_name: 'Model A', status: 'ACTIVE' }],
     });
 
     const { findByTestId } = render(<HomeScreen navigation={navigation} />);
+
+    await waitFor(() => {
+      expect(warrantyAPI.getWarranties).toHaveBeenCalledTimes(1);
+    });
 
     const card = await findByTestId('warranty-card-1');
 
     fireEvent.press(card);
 
     expect(navigation.navigate).toHaveBeenCalledWith('WarrantyDetails', {
-      warranty: { id: 1, serial: 'LV-100', battery_model_name: 'Model A', status: 'ACTIVE' },
+      warranty: { id: 1, serial: 'LV-100', product_name: 'Model A', status: 'ACTIVE' },
     });
   });
 
   it('navigates to scan screen', async () => {
     warrantyAPI.getWarranties.mockResolvedValue({ data: [] });
-    const { getByTestId } = render(<HomeScreen navigation={navigation} />);
+    const { getByTestId, findByText } = render(<HomeScreen navigation={navigation} />);
+
+    await waitFor(() => {
+      expect(warrantyAPI.getWarranties).toHaveBeenCalledTimes(1);
+    });
+
+    await findByText('No warranties found yet.');
 
     fireEvent.press(getByTestId('home-scan-qr'));
 

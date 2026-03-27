@@ -13,7 +13,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         WarrantyClaim::factory()->count(2)->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranty-claims')
+        $this->getJson('/api/warranty-claims')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -25,7 +25,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $customer = $this->createUser('customer');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/warranty-claims', [
+        $response = $this->postJson('/api/warranty-claims', [
             'warranty_id' => $warranty->id,
             'user_id' => $customer->id,
             'claim_number' => 'CLM-00001',
@@ -43,7 +43,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $claim = WarrantyClaim::factory()->create();
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranty-claims/' . $claim->id)
+        $this->getJson('/api/warranty-claims/' . $claim->id)
             ->assertOk()
             ->assertJsonPath('id', $claim->id);
     }
@@ -54,7 +54,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $claim = WarrantyClaim::factory()->create();
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/warranty-claims/' . $claim->id, [
+        $this->putJson('/api/warranty-claims/' . $claim->id, [
             'status' => 'resolved',
             'resolution' => 'Replaced',
         ])->assertOk();
@@ -68,7 +68,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $claim = WarrantyClaim::factory()->create();
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/warranty-claims/' . $claim->id)
+        $this->deleteJson('/api/warranty-claims/' . $claim->id)
             ->assertOk();
 
         $this->assertDatabaseMissing('warranty_claims', ['id' => $claim->id]);
@@ -81,7 +81,7 @@ class WarrantyClaimControllerTest extends ApiTestCase
         WarrantyClaim::factory()->count(2)->create(['warranty_id' => $warranty->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/warranties/' . $warranty->id . '/claims')
+        $this->getJson('/api/warranty-claims/warranty/' . $warranty->id)
             ->assertOk()
             ->assertJsonStructure(['data']);
     }

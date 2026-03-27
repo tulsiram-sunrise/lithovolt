@@ -22,7 +22,7 @@ export default function WholesalerDashboard() {
   }, [ordersData])
 
   const serials = useMemo(() => {
-    const list = Array.isArray(serialsData) ? serialsData : serialsData?.results || []
+    const list = Array.isArray(serialsData) ? serialsData : serialsData?.results || serialsData?.data || []
     return list
   }, [serialsData])
 

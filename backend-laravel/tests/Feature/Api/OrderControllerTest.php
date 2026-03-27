@@ -12,7 +12,7 @@ class OrderControllerTest extends ApiTestCase
         Order::factory()->count(2)->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/orders')
+        $this->getJson('/api/orders')
             ->assertOk()
             ->assertJsonStructure(['data']);
     }
@@ -22,7 +22,7 @@ class OrderControllerTest extends ApiTestCase
         $user = $this->createUser('admin');
         $this->actingAsUser($user);
 
-        $response = $this->postJson('/api/v1/orders', [
+        $response = $this->postJson('/api/orders', [
             'user_id' => $user->id,
             'order_number' => 'ORD-00001',
             'total_amount' => 1500,
@@ -40,7 +40,7 @@ class OrderControllerTest extends ApiTestCase
         $order = Order::factory()->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/orders/' . $order->id)
+        $this->getJson('/api/orders/' . $order->id)
             ->assertOk()
             ->assertJsonPath('id', $order->id);
     }
@@ -51,7 +51,7 @@ class OrderControllerTest extends ApiTestCase
         $order = Order::factory()->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->putJson('/api/v1/orders/' . $order->id, [
+        $this->putJson('/api/orders/' . $order->id, [
             'status' => 'confirmed',
         ])->assertOk();
 
@@ -64,7 +64,7 @@ class OrderControllerTest extends ApiTestCase
         $order = Order::factory()->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->deleteJson('/api/v1/orders/' . $order->id)->assertOk();
+        $this->deleteJson('/api/orders/' . $order->id)->assertOk();
         $this->assertSoftDeleted('orders', ['id' => $order->id]);
     }
 
@@ -74,7 +74,7 @@ class OrderControllerTest extends ApiTestCase
         Order::factory()->count(2)->create(['user_id' => $user->id]);
         $this->actingAsUser($user);
 
-        $this->getJson('/api/v1/users/' . $user->id . '/orders')
+        $this->getJson('/api/orders/user/' . $user->id)
             ->assertOk()
             ->assertJsonStructure(['data']);
     }

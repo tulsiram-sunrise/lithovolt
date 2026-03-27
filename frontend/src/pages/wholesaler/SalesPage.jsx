@@ -44,7 +44,7 @@ export default function SalesPage() {
   })
 
   const warranties = useMemo(
-    () => (Array.isArray(warrantiesData) ? warrantiesData : warrantiesData?.results || []),
+    () => (Array.isArray(warrantiesData) ? warrantiesData : warrantiesData?.results || warrantiesData?.data || []),
     [warrantiesData]
   )
 
@@ -157,10 +157,10 @@ export default function SalesPage() {
             {warranties.map((warranty) => (
               <tr key={warranty.id}>
                 <td>{warranty.warranty_number}</td>
-                <td>{warranty.battery_model_name}</td>
+                <td>{warranty.product_name || warranty.battery_model_name || 'Unknown item'}</td>
                 <td>{warranty.consumer_name || 'Unassigned'}</td>
                 <td><span className="tag">{warranty.status}</span></td>
-                <td>{new Date(warranty.issued_at).toLocaleDateString()}</td>
+                <td>{new Date(warranty.issue_date || warranty.created_at).toLocaleDateString()}</td>
                 <td>
                   <button
                     className="neon-btn-ghost"
