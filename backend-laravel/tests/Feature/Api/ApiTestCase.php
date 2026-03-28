@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Permission;
 use App\Models\Role;
+use App\Models\StaffUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -33,5 +35,40 @@ abstract class ApiTestCase extends TestCase
     {
         $token = JWTAuth::fromUser($user);
         $this->withHeader('Authorization', 'Bearer ' . $token);
+    }
+
+    /**
+     * Create an authenticated admin with the required backoffice permissions.
+     */
+    protected function actingAsBackofficeAdmin(array $permissions = ['USERS:VIEW', 'USERS:CREATE', 'USERS:UPDATE', 'USERS:DELETE']): User
+    {
+        $adminRole = $this->createRole('ADMIN');
+
+        foreach ($permissions as $permission) {
+            [$resource, $action] = explode(':', strtoupper($permission), 2);
+            Permission::firstOrCreate([
+                'role_id' => $adminRole->id,
+                'resource' => $resource,
+                'action' => $action,
+            ], [
+                'description' => "{$resource} {$action}",
+            ]);
+        }
+
+        $admin = User::factory()->create([
+            'role_id' => $adminRole->id,
+            'email' => 'admin@lithovolt.com',
+        ]);
+
+        StaffUser::create([
+            'user_id' => $admin->id,
+            'role_id' => $adminRole->id,
+            'hire_date' => now()->toDateString(),
+            'is_active' => true,
+        ]);
+
+        $this->actingAsUser($admin);
+
+        return $admin;
     }
 }

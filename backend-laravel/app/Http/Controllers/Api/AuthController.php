@@ -433,12 +433,13 @@ class AuthController extends Controller
     }
 
     /**
-     * Send OTP to user's phone
+     * Send OTP to user via phone or email.
      */
     public function sendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string',
+            'phone' => 'nullable|string|required_without:email',
+            'email' => 'nullable|email|required_without:phone',
         ]);
 
         if ($validator->fails()) {
@@ -449,27 +450,67 @@ class AuthController extends Controller
         }
 
         try {
-            $user = User::where('phone', $request->phone)->first();
+            $email = $request->input('email');
+            $phone = $request->input('phone');
+
+            $user = $email
+                ? User::where('email', $email)->first()
+                : User::where('phone', $phone)->first();
 
             if (!$user) {
                 return response()->json([
-                    'error' => 'Phone number not found'
+                    'error' => $email ? 'Email not found' : 'Phone number not found'
                 ], 404);
             }
 
             // Generate OTP (6 digits)
             $otp = rand(100000, 999999);
 
-            // Store OTP in session/cache (in production, use database or cache)
-            \Illuminate\Support\Facades\Cache::put('otp_' . $request->phone, $otp, now()->addMinutes(10));
+            $cacheKey = 'otp_' . ($email ? 'email_' . strtolower($email) : 'phone_' . $phone);
 
-            // Send OTP to phone (implement actual SMS sending)
-            // For now, just return success (in production, integrate with SMS service)
+            // Store OTP in cache for 10 minutes.
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $otp, now()->addMinutes(10));
 
-            return response()->json([
+            $deliveryStatus = 'mocked';
+            $deliveryMessage = $email
+                ? 'OTP generated and sent to email'
+                : 'OTP generated and prepared for SMS delivery';
+
+            if ($email) {
+                try {
+                    Mail::raw(
+                        "Your Lithovolt OTP is: {$otp}\nThis OTP expires in 10 minutes.",
+                        static function ($message) use ($user): void {
+                            $message->to($user->email)->subject('Your Lithovolt OTP');
+                        }
+                    );
+
+                    $deliveryStatus = 'sent';
+                    $deliveryMessage = 'OTP sent successfully to email';
+                } catch (\Throwable $mailError) {
+                    if (!config('app.debug')) {
+                        return response()->json([
+                            'error' => 'Unable to send OTP email at this time.'
+                        ], 500);
+                    }
+
+                    $deliveryStatus = 'debug-fallback';
+                    $deliveryMessage = 'Email delivery failed in debug mode; returning OTP for local testing.';
+                }
+            }
+
+            $response = [
                 'message' => 'OTP sent successfully',
-                'otp' => $otp  // Remove in production - only for testing
-            ]);
+                'channel' => $email ? 'email' : 'phone',
+                'delivery_status' => $deliveryStatus,
+                'delivery_message' => $deliveryMessage,
+            ];
+
+            if (config('app.debug')) {
+                $response['otp'] = $otp;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to send OTP',
@@ -484,7 +525,8 @@ class AuthController extends Controller
     public function verifyOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string',
+            'phone' => 'nullable|string|required_without:email',
+            'email' => 'nullable|email|required_without:phone',
             'otp' => 'required|string|size:6',
         ]);
 
@@ -496,7 +538,10 @@ class AuthController extends Controller
         }
 
         try {
-            $storedOtp = \Illuminate\Support\Facades\Cache::get('otp_' . $request->phone);
+            $email = $request->input('email');
+            $phone = $request->input('phone');
+            $cacheKey = 'otp_' . ($email ? 'email_' . strtolower($email) : 'phone_' . $phone);
+            $storedOtp = \Illuminate\Support\Facades\Cache::get($cacheKey);
 
             if (!$storedOtp || $storedOtp != $request->otp) {
                 return response()->json([
@@ -504,7 +549,9 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            $user = User::where('phone', $request->phone)->first();
+            $user = $email
+                ? User::where('email', $email)->first()
+                : User::where('phone', $phone)->first();
 
             if (!$user) {
                 return response()->json([
@@ -519,7 +566,7 @@ class AuthController extends Controller
             ]);
 
             // Clear OTP from cache
-            \Illuminate\Support\Facades\Cache::forget('otp_' . $request->phone);
+            \Illuminate\Support\Facades\Cache::forget($cacheKey);
 
             // Generate JWT tokens
             $access_token = JWTAuth::fromUser($user);

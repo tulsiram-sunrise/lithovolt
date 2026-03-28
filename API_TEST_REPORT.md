@@ -1,5 +1,38 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 28, 2026 (Email OTP Validation)
+
+### OTP Fallback Enablement
+- Enhanced `POST /api/auth/otp/send/` and `POST /api/auth/otp/verify/` to accept either `email` or `phone`.
+- Maintained backward compatibility for existing phone-based OTP requests.
+- Added email OTP delivery path with debug-safe fallback behavior.
+
+### Live Validation Results (127.0.0.1:8001)
+- `OTP_SEND_STATUS=200`
+- `OTP_CHANNEL=email`
+- `OTP_DELIVERY_STATUS=sent`
+- `OTP_VALUE_PRESENT=YES`
+- `OTP_VERIFY_STATUS=200`
+- `OTP_VERIFY_ACCESS_TOKEN=YES`
+
+### Automated Test Coverage Added
+- Added Laravel feature tests in [backend-laravel/tests/Feature/Api/AuthControllerTest.php](backend-laravel/tests/Feature/Api/AuthControllerTest.php):
+	- Email OTP send success
+	- Email OTP verify success (token issuance + verified flags)
+	- Email OTP invalid-code rejection (`401`)
+	- OTP hidden when debug mode is disabled
+- Validation command result: `php artisan test --filter=AuthControllerTest` passed (`9` tests, `25` assertions).
+
+### Regression Check Snapshot
+- Full Laravel Feature suite re-run completed after aligning UserController tests to backoffice permission middleware expectations.
+- Result: `67` passed, `0` failed (`172` assertions).
+- Closure detail: UserController tests now authenticate with a permission-bearing admin staff profile fixture.
+- OTP/Auth test suite remained green throughout, indicating no regression from OTP hardening.
+
+### Notes
+- This enables OTP checks in environments where SMS gateway integration is unavailable.
+- OTP value is still returned for local testing and should be removed/redacted for production-hardening.
+
 ## Update - March 27, 2026 (Post-Readiness Hardening Pass)
 
 ### Invitation Workflow Hardening (March 27, 2026)
