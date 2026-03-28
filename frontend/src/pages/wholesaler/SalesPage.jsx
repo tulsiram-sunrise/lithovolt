@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { warrantyAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 
@@ -39,7 +40,7 @@ export default function SalesPage() {
       addToast({ type: 'success', title: 'Warranty issued', message: 'Certificate generated and sent to consumer.' })
     },
     onError: (error) => {
-      addToast({ type: 'error', title: 'Warranty issue failed', message: error.response?.data?.detail || 'Unable to issue warranty.' })
+      addToast({ type: 'error', title: 'Warranty issue failed', message: extractApiErrorMessage(error, 'Unable to issue warranty.') })
     },
   })
 
@@ -149,11 +150,12 @@ export default function SalesPage() {
               <th>Consumer</th>
               <th>Status</th>
               <th>Issued</th>
+              <th>Expiry</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {isLoading ? <ShimmerTableRows rows={5} columns={6} /> : null}
+            {isLoading ? <ShimmerTableRows rows={5} columns={7} /> : null}
             {warranties.map((warranty) => (
               <tr key={warranty.id}>
                 <td>{warranty.warranty_number}</td>
@@ -161,17 +163,26 @@ export default function SalesPage() {
                 <td>{warranty.consumer_name || 'Unassigned'}</td>
                 <td><span className="tag">{warranty.status}</span></td>
                 <td>{new Date(warranty.issue_date || warranty.created_at).toLocaleDateString()}</td>
+                <td>{warranty.expiry_date ? new Date(warranty.expiry_date).toLocaleDateString() : '-'}</td>
                 <td>
                   <button
                     className="neon-btn-ghost"
                     onClick={async () => {
-                      const response = await warrantyAPI.getCertificate(warranty.id)
-                      const url = window.URL.createObjectURL(response.data)
-                      const link = document.createElement('a')
-                      link.href = url
-                      link.download = `warranty_${warranty.warranty_number}.pdf`
-                      link.click()
-                      window.URL.revokeObjectURL(url)
+                      try {
+                        const response = await warrantyAPI.getCertificate(warranty.id)
+                        const url = window.URL.createObjectURL(response.data)
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.download = `warranty_${warranty.warranty_number}.pdf`
+                        link.click()
+                        window.URL.revokeObjectURL(url)
+                      } catch (error) {
+                        addToast({
+                          type: 'error',
+                          title: 'Certificate download failed',
+                          message: extractApiErrorMessage(error, 'Unable to download certificate.'),
+                        })
+                      }
                     }}
                   >
                     Certificate

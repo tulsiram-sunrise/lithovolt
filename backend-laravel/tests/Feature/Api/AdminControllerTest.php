@@ -50,7 +50,7 @@ class AdminControllerTest extends ApiTestCase
 
         $this->getJson('/api/admin/orders/stats')
             ->assertOk()
-            ->assertJsonStructure(['total', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled']);
+            ->assertJsonStructure(['total', 'pending', 'accepted', 'rejected', 'fulfilled', 'cancelled']);
     }
 
     public function test_warranty_stats_returns_counts(): void

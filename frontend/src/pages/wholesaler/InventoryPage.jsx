@@ -33,8 +33,8 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold neon-title">Inventory</h1>
-        <p className="text-[color:var(--muted)]">Allocated stock and sales summary.</p>
+        <h1 className="text-3xl font-semibold neon-title">My Stock</h1>
+        <p className="text-[color:var(--muted)]">Stock allocated to your shop by Lithovolt, with sold movement summary.</p>
       </div>
 
       <div className="panel-card p-6">
@@ -58,7 +58,7 @@ export default function InventoryPage() {
           </tbody>
         </table>
         {!isLoading && summary.length === 0 ? (
-          <p className="mt-3 text-sm text-[color:var(--muted)]">No allocated stock yet.</p>
+          <p className="mt-3 text-sm text-[color:var(--muted)]">No stock allocated to your shop yet.</p>
         ) : null}
       </div>
     </div>

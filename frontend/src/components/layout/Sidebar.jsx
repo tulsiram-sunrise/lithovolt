@@ -44,6 +44,7 @@ const adminMenuGroups = [
     items: [
       { name: 'Orders', path: '/admin/orders', icon: ClipboardDocumentListIcon },
       { name: 'Warranties', path: '/admin/warranties', icon: ShieldCheckIcon },
+      { name: 'Claims', path: '/admin/warranty-claims', icon: DocumentCheckIcon },
       { name: 'Consumers', path: '/admin/consumers', icon: UsersIcon },
       { name: 'Wholesalers', path: '/admin/wholesalers', icon: UsersIcon },
     ],
@@ -69,8 +70,9 @@ const wholesalerMenuGroups = [
     id: 'operations',
     name: 'Operations',
     items: [
-      { name: 'Inventory', path: '/wholesaler/inventory', icon: CircleStackIcon },
+      { name: 'My Stock', path: '/wholesaler/inventory', icon: CircleStackIcon },
       { name: 'Products', path: '/wholesaler/products', icon: ShoppingBagIcon },
+      { name: 'Place Order', path: '/wholesaler/orders/new', icon: DocumentCheckIcon },
       { name: 'Orders', path: '/wholesaler/orders', icon: ClipboardDocumentListIcon },
       { name: 'Sales', path: '/wholesaler/sales', icon: RectangleGroupIcon },
     ],
@@ -98,6 +100,7 @@ const customerMenuGroups = [
     items: [
       { name: 'My Warranties', path: '/customer/warranties', icon: ShieldCheckIcon },
       { name: 'Claim Warranty', path: '/customer/claim', icon: DocumentCheckIcon },
+      { name: 'My Claims', path: '/customer/claims', icon: ClipboardDocumentListIcon },
     ],
   },
 ]

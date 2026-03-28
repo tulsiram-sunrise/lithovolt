@@ -32,6 +32,7 @@ import ProductsPage from './pages/admin/ProductsPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
 import OrdersPage from './pages/admin/OrdersPage'
 import WarrantiesPage from './pages/admin/WarrantiesPage'
+import WarrantyClaimsPage from './pages/admin/WarrantyClaimsPage'
 import WholesalerManagementPage from './pages/admin/WholesalerManagementPage'
 import ConsumersPage from './pages/admin/ConsumersPage'
 
@@ -39,6 +40,7 @@ import ConsumersPage from './pages/admin/ConsumersPage'
 import WholesalerDashboard from './pages/wholesaler/Dashboard'
 import WholesalerInventory from './pages/wholesaler/InventoryPage'
 import WholesalerOrders from './pages/wholesaler/OrdersPage'
+import WholesalerPlaceOrder from './pages/wholesaler/PlaceOrderPage'
 import WholesalerSales from './pages/wholesaler/SalesPage'
 import WholesalerProducts from './pages/wholesaler/ProductsPage'
 
@@ -46,6 +48,7 @@ import WholesalerProducts from './pages/wholesaler/ProductsPage'
 import CustomerDashboard from './pages/customer/Dashboard'
 import CustomerWarrantiesPage from './pages/customer/WarrantiesPage'
 import CustomerClaimPage from './pages/customer/ClaimWarrantyPage'
+import CustomerClaimsPage from './pages/customer/ClaimsPage'
 import CustomerWholesalerRegister from './pages/customer/WholesalerRegisterPage'
 import CustomerProducts from './pages/customer/ProductsPage'
 import CustomerModelCatalogPage from './pages/customer/ModelCatalogPage'
@@ -176,6 +179,7 @@ function App() {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="warranties" element={<WarrantiesPage />} />
+        <Route path="warranty-claims" element={<WarrantyClaimsPage />} />
       </Route>
 
       {/* Wholesaler Routes */}
@@ -194,6 +198,7 @@ function App() {
         <Route path="inventory" element={<WholesalerInventory />} />
         <Route path="products" element={<WholesalerProducts />} />
         <Route path="orders" element={<WholesalerOrders />} />
+        <Route path="orders/new" element={<WholesalerPlaceOrder />} />
         <Route path="sales" element={<WholesalerSales />} />
       </Route>
 
@@ -215,6 +220,7 @@ function App() {
         <Route path="find-battery" element={<CustomerBatteryFinderPage />} />
         <Route path="warranties" element={<CustomerWarrantiesPage />} />
         <Route path="claim" element={<CustomerClaimPage />} />
+        <Route path="claims" element={<CustomerClaimsPage />} />
         <Route path="products" element={<CustomerProducts />} />
         <Route path="wholesaler-register" element={<CustomerWholesalerRegister />} />
       </Route>

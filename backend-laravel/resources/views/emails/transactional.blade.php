@@ -6,6 +6,13 @@
     <title>{{ $subject ?? 'Lithovolt Notification' }}</title>
 </head>
 <body style="margin:0;padding:0;background:#f2f8f4;font-family:Arial,Helvetica,sans-serif;color:#102018;">
+    @php
+        $defaultLogoUrl = env('MAIL_BRAND_LOGO_URL');
+        if (empty($defaultLogoUrl)) {
+            $defaultLogoUrl = rtrim((string) env('FRONTEND_URL', config('app.url')), '/') . '/logo.png';
+        }
+        $brandLogoUrl = $logoUrl ?? $defaultLogoUrl;
+    @endphp
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f2f8f4;padding:24px 12px;">
         <tr>
             <td align="center">
@@ -64,7 +71,16 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding:16px 24px;border-top:1px solid #e3efe8;background:#fbfefc;">
+                        <td align="center" style="padding:16px 24px;border-top:1px solid #e3efe8;background:#fbfefc;">
+                            @if(!empty($brandLogoUrl))
+                                <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 10px 0;">
+                                    <tr>
+                                        <td style="background:#f4fff8;border-radius:10px;padding:7px 10px;border:1px solid #d8ebe0;">
+                                            <img src="{{ $brandLogoUrl }}" alt="Lithovolt" style="display:block;max-width:180px;max-height:56px;height:auto;width:auto;">
+                                        </td>
+                                    </tr>
+                                </table>
+                            @endif
                             <p style="margin:0;font-size:12px;line-height:1.5;color:#5f7d6e;">
                                 {{ $footerText ?? 'If you did not expect this email, you can safely ignore it.' }}
                             </p>

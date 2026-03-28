@@ -37,6 +37,50 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $this->assertDatabaseHas('warranty_claims', ['claim_number' => 'CLM-00001']);
     }
 
+    public function test_store_rejects_claim_when_user_does_not_match_warranty_owner(): void
+    {
+        $this->actingAsBackofficeAdmin();
+        $customerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $otherCustomer = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $warranty = Warranty::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        $this->postJson('/api/warranty-claims', [
+            'warranty_id' => $warranty->id,
+            'user_id' => $otherCustomer->id,
+            'claim_number' => 'CLM-OWNER-MISMATCH',
+            'complaint_description' => 'Mismatch ownership test',
+            'status' => 'PENDING',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Claim user must match the warranty owner.');
+    }
+
+    public function test_non_admin_cannot_create_claim_for_another_user(): void
+    {
+        $customerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $otherUser = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+
+        $warranty = Warranty::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        $this->actingAsUser($otherUser);
+
+        $this->postJson('/api/warranty-claims', [
+            'warranty_id' => $warranty->id,
+            'user_id' => $owner->id,
+            'claim_number' => 'CLM-FORBIDDEN-CREATE',
+            'complaint_description' => 'Unauthorized create attempt',
+            'status' => 'PENDING',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'You can only create claims for your own account.');
+    }
+
     public function test_show_returns_claim(): void
     {
         $this->actingAsBackofficeAdmin();
@@ -82,6 +126,38 @@ class WarrantyClaimControllerTest extends ApiTestCase
         $this->getJson('/api/warranty-claims/warranty/' . $warranty->id)
             ->assertOk()
             ->assertJsonStructure(['data']);
+    }
+
+    public function test_claims_by_warranty_for_customer_excludes_other_warranty_claims(): void
+    {
+        $customerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $otherUser = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+
+        $warranty = Warranty::factory()->create(['user_id' => $owner->id]);
+        $otherWarranty = Warranty::factory()->create(['user_id' => $otherUser->id]);
+
+        WarrantyClaim::factory()->create([
+            'warranty_id' => $warranty->id,
+            'user_id' => $owner->id,
+        ]);
+
+        WarrantyClaim::factory()->create([
+            'warranty_id' => $warranty->id,
+            'user_id' => $otherUser->id,
+        ]);
+
+        $hiddenClaim = WarrantyClaim::factory()->create([
+            'warranty_id' => $otherWarranty->id,
+            'user_id' => $otherUser->id,
+        ]);
+
+        $this->actingAsUser($owner);
+
+        $this->getJson('/api/warranty-claims/warranty/' . $warranty->id)
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonMissing(['id' => $hiddenClaim->id]);
     }
 
     public function test_update_rejects_invalid_status_transition(): void

@@ -48,17 +48,21 @@ export default function CustomerWarrantiesPage() {
                 <th>Serial</th>
                 <th>Model</th>
                 <th>Status</th>
+                <th>Issued</th>
+                <th>Expiry</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {isLoading ? <ShimmerTableRows rows={5} columns={5} /> : null}
+              {isLoading ? <ShimmerTableRows rows={5} columns={7} /> : null}
               {warranties.map((item) => (
                 <tr key={item.id}>
                   <td>{item.warranty_number || `WAR-${item.id}`}</td>
                   <td>{item.serial_number || item.serial}</td>
                   <td>{item.product_name || item.battery_model_name || 'Unknown item'}</td>
                   <td><span className="tag">{item.status}</span></td>
+                  <td>{item.issue_date ? new Date(item.issue_date).toLocaleDateString() : '-'}</td>
+                  <td>{item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : '-'}</td>
                   <td>
                     <button
                       className="neon-btn-ghost"

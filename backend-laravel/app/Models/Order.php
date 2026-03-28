@@ -14,7 +14,16 @@ class Order extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['order_number', 'user_id', 'total_amount', 'status', 'payment_status', 'notes'];
+    protected $fillable = [
+        'order_number',
+        'user_id',
+        'total_amount',
+        'status',
+        'payment_status',
+        'payment_method',
+        'stripe_checkout_session_id',
+        'notes',
+    ];
 
     protected $casts = [
         'total_amount' => 'float',
@@ -39,6 +48,13 @@ class Order extends Model
      */
     public function scopeVisibleToUser(Builder $query, User $user): Builder
     {
+        $user->loadMissing('staffUser.role');
+
+        // Non-backoffice users should always see their own orders.
+        if (!$user->staffUser) {
+            return $query->where('user_id', $user->id);
+        }
+
         $accessService = new EntityAccessService();
         return $accessService->applyVisibility($user, 'ORDERS', $query);
     }

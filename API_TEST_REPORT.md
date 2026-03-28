@@ -1,5 +1,175 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 28, 2026 (Order Lifecycle Emails + Invoice PDF)
+
+### Implemented
+- Added lifecycle order email notifications:
+	- order created,
+	- order status updated (accept/reject),
+	- order fulfilled.
+- Added reusable transactional mailable using shared branded templates.
+- Replaced text invoice download with real PDF invoice generation.
+- Added invoice PDF Blade view and integrated `barryvdh/laravel-dompdf`.
+- Ensured shared system email template supports branding logo URL config.
+
+### Files Added/Updated
+- `backend-laravel/app/Mail/TransactionalMail.php` (new)
+- `backend-laravel/app/Http/Controllers/Api/OrderController.php`
+- `backend-laravel/resources/views/pdf/invoice.blade.php` (new)
+- `backend-laravel/resources/views/emails/transactional.blade.php`
+- `backend-laravel/.env.example`
+- `backend-laravel/composer.json`
+- `backend-laravel/tests/Feature/Api/OrderControllerTest.php`
+
+### Validation
+- Migration check:
+	- `php artisan migrate --force` -> nothing pending.
+- Backend regression:
+	- `php artisan test --filter='(OrderControllerTest|AuthControllerTest)'` -> passed (`22` tests, `70` assertions).
+- Seeder run:
+	- `php artisan db:seed --force` -> completed successfully.
+
+## Update - March 28, 2026 (Wholesaler Payment Methods: Stripe Online + Pay Later)
+
+### Implemented
+- Added order payment method support in backend and frontend:
+	- `PAY_LATER` (default)
+	- `ONLINE` (Stripe Checkout)
+- Backend order flow updates:
+	- Added `payment_method` and `stripe_checkout_session_id` to orders schema.
+	- Order create API now accepts `payment_method` and returns `checkout_url` when `ONLINE` is selected.
+	- Stripe checkout session integration added via `stripe/stripe-php`.
+	- Test-environment-safe Stripe behavior for deterministic feature tests.
+- Frontend wholesaler order placement updates:
+	- Added payment method selection cards on place-order page.
+	- `ONLINE` mode now triggers Stripe redirect flow using returned `checkout_url`.
+	- Orders history now displays payment method (`Online (Stripe)` / `Pay Later`).
+
+### Files Added/Updated
+- `backend-laravel/database/migrations/2026_03_28_000010_add_payment_method_to_orders_table.php` (new)
+- `backend-laravel/app/Http/Controllers/Api/OrderController.php`
+- `backend-laravel/app/Models/Order.php`
+- `backend-laravel/config/services.php`
+- `backend-laravel/.env.example`
+- `backend-laravel/tests/Feature/Api/OrderControllerTest.php`
+- `frontend/src/pages/wholesaler/PlaceOrderPage.jsx`
+- `frontend/src/pages/wholesaler/OrdersPage.jsx`
+- `frontend/src/pages/wholesaler/PlaceOrderPage.test.jsx`
+
+### Validation
+- Backend migration:
+	- `php artisan migrate --force` passed (payment method migration applied).
+- Backend feature regression:
+	- `php artisan test --filter=OrderControllerTest` passed (`13` tests, `42` assertions).
+- Frontend targeted regression:
+	- `npm run test -- src/pages/wholesaler/PlaceOrderPage.test.jsx src/pages/wholesaler/OrdersPage.test.jsx --run` passed (`2` files, `8` tests).
+- Full frontend regression:
+	- `npm run test -- --run` passed (`29` files, `126` tests).
+
+## Update - March 28, 2026 (Admin Claims UI Contract Alignment)
+
+### Implemented
+- Rebuilt admin warranty-claims UI to match current app design system and live API contract:
+	- Migrated page away from legacy Ant Design workflow.
+	- Standardized list fetches to `GET /warranty-claims/` with status filter support.
+	- Standardized status actions to `PUT /warranty-claims/{id}/` updates (`UNDER_REVIEW`, `APPROVED`, `REJECTED`, `RESOLVED`) with optional notes.
+	- Added summary KPI cards and details panel for claim review context.
+- Integrated admin claims into navigation and routing:
+	- Added `/admin/warranty-claims` route.
+	- Added `Claims` sidebar item under Admin Operations.
+- Added focused frontend tests for:
+	- rendering + table/summaries,
+	- filter query behavior,
+	- status transition payload behavior.
+
+### Files Added/Updated
+- `frontend/src/pages/admin/WarrantyClaimsPage.jsx`
+- `frontend/src/pages/admin/WarrantyClaimsPage.test.jsx` (new)
+- `frontend/src/App.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+
+### Validation
+- Targeted frontend test:
+	- `npm run test -- src/pages/admin/WarrantyClaimsPage.test.jsx --run`
+	- Result: passed (`1` file, `3` tests).
+- Full frontend regression:
+	- `npm run test -- --run`
+	- Result: passed (`28` files, `124` tests).
+
+## Update - March 28, 2026 (Next Natural Steps: Wholesaler Orders UX + Warranty Metadata Context)
+
+### Implemented
+- Wholesaler order tracking/history UX improvements in frontend:
+	- Added status-filter controls (`All`, `Pending`, `Accepted`, `Fulfilled`, `Rejected`).
+	- Added summary KPI cards for order state counts.
+	- Added submitted date + total amount columns for richer history context.
+	- Added client-side order form guardrails (missing item selection / invalid quantity).
+	- Improved invoice download behavior:
+		- uses server-provided filename when available
+		- shows explicit error toast when invoice is unavailable.
+- Warranty metadata context improvements (download-only scope preserved):
+	- Customer warranty list now surfaces issue date + expiry date next to status.
+	- Wholesaler sales/warranty table now surfaces expiry date next to issue date.
+	- Added resilient certificate download error handling in wholesaler view.
+
+### Files Updated
+- `frontend/src/pages/wholesaler/OrdersPage.jsx`
+- `frontend/src/pages/wholesaler/SalesPage.jsx`
+- `frontend/src/pages/customer/WarrantiesPage.jsx`
+- `frontend/src/pages/wholesaler/OrdersPage.test.jsx`
+
+### Validation
+- Targeted frontend regression:
+	- `npm test -- --run src/pages/wholesaler/OrdersPage.test.jsx src/pages/wholesaler/SalesPage.test.jsx src/pages/customer/WarrantiesPage.test.jsx`
+	- Result: passed (`3` files, `16` tests).
+- Full frontend regression:
+	- `npm test -- --run`
+	- Result: passed (`27` files, `121` tests).
+
+## Update - March 28, 2026 (Implementation Start: Orders Lifecycle + Customer Claims Tracking)
+
+### Implemented
+- Backend order lifecycle hardening in Laravel:
+	- Added missing order action endpoints used by frontend:
+		- `POST /api/orders/{order}/accept/`
+		- `POST /api/orders/{order}/reject/`
+		- `POST /api/orders/{order}/fulfill/`
+		- `GET /api/orders/{order}/invoice/`
+	- Added order status normalization + transition rules (`PENDING -> ACCEPTED/REJECTED/CANCELLED -> FULFILLED`).
+	- Added ownership/visibility enforcement for order `show`, `update`, `destroy`, and `ordersByUser`.
+	- Added list filtering (`status`, `per_page`) and sorting for order history consistency.
+	- Updated order stats payload to canonical lifecycle keys (`accepted`, `rejected`, `fulfilled`) with legacy status compatibility.
+- Frontend customer claims tracking closure:
+	- Added new customer claims status page:
+		- `frontend/src/pages/customer/ClaimsPage.jsx`
+	- Routed and navigated in customer panel:
+		- `frontend/src/App.jsx` (`/customer/claims`)
+		- `frontend/src/components/layout/Sidebar.jsx` (new `My Claims` nav item)
+	- Added dedicated frontend test coverage:
+		- `frontend/src/pages/customer/ClaimsPage.test.jsx`
+
+### Files Added/Updated
+- `backend-laravel/app/Http/Controllers/Api/OrderController.php`
+- `backend-laravel/routes/api.php`
+- `backend-laravel/app/Models/Order.php`
+- `backend-laravel/app/Http/Controllers/Api/AdminController.php`
+- `backend-laravel/tests/Feature/Api/OrderControllerTest.php`
+- `backend-laravel/tests/Feature/Api/AdminControllerTest.php`
+- `frontend/src/pages/customer/ClaimsPage.jsx` (new)
+- `frontend/src/pages/customer/ClaimsPage.test.jsx` (new)
+- `frontend/src/App.jsx`
+- `frontend/src/components/layout/Sidebar.jsx`
+
+### Validation
+- Targeted backend regression:
+	- `php artisan test --filter='(OrderControllerTest|AdminControllerTest)'` passed (`19` tests).
+- Targeted frontend regression:
+	- `npm test -- --run src/pages/customer/ClaimsPage.test.jsx src/pages/customer/ClaimWarrantyPage.test.jsx src/pages/customer/WarrantiesPage.test.jsx` passed (`3` files, `13` tests).
+- Full frontend regression:
+	- `npm test -- --run` passed (`27` files, `120` tests).
+- Full Laravel Feature regression:
+	- `php artisan test --testsuite=Feature` passed (`80` tests, `213` assertions).
+
 ## Update - March 28, 2026 (Next Pending Feature: Frontend API Error Normalization)
 
 ### Implemented

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { TestWrapper, mockOrder, mockBatteryModel } from '../../test/helpers'
+import { TestWrapper, mockOrder } from '../../test/helpers'
 import OrdersPage from './OrdersPage'
 import * as api from '../../services/api'
 
@@ -9,13 +9,9 @@ vi.mock('../../services/api')
 describe('Wholesaler OrdersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    api.inventoryAPI.getCatalogItems = vi.fn(() => Promise.resolve({ data: { results: [] } }))
   })
 
-  it('renders orders page with form and list', async () => {
-    api.inventoryAPI.getCatalogItems = vi.fn(() =>
-      Promise.resolve({ data: { results: [mockBatteryModel] } })
-    )
+  it('renders orders page with listing and place order action', async () => {
     api.orderAPI.getOrders = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
     )
@@ -28,89 +24,11 @@ describe('Wholesaler OrdersPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Orders')).toBeInTheDocument()
-      expect(screen.getByText('Place Order')).toBeInTheDocument()
-    })
-  })
-
-  it('allows adding multiple order items', async () => {
-    api.inventoryAPI.getCatalogItems = vi.fn(() =>
-      Promise.resolve({ data: { results: [mockBatteryModel] } })
-    )
-    api.orderAPI.getOrders = vi.fn(() =>
-      Promise.resolve({ data: { results: [] } })
-    )
-
-    render(
-      <TestWrapper>
-        <OrdersPage />
-      </TestWrapper>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Add Item')).toBeInTheDocument()
-    })
-
-    // Initially one item row
-    expect(screen.getAllByLabelText(/Item/i)).toHaveLength(1)
-
-    // Add another item
-    fireEvent.click(screen.getByText('Add Item'))
-
-    // Now should have two item rows
-    expect(screen.getAllByLabelText(/Item/i)).toHaveLength(2)
-  })
-
-  it('submits order with items', async () => {
-    api.inventoryAPI.getCatalogItems = vi.fn(() =>
-      Promise.resolve({ data: { results: [mockBatteryModel] } })
-    )
-    api.orderAPI.getOrders = vi.fn(() =>
-      Promise.resolve({ data: { results: [] } })
-    )
-    api.orderAPI.createOrder = vi.fn(() =>
-      Promise.resolve({ data: mockOrder })
-    )
-
-    render(
-      <TestWrapper>
-        <OrdersPage />
-      </TestWrapper>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Submit Order')).toBeInTheDocument()
-      expect(screen.getByRole('option', { name: mockBatteryModel.name })).toBeInTheDocument()
-    })
-
-    // Select battery model
-    const modelSelect = screen.getByLabelText(/Item/i)
-    fireEvent.change(modelSelect, { target: { value: mockBatteryModel.id } })
-
-    // Set quantity
-    const quantityInput = screen.getByLabelText(/Quantity/i)
-    fireEvent.change(quantityInput, { target: { value: '10' } })
-
-    // Submit
-    fireEvent.click(screen.getByText('Submit Order'))
-
-    await waitFor(() => {
-      expect(api.orderAPI.createOrder).toHaveBeenCalledWith({
-        notes: '',
-        items: [
-          {
-            product_type: 'PRODUCT',
-            product_id: mockBatteryModel.id,
-            quantity: 10,
-          },
-        ],
-      })
+      expect(screen.getByRole('link', { name: 'Place New Order' })).toHaveAttribute('href', '/wholesaler/orders/new')
     })
   })
 
   it('displays existing orders', async () => {
-    api.inventoryAPI.getCatalogItems = vi.fn(() =>
-      Promise.resolve({ data: { results: [] } })
-    )
     api.orderAPI.getOrders = vi.fn(() =>
       Promise.resolve({ data: { results: [mockOrder] } })
     )
@@ -129,9 +47,6 @@ describe('Wholesaler OrdersPage', () => {
 
   it('shows invoice button for fulfilled orders', async () => {
     const fulfilledOrder = { ...mockOrder, status: 'FULFILLED' }
-    api.inventoryAPI.getCatalogItems = vi.fn(() =>
-      Promise.resolve({ data: { results: [] } })
-    )
     api.orderAPI.getOrders = vi.fn(() =>
       Promise.resolve({ data: { results: [fulfilledOrder] } })
     )
@@ -144,6 +59,34 @@ describe('Wholesaler OrdersPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Invoice')).toBeInTheDocument()
+    })
+  })
+
+  it('requests filtered orders when status filter is selected', async () => {
+    api.orderAPI.getOrders = vi.fn(() =>
+      Promise.resolve({ data: { results: [] } })
+    )
+
+    render(
+      <TestWrapper>
+        <OrdersPage />
+      </TestWrapper>
+    )
+
+    await waitFor(() => {
+      expect(api.orderAPI.getOrders).toHaveBeenCalledWith({
+        ordering: '-created_at',
+        status: undefined,
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pending' }))
+
+    await waitFor(() => {
+      expect(api.orderAPI.getOrders).toHaveBeenLastCalledWith({
+        ordering: '-created_at',
+        status: 'PENDING',
+      })
     })
   })
 })

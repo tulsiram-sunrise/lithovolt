@@ -73,11 +73,11 @@ class AdminController extends Controller
     {
         $stats = [
             'total' => Order::count(),
-            'pending' => Order::where('status', 'pending')->count(),
-            'confirmed' => Order::where('status', 'confirmed')->count(),
-            'shipped' => Order::where('status', 'shipped')->count(),
-            'delivered' => Order::where('status', 'delivered')->count(),
-            'cancelled' => Order::where('status', 'cancelled')->count(),
+            'pending' => Order::whereIn('status', ['pending', 'PENDING'])->count(),
+            'accepted' => Order::whereIn('status', ['confirmed', 'accepted', 'CONFIRMED', 'ACCEPTED'])->count(),
+            'rejected' => Order::whereIn('status', ['rejected', 'REJECTED'])->count(),
+            'fulfilled' => Order::whereIn('status', ['shipped', 'delivered', 'fulfilled', 'SHIPPED', 'DELIVERED', 'FULFILLED'])->count(),
+            'cancelled' => Order::whereIn('status', ['cancelled', 'CANCELLED'])->count(),
         ];
 
         return response()->json($stats);
