@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import PasswordInput from '../../components/common/PasswordInput'
 
 export default function ResetPasswordPage() {
@@ -33,7 +34,7 @@ export default function ResetPasswordPage() {
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to reset password. Please verify the token and try again.')
+      setError(extractApiErrorMessage(err, 'Unable to reset password. Please verify the token and try again.'))
     } finally {
       setIsSubmitting(false)
     }

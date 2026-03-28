@@ -84,4 +84,15 @@ class WarrantyControllerTest extends ApiTestCase
             ->assertOk()
             ->assertJsonPath('valid', true);
     }
+
+    public function test_public_verify_works_without_auth_and_hides_consumer_identity(): void
+    {
+        Warranty::factory()->create(['serial_number' => 'SN-PUBLIC-VERIFY-001']);
+
+        $this->getJson('/api/warranties/verify/SN-PUBLIC-VERIFY-001')
+            ->assertOk()
+            ->assertJsonPath('valid', true)
+            ->assertJsonMissingPath('warranty.consumer_email')
+            ->assertJsonMissingPath('warranty.consumer_name');
+    }
 }

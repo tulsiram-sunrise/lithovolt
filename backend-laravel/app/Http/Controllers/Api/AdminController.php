@@ -97,12 +97,19 @@ class AdminController extends Controller
 
     public function exportData($model)
     {
+        $allowedModels = ['users', 'orders', 'warranties', 'claims'];
+        if (!in_array($model, $allowedModels, true)) {
+            return response()->json([
+                'message' => 'Invalid export model.',
+                'allowed_models' => $allowedModels,
+            ], 422);
+        }
+
         $data = match ($model) {
             'users' => User::all(),
             'orders' => Order::with('user', 'items')->get(),
             'warranties' => Warranty::with('batteryModel', 'user')->get(),
             'claims' => \App\Models\WarrantyClaim::with('warranty', 'user')->get(),
-            default => [],
         };
 
         return response()->json($data);

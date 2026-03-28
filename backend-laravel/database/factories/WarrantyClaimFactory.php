@@ -18,7 +18,7 @@ class WarrantyClaimFactory extends Factory
             'user_id' => User::factory(),
             'claim_number' => fake()->unique()->bothify('CLM-#####'),
             'complaint_description' => fake()->sentence(),
-            'status' => 'submitted',
+            'status' => 'PENDING',
             'resolution' => null,
             'resolved_date' => null,
         ];

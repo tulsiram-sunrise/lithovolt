@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
+import { authAPI } from './services/api'
 
 // Layouts
 import AuthLayout from './components/layout/AuthLayout'
@@ -61,8 +63,62 @@ import GuestBatteryFinderPage from './pages/guest/GuestBatteryFinderPage'
 import GuestAboutPage from './pages/guest/GuestAboutPage'
 import GuestContactPage from './pages/guest/GuestContactPage'
 import GuestSupportPage from './pages/guest/GuestSupportPage'
+import UnauthorizedPage from './pages/common/UnauthorizedPage'
 
 function App() {
+  const { isAuthenticated, token, updateUser, logout } = useAuthStore()
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    // Keep tests deterministic while preserving runtime bootstrap validation.
+    if (import.meta.env.MODE === 'test') {
+      setAuthReady(true)
+      return () => {
+        isMounted = false
+      }
+    }
+
+    const bootstrapAuth = async () => {
+      if (!isAuthenticated || !token) {
+        if (isMounted) {
+          setAuthReady(true)
+        }
+        return
+      }
+
+      try {
+        const response = await authAPI.profile()
+        if (isMounted && response?.data) {
+          updateUser(response.data)
+        }
+      } catch {
+        if (isMounted) {
+          logout()
+        }
+      } finally {
+        if (isMounted) {
+          setAuthReady(true)
+        }
+      }
+    }
+
+    bootstrapAuth()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAuthenticated, token, updateUser, logout])
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 text-center text-[color:var(--muted)]">
+        Checking your session...
+      </div>
+    )
+  }
+
   return (
     <Routes>
       {/* Public Routes */}
@@ -80,6 +136,7 @@ function App() {
         <Route path="/about" element={<GuestAboutPage />} />
         <Route path="/contact" element={<GuestContactPage />} />
         <Route path="/support" element={<GuestSupportPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="/models" element={<GuestModelCatalogPage />} />
         <Route path="/models/:id" element={<GuestModelDetailPage />} />
         <Route path="/find-battery" element={<GuestBatteryFinderPage />} />
@@ -94,7 +151,7 @@ function App() {
       <Route
         path="/admin/*"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN']} authReady={authReady}>
             <AdminLayout />
           </ProtectedRoute>
         }
@@ -125,7 +182,7 @@ function App() {
       <Route
         path="/wholesaler/*"
         element={
-          <ProtectedRoute roles={['WHOLESALER']}>
+          <ProtectedRoute roles={['WHOLESALER']} authReady={authReady}>
             <WholesalerLayout />
           </ProtectedRoute>
         }
@@ -144,7 +201,7 @@ function App() {
       <Route
         path="/customer/*"
         element={
-          <ProtectedRoute roles={['CONSUMER', 'RETAILER']}>
+          <ProtectedRoute roles={['CONSUMER', 'RETAILER']} authReady={authReady}>
             <CustomerLayout />
           </ProtectedRoute>
         }
@@ -169,15 +226,21 @@ function App() {
 }
 
 // Protected Route Component
-function ProtectedRoute({ children, roles }) {
+function ProtectedRoute({ children, roles, authReady }) {
   const { user, isAuthenticated } = useAuthStore()
+
+  if (!authReady) {
+    return null
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  if (roles && !roles.includes(user?.role)) {
-    return <Navigate to="/login" replace />
+  const roleName = String(user?.role?.name || user?.role || '').toUpperCase()
+
+  if (roles && !roles.includes(roleName)) {
+    return <Navigate to="/unauthorized" replace />
   }
 
   return children

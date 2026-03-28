@@ -9,9 +9,8 @@ class WarrantyClaimControllerTest extends ApiTestCase
 {
     public function test_index_returns_claims(): void
     {
-        $user = $this->createUser('admin');
+        $user = $this->actingAsBackofficeAdmin();
         WarrantyClaim::factory()->count(2)->create();
-        $this->actingAsUser($user);
 
         $this->getJson('/api/warranty-claims')
             ->assertOk()
@@ -20,17 +19,18 @@ class WarrantyClaimControllerTest extends ApiTestCase
 
     public function test_store_creates_claim(): void
     {
-        $user = $this->createUser('admin');
-        $warranty = Warranty::factory()->create();
+        $this->actingAsBackofficeAdmin();
         $customer = $this->createUser('customer');
-        $this->actingAsUser($user);
+        $warranty = Warranty::factory()->create([
+            'user_id' => $customer->id,
+        ]);
 
         $response = $this->postJson('/api/warranty-claims', [
             'warranty_id' => $warranty->id,
             'user_id' => $customer->id,
             'claim_number' => 'CLM-00001',
             'complaint_description' => 'Not charging',
-            'status' => 'submitted',
+            'status' => 'PENDING',
         ]);
 
         $response->assertStatus(201);
@@ -39,9 +39,8 @@ class WarrantyClaimControllerTest extends ApiTestCase
 
     public function test_show_returns_claim(): void
     {
-        $user = $this->createUser('admin');
+        $this->actingAsBackofficeAdmin();
         $claim = WarrantyClaim::factory()->create();
-        $this->actingAsUser($user);
 
         $this->getJson('/api/warranty-claims/' . $claim->id)
             ->assertOk()
@@ -50,23 +49,23 @@ class WarrantyClaimControllerTest extends ApiTestCase
 
     public function test_update_modifies_claim(): void
     {
-        $user = $this->createUser('admin');
-        $claim = WarrantyClaim::factory()->create();
-        $this->actingAsUser($user);
+        $this->actingAsBackofficeAdmin();
+        $claim = WarrantyClaim::factory()->create([
+            'status' => 'PENDING',
+        ]);
 
         $this->putJson('/api/warranty-claims/' . $claim->id, [
-            'status' => 'resolved',
-            'resolution' => 'Replaced',
+            'status' => 'UNDER_REVIEW',
+            'resolution' => 'Review started',
         ])->assertOk();
 
-        $this->assertDatabaseHas('warranty_claims', ['id' => $claim->id, 'status' => 'resolved']);
+        $this->assertDatabaseHas('warranty_claims', ['id' => $claim->id, 'status' => 'UNDER_REVIEW']);
     }
 
     public function test_destroy_deletes_claim(): void
     {
-        $user = $this->createUser('admin');
+        $this->actingAsBackofficeAdmin();
         $claim = WarrantyClaim::factory()->create();
-        $this->actingAsUser($user);
 
         $this->deleteJson('/api/warranty-claims/' . $claim->id)
             ->assertOk();
@@ -76,13 +75,47 @@ class WarrantyClaimControllerTest extends ApiTestCase
 
     public function test_claims_by_warranty_returns_claims(): void
     {
-        $user = $this->createUser('admin');
+        $this->actingAsBackofficeAdmin();
         $warranty = Warranty::factory()->create();
         WarrantyClaim::factory()->count(2)->create(['warranty_id' => $warranty->id]);
-        $this->actingAsUser($user);
 
         $this->getJson('/api/warranty-claims/warranty/' . $warranty->id)
             ->assertOk()
             ->assertJsonStructure(['data']);
+    }
+
+    public function test_update_rejects_invalid_status_transition(): void
+    {
+        $this->actingAsBackofficeAdmin();
+        $claim = WarrantyClaim::factory()->create([
+            'status' => 'RESOLVED',
+        ]);
+
+        $this->putJson('/api/warranty-claims/' . $claim->id, [
+            'status' => 'APPROVED',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot transition from RESOLVED to APPROVED');
+    }
+
+    public function test_non_owner_cannot_update_claim(): void
+    {
+        $customerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $warranty = Warranty::factory()->create(['user_id' => $owner->id]);
+        $claim = WarrantyClaim::factory()->create([
+            'warranty_id' => $warranty->id,
+            'user_id' => $owner->id,
+            'status' => 'PENDING',
+        ]);
+
+        $otherUser = \App\Models\User::factory()->create(['role_id' => $customerRole->id]);
+        $this->actingAsUser($otherUser);
+
+        $this->putJson('/api/warranty-claims/' . $claim->id, [
+            'status' => 'UNDER_REVIEW',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Forbidden');
     }
 }

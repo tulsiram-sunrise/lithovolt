@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
@@ -23,7 +24,7 @@ export default function ForgotPasswordPage() {
         navigate(`/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to request password reset.')
+      setError(extractApiErrorMessage(err, 'Unable to request password reset.'))
     } finally {
       setIsRequesting(false)
     }

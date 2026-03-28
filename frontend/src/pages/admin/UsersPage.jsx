@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { userAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import PasswordInput from '../../components/common/PasswordInput'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
@@ -64,15 +65,7 @@ function UserDirectoryTab() {
       resetCreateForm()
     },
     onError: (err) => {
-      const details = err.response?.data?.errors || err.response?.data?.details
-      if (details && typeof details === 'object') {
-        const firstError = Object.values(details)[0]
-        if (Array.isArray(firstError) && firstError.length > 0) {
-          setCreateError(firstError[0])
-          return
-        }
-      }
-      setCreateError(err.response?.data?.message || err.response?.data?.error || 'Unable to create user.')
+      setCreateError(extractApiErrorMessage(err, 'Unable to create user.'))
     },
   })
 

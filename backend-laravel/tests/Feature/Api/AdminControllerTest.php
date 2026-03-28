@@ -72,4 +72,14 @@ class AdminControllerTest extends ApiTestCase
         $this->getJson('/api/admin/export/users')
             ->assertOk();
     }
+
+    public function test_export_data_rejects_invalid_model(): void
+    {
+        $admin = $this->createUser('admin');
+        $this->actingAsUser($admin);
+
+        $this->getJson('/api/admin/export/unknown-model')
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Invalid export model.');
+    }
 }

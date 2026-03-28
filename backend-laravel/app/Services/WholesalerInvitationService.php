@@ -6,6 +6,7 @@ use App\Models\WholesalerInvitation;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Collection;
 
 class WholesalerInvitationService
@@ -73,7 +74,7 @@ class WholesalerInvitationService
                 $results->push($result);
             } catch (\Exception $e) {
                 // Log error but continue with next invitation
-                \Log::error('Failed to send wholesaler invitation', [
+                    Log::error('Failed to send wholesaler invitation', [
                     'email' => $invite['email'],
                     'error' => $e->getMessage(),
                 ]);
@@ -130,16 +131,26 @@ class WholesalerInvitationService
         $subject = 'Invitation to Join Lithovolt as a Wholesaler';
 
         $viewData = [
-            'name' => $invitation->name,
-            'companyName' => $invitation->company_name,
-            'notes' => $invitation->notes,
-            'registrationLink' => $registrationLink,
-            'expiresOn' => $invitation->expires_at?->format('F j, Y') ?? now()->addDays(30)->format('F j, Y'),
+            'subject' => $subject,
+            'heading' => 'You are invited to Lithovolt',
+            'subheading' => 'Wholesale Partner Onboarding',
+            'greeting' => 'Hello ' . ($invitation->name ?: 'there') . ',',
+            'lines' => [
+                'You have been invited to join Lithovolt as a wholesale partner.',
+            ],
+            'meta' => array_values(array_filter([
+                !empty($invitation->company_name) ? ['label' => 'Company:', 'value' => $invitation->company_name] : null,
+                !empty($invitation->notes) ? ['label' => 'Message:', 'value' => $invitation->notes] : null,
+            ])),
+            'actionText' => 'Accept Invitation',
+            'actionUrl' => $registrationLink,
+            'footnote' => 'This invitation expires on ' . ($invitation->expires_at?->format('F j, Y') ?? now()->addDays(30)->format('F j, Y')) . '.',
+            'footerText' => 'If you did not expect this invitation, you can ignore this email.',
         ];
 
         try {
             Mail::send(
-                ['html' => 'emails.wholesaler-invite', 'text' => 'emails.wholesaler-invite-plain'],
+                ['html' => 'emails.transactional', 'text' => 'emails.transactional-plain'],
                 $viewData,
                 function ($message) use ($invitation, $subject) {
                 $message->to($invitation->email)
@@ -149,7 +160,7 @@ class WholesalerInvitationService
 
             $invitation->update(['sent_at' => now()]);
         } catch (\Throwable $e) {
-            \Log::error('Failed to send wholesaler invitation email', [
+                Log::error('Failed to send wholesaler invitation email', [
                 'invitation_id' => $invitation->id,
                 'email' => $invitation->email,
                 'error' => $e->getMessage(),

@@ -230,11 +230,15 @@ class WarrantyController extends Controller
         return response()->json([
             'valid' => !$isExpired,
             'is_expired' => $isExpired,
-            'warranty' => $this->toWarrantyPayload($warranty, true),
+            'warranty' => $this->toWarrantyPayload($warranty, false, false),
         ]);
     }
 
-    private function toWarrantyPayload(Warranty $warranty, bool $includeRelations = false): array
+    private function toWarrantyPayload(
+        Warranty $warranty,
+        bool $includeRelations = false,
+        bool $includeConsumerIdentity = true
+    ): array
     {
         $product = $warranty->product;
         $battery = $warranty->batteryModel;
@@ -249,10 +253,6 @@ class WarrantyController extends Controller
             'expiry_date' => $warranty->expiry_date,
             'is_expired' => $this->isWarrantyExpired($warranty),
             'user_id' => $warranty->user_id,
-            'consumer_name' => $user?->full_name
-                ?: trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? ''))
-                ?: $user?->email,
-            'consumer_email' => $user?->email,
             'product_id' => $warranty->product_id,
             'product_name' => $product?->name,
             'product_type' => $product?->product_type,
@@ -262,6 +262,13 @@ class WarrantyController extends Controller
             'created_at' => $warranty->created_at,
             'updated_at' => $warranty->updated_at,
         ];
+
+        if ($includeConsumerIdentity) {
+            $payload['consumer_name'] = $user?->full_name
+                ?: trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? ''))
+                ?: $user?->email;
+            $payload['consumer_email'] = $user?->email;
+        }
 
         if ($includeRelations) {
             $payload['product'] = $product;

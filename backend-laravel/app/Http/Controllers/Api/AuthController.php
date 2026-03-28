@@ -111,15 +111,20 @@ class AuthController extends Controller
             $verificationLink = $frontendUrl . '/verify-email?token=' . urlencode($verificationToken);
 
             try {
-                Mail::raw(
-                    "Welcome to Lithovolt.\n\n" .
-                    "Please verify your email by clicking the link below:\n" .
-                    $verificationLink . "\n\n" .
-                    "If you did not create this account, you can ignore this message.",
-                    function ($message) use ($user) {
-                        $message->to($user->email)
-                            ->subject('Verify your Lithovolt email');
-                    }
+                $this->sendTransactionalEmail(
+                    $user->email,
+                    'Verify your Lithovolt email',
+                    [
+                        'heading' => 'Welcome to Lithovolt',
+                        'subheading' => 'Email Verification',
+                        'greeting' => 'Hello ' . trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ',',
+                        'lines' => [
+                            'Please verify your email address to activate your account and continue using Lithovolt services.',
+                        ],
+                        'actionText' => 'Verify Email',
+                        'actionUrl' => $verificationLink,
+                        'footnote' => 'If you did not create this account, you can ignore this email.',
+                    ]
                 );
             } catch (\Throwable $mailError) {
                 if (config('app.debug')) {
@@ -478,11 +483,21 @@ class AuthController extends Controller
 
             if ($email) {
                 try {
-                    Mail::raw(
-                        "Your Lithovolt OTP is: {$otp}\nThis OTP expires in 10 minutes.",
-                        static function ($message) use ($user): void {
-                            $message->to($user->email)->subject('Your Lithovolt OTP');
-                        }
+                    $this->sendTransactionalEmail(
+                        $user->email,
+                        'Your Lithovolt OTP',
+                        [
+                            'heading' => 'Your One-Time Passcode',
+                            'subheading' => 'Secure Verification',
+                            'greeting' => 'Hello ' . trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ',',
+                            'lines' => [
+                                'Use the OTP below to continue your sign-in process. This OTP expires in 10 minutes.',
+                            ],
+                            'meta' => [
+                                ['label' => 'OTP:', 'value' => (string) $otp],
+                            ],
+                            'footerText' => 'If you did not request this OTP, please secure your account immediately.',
+                        ]
                     );
 
                     $deliveryStatus = 'sent';
@@ -634,17 +649,25 @@ class AuthController extends Controller
             $resetLink = $frontendUrl . '/reset-password?token=' . urlencode($resetToken) . '&email=' . urlencode($user->email);
 
             try {
-                Mail::raw(
-                    "We received a request to reset your Lithovolt password.\n\n" .
-                    "Use this link to set a new password:\n" .
-                    $resetLink . "\n\n" .
-                    "Or enter this reset token manually:\n" .
-                    $resetToken . "\n\n" .
-                    "This link expires in 1 hour. If you did not request this change, you can ignore this email.",
-                    function ($message) use ($user) {
-                        $message->to($user->email)
-                            ->subject('Lithovolt Password Reset');
-                    }
+                $this->sendTransactionalEmail(
+                    $user->email,
+                    'Lithovolt Password Reset',
+                    [
+                        'heading' => 'Password Reset Request',
+                        'subheading' => 'Account Security',
+                        'greeting' => 'Hello ' . trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) . ',',
+                        'lines' => [
+                            'We received a request to reset your Lithovolt password.',
+                            'Use the secure link below to set a new password.',
+                        ],
+                        'actionText' => 'Reset Password',
+                        'actionUrl' => $resetLink,
+                        'meta' => [
+                            ['label' => 'Reset token:', 'value' => $resetToken],
+                        ],
+                        'footnote' => 'This reset link expires in 1 hour.',
+                        'footerText' => 'If you did not request this password reset, you can ignore this email.',
+                    ]
                 );
             } catch (\Throwable $mailError) {
                 if (config('app.debug')) {
@@ -721,5 +744,16 @@ class AuthController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function sendTransactionalEmail(string $to, string $subject, array $data): void
+    {
+        Mail::send(
+            ['html' => 'emails.transactional', 'text' => 'emails.transactional-plain'],
+            array_merge($data, ['subject' => $subject]),
+            static function ($message) use ($to, $subject): void {
+                $message->to($to)->subject($subject);
+            }
+        );
     }
 }

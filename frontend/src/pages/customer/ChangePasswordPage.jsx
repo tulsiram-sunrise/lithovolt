@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import PasswordInput from '../../components/common/PasswordInput'
 
 function resolvePanelBasePath(pathname) {
@@ -55,17 +56,7 @@ export default function ChangePasswordPage() {
       })
       setTimeout(() => navigate(`${basePath}/profile`), 700)
     } catch (err) {
-      const details = err.response?.data?.details
-      if (details && typeof details === 'object') {
-        const firstError = Object.values(details)[0]
-        if (Array.isArray(firstError) && firstError.length > 0) {
-          setError(firstError[0])
-        } else {
-          setError('Unable to change password.')
-        }
-      } else {
-        setError(err.response?.data?.error || 'Unable to change password.')
-      }
+      setError(extractApiErrorMessage(err, 'Unable to change password.'))
     } finally {
       setLoading(false)
     }

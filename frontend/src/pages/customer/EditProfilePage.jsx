@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import { useAuthStore } from '../../store/authStore'
 
 function resolvePanelBasePath(pathname) {
@@ -82,17 +83,7 @@ export default function EditProfilePage() {
       setSuccess('Profile updated successfully.')
       setTimeout(() => navigate(`${basePath}/profile`), 700)
     } catch (err) {
-      const details = err.response?.data?.details
-      if (details && typeof details === 'object') {
-        const firstError = Object.values(details)[0]
-        if (Array.isArray(firstError) && firstError.length > 0) {
-          setError(firstError[0])
-        } else {
-          setError('Unable to update profile.')
-        }
-      } else {
-        setError(err.response?.data?.error || 'Unable to update profile.')
-      }
+      setError(extractApiErrorMessage(err, 'Unable to update profile.'))
     } finally {
       setLoading(false)
     }

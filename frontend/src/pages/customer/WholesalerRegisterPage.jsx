@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { userAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 
 export default function WholesalerRegisterPage() {
   const authUser = useAuthStore((state) => state.user)
@@ -76,7 +77,7 @@ export default function WholesalerRegisterPage() {
       setSuccess('Application submitted. We will review it soon.')
       await loadApplication()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Unable to submit application.')
+      setError(extractApiErrorMessage(err, 'Unable to submit application.'))
     } finally {
       setLoading(false)
     }

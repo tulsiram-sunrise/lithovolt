@@ -75,6 +75,9 @@ class WarrantyClaim extends Model
      */
     public function canTransitionTo(string $newStatus): bool
     {
+        $currentStatus = strtoupper((string) $this->status);
+        $newStatus = strtoupper((string) $newStatus);
+
         $validTransitions = [
             self::STATUS_PENDING => [self::STATUS_UNDER_REVIEW],
             self::STATUS_UNDER_REVIEW => [self::STATUS_APPROVED, self::STATUS_REJECTED],
@@ -83,7 +86,7 @@ class WarrantyClaim extends Model
             self::STATUS_RESOLVED => [],
         ];
 
-        return in_array($newStatus, $validTransitions[$this->status] ?? []);
+        return in_array($newStatus, $validTransitions[$currentStatus] ?? [], true);
     }
 
     /**
@@ -91,8 +94,11 @@ class WarrantyClaim extends Model
      */
     public function updateStatus(string $newStatus, ?User $reviewedBy = null, string $reviewNotes = ''): void
     {
+        $fromStatus = strtoupper((string) $this->status);
+        $newStatus = strtoupper((string) $newStatus);
+
         if (!$this->canTransitionTo($newStatus)) {
-            throw new \Exception("Cannot transition from {$this->status} to {$newStatus}");
+            throw new \Exception("Cannot transition from {$fromStatus} to {$newStatus}");
         }
 
         $this->status = $newStatus;
@@ -111,7 +117,7 @@ class WarrantyClaim extends Model
         // Record status history
         ClaimStatusHistory::create([
             'claim_id' => $this->id,
-            'from_status' => $this->status,
+            'from_status' => $fromStatus,
             'to_status' => $newStatus,
             'changed_by' => $reviewedBy?->id,
             'notes' => $reviewNotes,

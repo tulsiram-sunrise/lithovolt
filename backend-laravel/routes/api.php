@@ -49,6 +49,8 @@ Route::prefix('auth')->group(function () {
 
 // Public fitment lookup (throttled)
 Route::get('/catalog/models/', [BatteryModelController::class, 'publicIndex']);
+Route::get('/warranties/verify/{serialNumber}/', [WarrantyController::class, 'verify'])
+    ->middleware('throttle:40,1');
 Route::post('/fitment/registration-lookup/', [VehicleFitmentController::class, 'registrationLookup'])
     ->middleware('throttle:20,1');
 Route::post('/fitment/vehicle-lookup/', [VehicleFitmentController::class, 'vehicleLookup'])
@@ -163,7 +165,6 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/{warranty}/', [WarrantyController::class, 'show']);
         Route::put('/{warranty}/', [WarrantyController::class, 'update']);
         Route::delete('/{warranty}/', [WarrantyController::class, 'destroy']);
-        Route::get('/verify/{serialNumber}/', [WarrantyController::class, 'verify']);
     });
     
     // Warranty Claims

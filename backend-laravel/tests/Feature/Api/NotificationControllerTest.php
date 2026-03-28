@@ -79,4 +79,51 @@ class NotificationControllerTest extends ApiTestCase
             ->assertOk()
             ->assertJsonStructure(['unread_count']);
     }
+
+    public function test_non_owner_cannot_view_notification(): void
+    {
+        $ownerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+        $otherUser = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+        $notification = Notification::factory()->create(['user_id' => $owner->id]);
+
+        $this->actingAsUser($otherUser);
+
+        $this->getJson('/api/notifications/' . $notification->id)
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Forbidden');
+    }
+
+    public function test_non_owner_cannot_mark_notification_as_read(): void
+    {
+        $ownerRole = $this->createRole('customer');
+        $owner = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+        $otherUser = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+        $notification = Notification::factory()->create(['user_id' => $owner->id, 'status' => 'pending']);
+
+        $this->actingAsUser($otherUser);
+
+        $this->postJson('/api/notifications/' . $notification->id . '/read')
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Forbidden');
+    }
+
+    public function test_non_admin_cannot_create_notification_for_other_user(): void
+    {
+        $ownerRole = $this->createRole('customer');
+        $actor = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+        $recipient = \App\Models\User::factory()->create(['role_id' => $ownerRole->id]);
+
+        $this->actingAsUser($actor);
+
+        $this->postJson('/api/notifications', [
+            'user_id' => $recipient->id,
+            'type' => 'email',
+            'subject' => 'Unauthorized send',
+            'message' => 'Should fail',
+            'status' => 'pending',
+        ])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'You can only create notifications for your own account.');
+    }
 }

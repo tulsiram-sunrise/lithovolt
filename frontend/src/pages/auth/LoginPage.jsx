@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import { useAuthStore } from '../../store/authStore'
 import PasswordInput from '../../components/common/PasswordInput'
 
@@ -31,7 +32,7 @@ export default function LoginPage() {
         navigate('/customer', { replace: true })
       }
     } catch (err) {
-      setError(err.response?.data?.detail || err.response?.data?.error || 'Unable to sign in. Please check your credentials.')
+      setError(extractApiErrorMessage(err, 'Unable to sign in. Please check your credentials.'))
     } finally {
       setIsLoading(false)
     }

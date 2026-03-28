@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
@@ -31,7 +32,7 @@ export default function VerifyEmailPage() {
           return
         }
         setStatus('error')
-        setMessage(error.response?.data?.error || 'Verification failed. Link may be invalid or expired.')
+        setMessage(extractApiErrorMessage(error, 'Verification failed. Link may be invalid or expired.'))
       })
 
     return () => {

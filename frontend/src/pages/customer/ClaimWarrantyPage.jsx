@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { warrantyAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 
 export default function ClaimWarrantyPage() {
   const [form, setForm] = useState({
@@ -24,7 +25,7 @@ export default function ClaimWarrantyPage() {
       await warrantyAPI.claimWarranty(form)
       setSuccess('Warranty claimed successfully.')
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.detail || 'Unable to claim warranty.')
+      setError(extractApiErrorMessage(err, 'Unable to claim warranty.'))
     } finally {
       setLoading(false)
     }

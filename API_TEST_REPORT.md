@@ -1,5 +1,108 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 28, 2026 (Next Pending Feature: Frontend API Error Normalization)
+
+### Implemented
+- Added shared frontend API error parser:
+	- `frontend/src/services/apiError.js`
+	- Normalizes validation-style payloads (`details`, `errors`) and generic API payload fields (`message`, `error`, `detail`) into one user-facing message.
+- Added dedicated tests for parser behavior:
+	- `frontend/src/services/apiError.test.js`
+- Migrated high-impact auth and profile flows to shared parser:
+	- Auth pages: login, register, forgot-password, reset-password, verify-email.
+	- Customer forms: edit profile, change password, claim warranty, wholesaler registration.
+	- Admin user create mutation error handling.
+
+### Files Added/Updated
+- `frontend/src/services/apiError.js` (new)
+- `frontend/src/services/apiError.test.js` (new)
+- `frontend/src/pages/auth/LoginPage.jsx`
+- `frontend/src/pages/auth/RegisterPage.jsx`
+- `frontend/src/pages/auth/ForgotPasswordPage.jsx`
+- `frontend/src/pages/auth/ResetPasswordPage.jsx`
+- `frontend/src/pages/auth/VerifyEmailPage.jsx`
+- `frontend/src/pages/customer/EditProfilePage.jsx`
+- `frontend/src/pages/customer/ChangePasswordPage.jsx`
+- `frontend/src/pages/customer/ClaimWarrantyPage.jsx`
+- `frontend/src/pages/customer/WholesalerRegisterPage.jsx`
+- `frontend/src/pages/admin/UsersPage.jsx`
+
+### Validation
+- Targeted regression:
+	- `npm test -- src/services/apiError.test.js src/App.protected-route.test.jsx` passed (`2` files, `7` tests).
+- Full frontend regression:
+	- `cd frontend && npm test -- --run` passed (`26` files, `117` tests).
+
+## Update - March 28, 2026 (Next Pending Feature: Frontend Auth Guard Hardening)
+
+### Implemented
+- Added startup auth bootstrap validation in frontend app shell:
+	- App now verifies persisted authenticated sessions via `authAPI.profile()` at startup.
+	- Invalid persisted token state now logs out deterministically.
+- Improved role-mismatch behavior in route guard:
+	- Protected routes now redirect authenticated-but-unauthorized users to `/unauthorized` instead of `/login`.
+	- Added dedicated unauthorized page for clear access-denied UX.
+
+### Files Added/Updated
+- `frontend/src/App.jsx`
+- `frontend/src/pages/common/UnauthorizedPage.jsx` (new)
+- `frontend/src/App.protected-route.test.jsx` (new)
+
+### Validation
+- Targeted tests: `npm test -- --run src/App.protected-route.test.jsx` passed (`2` tests).
+- Full frontend regression: `npm test -- --run` passed (`25` files, `112` tests).
+
+## Update - March 28, 2026 (Uniform HTML Email Template Rollout)
+
+### What was standardized
+- Introduced a shared transactional email template pair:
+	- `backend-laravel/resources/views/emails/transactional.blade.php` (HTML)
+	- `backend-laravel/resources/views/emails/transactional-plain.blade.php` (plain text fallback)
+- Migrated all core auth and onboarding mail sends to the shared template:
+	- Registration verification email
+	- OTP email
+	- Password reset email
+	- Wholesaler invitation email
+
+### Validation snapshot
+- Auth/user feature tests remained green after template migration:
+	- `php artisan test --filter='(AuthControllerTest|UserControllerTest)'` passed (`15` tests).
+- Wholesaler invite smoke verification passed:
+	- `LOGIN=PASS`
+	- `INVITE_HTTP_STATUS=201`
+	- `MAIL_SEND_STATUS=PASS`
+	- `MAIL_SENT_AT` populated.
+
+### Notes
+- Shared template ensures consistent branding, subject hierarchy, CTA rendering, and footer messaging across all transactional emails.
+- Plain text alternative is preserved for deliverability and client compatibility.
+
+## Update - March 28, 2026 (Implementation Batch: Validation + Logic Hardening)
+
+### Implemented Fixes
+- Warranty claim workflow hardening:
+	- Controller now enforces claim access checks and ownership consistency.
+	- Status updates now use model transition rules instead of raw writes.
+	- Invalid transitions now return `422` with explicit transition error.
+	- Status-history recording fixed to persist correct `from_status`.
+- Admin export hardening:
+	- `GET /api/admin/export/{model}` now validates allowed models and returns `422` for invalid input.
+- Notification authorization hardening:
+	- `show` and `markAsRead` enforce object-level ownership/admin access.
+	- Non-admin users can no longer create notifications for other users.
+- MVP public verification closure (backend path):
+	- `GET /api/warranties/verify/{serialNumber}/` is now publicly reachable (throttled).
+	- Public verify payload omits consumer identity fields (`consumer_name`, `consumer_email`).
+
+### Verification Results
+- `php artisan test --filter=WarrantyClaimControllerTest` → passed (`8` tests).
+- `php artisan test --filter='(AdminControllerTest|NotificationControllerTest)'` → passed (`16` tests).
+- `php artisan test --filter=WarrantyControllerTest` → passed (`7` tests, including public verify without auth).
+- Full Laravel Feature suite after this batch:
+	- `73` passed, `0` failed, `184` assertions.
+- Runtime public verify smoke (without token):
+	- `GET /api/warranties/verify/NO-SERIAL-XYZ/` → `404` (expected for missing serial, confirms public route reachability).
+
 ## Update - March 28, 2026 (Email OTP Validation)
 
 ### OTP Fallback Enablement

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authAPI } from '../../services/api'
+import { extractApiErrorMessage } from '../../services/apiError'
 import PasswordInput from '../../components/common/PasswordInput'
 
 export default function RegisterPage() {
@@ -46,17 +47,7 @@ export default function RegisterPage() {
         navigate('/login', { replace: true })
       }, 2000)
     } catch (err) {
-      const details = err.response?.data?.details
-      if (details && typeof details === 'object') {
-        const firstError = Object.values(details)[0]
-        if (Array.isArray(firstError) && firstError.length > 0) {
-          setError(firstError[0])
-        } else {
-          setError('Registration failed. Please check your details.')
-        }
-      } else {
-        setError(err.response?.data?.error || 'Registration failed. Please try again.')
-      }
+      setError(extractApiErrorMessage(err, 'Registration failed. Please try again.'))
     } finally {
       setIsSubmitting(false)
     }
