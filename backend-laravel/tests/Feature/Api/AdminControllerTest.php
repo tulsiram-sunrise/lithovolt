@@ -64,6 +64,26 @@ class AdminControllerTest extends ApiTestCase
             ->assertJsonStructure(['total', 'active', 'expired', 'claimed']);
     }
 
+    public function test_trends_returns_time_series_data(): void
+    {
+        $admin = $this->createUser('admin');
+        Order::factory()->count(2)->create(['user_id' => $admin->id]);
+        Warranty::factory()->count(2)->create(['user_id' => $admin->id]);
+
+        $this->actingAsUser($admin);
+
+        $this->getJson('/api/admin/trends?days=30')
+            ->assertOk()
+            ->assertJsonStructure([
+                'range' => ['days', 'start', 'end'],
+                'series' => ['labels', 'orders', 'warranties', 'users'],
+                'totals' => ['orders', 'warranties', 'users'],
+                'previous_totals' => ['orders', 'warranties', 'users'],
+                'delta_percent' => ['orders', 'warranties', 'users'],
+            ])
+            ->assertJsonPath('range.days', 30);
+    }
+
     public function test_export_data_returns_payload(): void
     {
         $admin = $this->createUser('admin');

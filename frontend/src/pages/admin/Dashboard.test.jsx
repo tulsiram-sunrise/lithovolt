@@ -17,6 +17,25 @@ describe('AdminDashboard', () => {
         },
       })
     )
+    api.adminAPI.getOrderStats = vi.fn(() => Promise.resolve({ data: { total: 0 } }))
+    api.adminAPI.getUserStats = vi.fn(() => Promise.resolve({ data: { total: 0 } }))
+    api.adminAPI.getWarrantyStats = vi.fn(() => Promise.resolve({ data: { total: 0 } }))
+    api.adminAPI.getTrends = vi.fn(() =>
+      Promise.resolve({
+        data: {
+          range: { days: 30, start: '2026-02-27', end: '2026-03-28' },
+          series: {
+            labels: ['Mar 25', 'Mar 26', 'Mar 27'],
+            orders: [1, 2, 3],
+            warranties: [0, 1, 1],
+            users: [2, 1, 2],
+          },
+          totals: { orders: 6, warranties: 2, users: 5 },
+          previous_totals: { orders: 3, warranties: 1, users: 4 },
+          delta_percent: { orders: 100, warranties: 100, users: 25 },
+        },
+      })
+    )
   })
 
   it('renders loading state initially', () => {
@@ -44,6 +63,9 @@ describe('AdminDashboard', () => {
     api.adminAPI.getMetrics = vi.fn(() =>
       Promise.resolve({ data: mockMetrics })
     )
+    api.adminAPI.getOrderStats = vi.fn(() => Promise.resolve({ data: { total: 20 } }))
+    api.adminAPI.getUserStats = vi.fn(() => Promise.resolve({ data: { total: 65 } }))
+    api.adminAPI.getWarrantyStats = vi.fn(() => Promise.resolve({ data: { total: 35 } }))
     api.orderAPI.getOrders = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
     )
@@ -57,6 +79,9 @@ describe('AdminDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('Total Users')).toBeInTheDocument()
       expect(screen.getByText('65')).toBeInTheDocument() // 5 + 10 + 50
+      expect(screen.getByText('Trend Monitor')).toBeInTheDocument()
+      expect(screen.getByText('Operational Mix')).toBeInTheDocument()
+      expect(screen.getByText('Dashboard vs Reports')).toBeInTheDocument()
     })
   })
 

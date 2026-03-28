@@ -13,6 +13,65 @@ use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
+    public function trends(Request $request)
+    {
+        $days = (int) $request->query('days', 30);
+        if (!in_array($days, [7, 30, 90], true)) {
+            $days = 30;
+        }
+
+        $end = Carbon::now()->endOfDay();
+        $start = Carbon::now()->subDays($days - 1)->startOfDay();
+
+        $labels = [];
+        $keys = [];
+        for ($i = 0; $i < $days; $i++) {
+            $day = $start->copy()->addDays($i);
+            $labels[] = $day->format('M d');
+            $keys[] = $day->toDateString();
+        }
+
+        $ordersSeries = $this->buildDailySeries(Order::query(), $start, $end, $keys);
+        $warrantiesSeries = $this->buildDailySeries(Warranty::query(), $start, $end, $keys);
+        $usersSeries = $this->buildDailySeries(User::query(), $start, $end, $keys);
+
+        $totals = [
+            'orders' => array_sum($ordersSeries),
+            'warranties' => array_sum($warrantiesSeries),
+            'users' => array_sum($usersSeries),
+        ];
+
+        $previousStart = $start->copy()->subDays($days);
+        $previousEnd = $start->copy()->subSecond();
+
+        $previousTotals = [
+            'orders' => $this->countInRange(Order::query(), $previousStart, $previousEnd),
+            'warranties' => $this->countInRange(Warranty::query(), $previousStart, $previousEnd),
+            'users' => $this->countInRange(User::query(), $previousStart, $previousEnd),
+        ];
+
+        return response()->json([
+            'range' => [
+                'days' => $days,
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+            ],
+            'series' => [
+                'labels' => $labels,
+                'orders' => $ordersSeries,
+                'warranties' => $warrantiesSeries,
+                'users' => $usersSeries,
+            ],
+            'totals' => $totals,
+            'previous_totals' => $previousTotals,
+            'delta_percent' => [
+                'orders' => $this->calculateDeltaPercent($totals['orders'], $previousTotals['orders']),
+                'warranties' => $this->calculateDeltaPercent($totals['warranties'], $previousTotals['warranties']),
+                'users' => $this->calculateDeltaPercent($totals['users'], $previousTotals['users']),
+            ],
+        ]);
+    }
+
     public function metrics()
     {
         $totalUsers = User::count();
@@ -213,5 +272,33 @@ class AdminController extends Controller
         } catch (\Throwable $exception) {
             return null;
         }
+    }
+
+    private function buildDailySeries($query, Carbon $start, Carbon $end, array $keys): array
+    {
+        $raw = $query
+            ->whereBetween('created_at', [$start, $end])
+            ->selectRaw('DATE(created_at) as date_key, COUNT(*) as aggregate')
+            ->groupBy('date_key')
+            ->pluck('aggregate', 'date_key')
+            ->toArray();
+
+        return array_map(function (string $key) use ($raw) {
+            return (int) ($raw[$key] ?? 0);
+        }, $keys);
+    }
+
+    private function countInRange($query, Carbon $start, Carbon $end): int
+    {
+        return (int) $query->whereBetween('created_at', [$start, $end])->count();
+    }
+
+    private function calculateDeltaPercent(int $current, int $previous): ?float
+    {
+        if ($previous === 0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 2);
     }
 }

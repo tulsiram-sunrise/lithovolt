@@ -75,6 +75,11 @@ export default api
 // Admin API
 export const adminAPI = {
   getMetrics: () => api.get('/admin/metrics'),
+  getOrderStats: () => api.get('/admin/orders/stats/'),
+  getUserStats: () => api.get('/admin/users/stats/'),
+  getWarrantyStats: () => api.get('/admin/warranties/stats/'),
+  getTrends: (params) => api.get('/admin/trends/', { params }),
+  exportData: (model) => api.get(`/admin/export/${model}/`),
   getRoles: (params) => api.get('/admin/roles', { params }),
   createRole: (data) => api.post('/admin/roles', data),
   updateRole: (id, data) => api.put(`/admin/roles/${id}`, data),

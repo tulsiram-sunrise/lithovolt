@@ -26,6 +26,7 @@ const adminMenuGroups = [
     items: [
       { name: 'Dashboard', path: '/admin', icon: HomeIcon },
       { name: 'Activity Audit', path: '/admin/activity', icon: ClockIcon },
+      { name: 'Reports', path: '/admin/reports', icon: RectangleGroupIcon },
     ],
   },
   {

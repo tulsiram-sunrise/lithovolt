@@ -202,6 +202,7 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/users/stats/', [AdminController::class, 'userStats']);
         Route::get('/orders/stats/', [AdminController::class, 'orderStats']);
         Route::get('/warranties/stats/', [AdminController::class, 'warrantyStats']);
+        Route::get('/trends/', [AdminController::class, 'trends']);
         Route::get('/export/{model}/', [AdminController::class, 'exportData']);
         
         // Role Management

@@ -35,6 +35,7 @@ import WarrantiesPage from './pages/admin/WarrantiesPage'
 import WarrantyClaimsPage from './pages/admin/WarrantyClaimsPage'
 import WholesalerManagementPage from './pages/admin/WholesalerManagementPage'
 import ConsumersPage from './pages/admin/ConsumersPage'
+import ReportsPage from './pages/admin/ReportsPage'
 
 // Wholesaler Pages
 import WholesalerDashboard from './pages/wholesaler/Dashboard'
@@ -170,6 +171,7 @@ function App() {
         <Route path="permissions" element={<PermissionsPage />} />
         <Route path="staff" element={<UsersPage defaultTab="staff" />} />
         <Route path="activity" element={<ActivityPage />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route path="battery-models" element={<BatteryModelsPage />} />
         <Route path="battery-models/new" element={<BatteryModelCreatePage />} />
         <Route path="battery-models/:id" element={<BatteryModelDetailPage />} />

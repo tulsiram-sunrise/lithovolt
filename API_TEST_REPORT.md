@@ -1,5 +1,27 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 28, 2026 (Admin Dashboard Trend Windows + Graph Data)
+
+### Implemented
+- Added admin trends API endpoint with day-window support: `7`, `30`, `90`.
+- Added daily time-series payload for orders, warranties, and users.
+- Added previous-period totals and percentage delta metrics for dashboard comparisons.
+- Wired dashboard trend UI to real backend data for graph rendering and period switching.
+
+### Files Added/Updated
+- `backend-laravel/app/Http/Controllers/Api/AdminController.php`
+- `backend-laravel/routes/api.php`
+- `backend-laravel/tests/Feature/Api/AdminControllerTest.php`
+- `frontend/src/services/api.js`
+- `frontend/src/pages/admin/Dashboard.jsx`
+- `frontend/src/pages/admin/Dashboard.test.jsx`
+
+### Validation
+- Backend targeted regression:
+	- `php artisan test --filter=AdminControllerTest` -> passed.
+- Frontend targeted regression:
+	- `npm run test -- src/pages/admin/Dashboard.test.jsx src/pages/admin/ReportsPage.test.jsx --run` -> passed.
+
 ## Update - March 28, 2026 (Stripe Payment Reconciliation Webhook)
 
 ### Implemented
