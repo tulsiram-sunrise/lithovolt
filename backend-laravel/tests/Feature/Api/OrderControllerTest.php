@@ -277,4 +277,77 @@ class OrderControllerTest extends ApiTestCase
             (string) $response->headers->get('content-type')
         );
     }
+
+    public function test_stripe_webhook_marks_order_paid_on_checkout_completed(): void
+    {
+        Mail::fake();
+
+        $owner = $this->createUser('wholesaler');
+        $order = Order::factory()->create([
+            'user_id' => $owner->id,
+            'payment_method' => 'ONLINE',
+            'payment_status' => 'PENDING',
+            'stripe_checkout_session_id' => 'cs_test_paid_001',
+        ]);
+
+        $payload = [
+            'type' => 'checkout.session.completed',
+            'data' => [
+                'object' => [
+                    'id' => 'cs_test_paid_001',
+                    'payment_status' => 'paid',
+                    'metadata' => [
+                        'order_id' => (string) $order->id,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->postJson('/api/orders/stripe/webhook', $payload)
+            ->assertOk()
+            ->assertJsonPath('received', true);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'payment_status' => 'PAID',
+        ]);
+
+        Mail::assertSent(TransactionalMail::class, 1);
+    }
+
+    public function test_stripe_webhook_marks_order_failed_on_checkout_expired(): void
+    {
+        Mail::fake();
+
+        $owner = $this->createUser('wholesaler');
+        $order = Order::factory()->create([
+            'user_id' => $owner->id,
+            'payment_method' => 'ONLINE',
+            'payment_status' => 'PENDING',
+            'stripe_checkout_session_id' => 'cs_test_failed_001',
+        ]);
+
+        $payload = [
+            'type' => 'checkout.session.expired',
+            'data' => [
+                'object' => [
+                    'id' => 'cs_test_failed_001',
+                    'metadata' => [
+                        'order_id' => (string) $order->id,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->postJson('/api/orders/stripe/webhook', $payload)
+            ->assertOk()
+            ->assertJsonPath('received', true);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'payment_status' => 'FAILED',
+        ]);
+
+        Mail::assertSent(TransactionalMail::class, 1);
+    }
 }

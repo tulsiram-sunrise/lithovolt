@@ -85,4 +85,45 @@ class VehicleFitmentControllerTest extends ApiTestCase
 
         Http::assertSentCount(1);
     }
+
+    public function test_registration_lookup_uses_au_nz_profile_mapping(): void
+    {
+        $this->seed([BatteryModelSeeder::class, VehicleFitmentSeeder::class]);
+
+        config()->set('registration_lookup.provider_enabled', true);
+        config()->set('registration_lookup.provider_driver', 'http_json');
+        config()->set('registration_lookup.provider_name', 'au_nz_provider');
+        config()->set('registration_lookup.http.url', 'https://provider.example/lookup');
+        config()->set('registration_lookup.http.method', 'GET');
+        config()->set('registration_lookup.http.profile', 'au_nz_adapter');
+
+        Http::fake([
+            'provider.example/*' => Http::response([
+                'data' => [
+                    'vehicle' => [
+                        'manufacturer_name' => 'Toyota',
+                        'model_name' => 'Hilux',
+                        'year_of_manufacture' => 2021,
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/fitment/registration-lookup/', [
+            'registration_number' => 'ABC123',
+            'state_code' => 'NSW',
+            'market' => 'AU',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('lookup_status', 'matched')
+            ->assertJsonPath('source', 'provider')
+            ->assertJsonPath('vehicle.make', 'TOYOTA')
+            ->assertJsonPath('vehicle.model', 'HILUX')
+            ->assertJsonPath('feasibility.provider_used', 'au_nz_provider');
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://provider.example/lookup?plate=ABC123&country=AU&jurisdiction=NSW';
+        });
+    }
 }

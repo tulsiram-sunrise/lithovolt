@@ -1,5 +1,26 @@
 #  API Testing Report - February 23, 2026
 
+## Update - March 28, 2026 (Stripe Payment Reconciliation Webhook)
+
+### Implemented
+- Added Stripe webhook callback endpoint for order payment reconciliation.
+- Implemented webhook event handling for:
+	- `checkout.session.completed` -> marks order `payment_status` as `PAID`.
+	- `checkout.session.expired` and `checkout.session.async_payment_failed` -> marks order `payment_status` as `FAILED`.
+- Added signature verification support through `STRIPE_WEBHOOK_SECRET` config.
+- Added payment lifecycle transactional emails for successful and failed online payments.
+
+### Files Added/Updated
+- `backend-laravel/routes/api.php`
+- `backend-laravel/app/Http/Controllers/Api/OrderController.php`
+- `backend-laravel/config/services.php`
+- `backend-laravel/.env.example`
+- `backend-laravel/tests/Feature/Api/OrderControllerTest.php`
+
+### Validation
+- Backend regression:
+	- `php artisan test --filter=OrderControllerTest` -> passed (`15` tests, `53` assertions).
+
 ## Update - March 28, 2026 (Order Lifecycle Emails + Invoice PDF)
 
 ### Implemented

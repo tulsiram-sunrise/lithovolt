@@ -55,6 +55,8 @@ Route::post('/fitment/registration-lookup/', [VehicleFitmentController::class, '
     ->middleware('throttle:20,1');
 Route::post('/fitment/vehicle-lookup/', [VehicleFitmentController::class, 'vehicleLookup'])
     ->middleware('throttle:20,1');
+Route::post('/orders/stripe/webhook/', [OrderController::class, 'stripeWebhook'])
+    ->middleware('throttle:120,1');
 
 // ====== PROTECTED ROUTES ======
 Route::middleware('auth:jwt')->group(function () {

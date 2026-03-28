@@ -15,9 +15,106 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Stripe\StripeClient;
+use Stripe\Webhook;
 
 class OrderController extends Controller
 {
+    public function stripeWebhook(Request $request)
+    {
+        $payload = (string) $request->getContent();
+        $signature = (string) $request->header('Stripe-Signature', '');
+        $webhookSecret = (string) config('services.stripe.webhook_secret');
+
+        try {
+            $event = $webhookSecret !== ''
+                ? Webhook::constructEvent($payload, $signature, $webhookSecret)
+                : json_decode($payload, false, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable $exception) {
+            Log::warning('Invalid Stripe webhook payload', [
+                'error' => $exception->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'Invalid webhook payload'], 400);
+        }
+
+        $type = (string) ($event->type ?? '');
+        $object = $event->data->object ?? null;
+
+        if (!$object) {
+            return response()->json(['received' => true]);
+        }
+
+        $sessionId = (string) ($object->id ?? '');
+        $metadataOrderId = (int) (($object->metadata->order_id ?? 0));
+
+        $order = null;
+        if ($metadataOrderId > 0) {
+            $order = Order::query()->find($metadataOrderId);
+        }
+
+        if (!$order && $sessionId !== '') {
+            $order = Order::query()->where('stripe_checkout_session_id', $sessionId)->first();
+        }
+
+        if (!$order) {
+            Log::info('Stripe webhook received for unknown order', [
+                'event_type' => $type,
+                'session_id' => $sessionId,
+                'metadata_order_id' => $metadataOrderId,
+            ]);
+
+            return response()->json(['received' => true]);
+        }
+
+        if ($type === 'checkout.session.completed') {
+            $paymentStatus = strtolower((string) ($object->payment_status ?? ''));
+            if ($paymentStatus === 'paid' || $paymentStatus === 'no_payment_required') {
+                $order->update(['payment_status' => self::PAYMENT_PAID]);
+
+                $this->sendOrderLifecycleEmail(
+                    $order->fresh()->load('user', 'items.itemable', 'items.product'),
+                    'Payment Received: ' . $order->order_number,
+                    [
+                        'heading' => 'Payment Received',
+                        'subheading' => 'Stripe payment confirmed',
+                        'greeting' => 'Hi ' . ($order->user?->first_name ?? 'Customer') . ',',
+                        'lines' => [
+                            'Your payment was successfully received for your order.',
+                        ],
+                        'meta' => [
+                            ['label' => 'Order Number:', 'value' => $order->order_number],
+                            ['label' => 'Payment Status:', 'value' => self::PAYMENT_PAID],
+                        ],
+                    ]
+                );
+            }
+        }
+
+        if ($type === 'checkout.session.expired' || $type === 'checkout.session.async_payment_failed') {
+            $order->update(['payment_status' => self::PAYMENT_FAILED]);
+
+            $this->sendOrderLifecycleEmail(
+                $order->fresh()->load('user', 'items.itemable', 'items.product'),
+                'Payment Update: ' . $order->order_number,
+                [
+                    'heading' => 'Payment Not Completed',
+                    'subheading' => 'Stripe payment was not completed',
+                    'greeting' => 'Hi ' . ($order->user?->first_name ?? 'Customer') . ',',
+                    'lines' => [
+                        'We could not complete your payment for this order.',
+                        'Please retry payment from your orders page or contact support if this persists.',
+                    ],
+                    'meta' => [
+                        ['label' => 'Order Number:', 'value' => $order->order_number],
+                        ['label' => 'Payment Status:', 'value' => self::PAYMENT_FAILED],
+                    ],
+                ]
+            );
+        }
+
+        return response()->json(['received' => true]);
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
