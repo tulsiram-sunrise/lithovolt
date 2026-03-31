@@ -4,6 +4,10 @@ import { adminAPI, userAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
 import StaffDetailModal from '../../components/admin/StaffDetailModal'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
+import SearchableSelect from '../../components/common/SearchableSelect'
+import RichDateInput from '../../components/common/RichDateInput'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
 
 function fullName(user) {
   if (!user) {
@@ -25,6 +29,7 @@ export default function StaffPage({ embedded = false }) {
   const [page, setPage] = useState(1)
   const [feedback, setFeedback] = useState('')
   const [error, setError] = useState('')
+  const [confirmRemoveStaff, setConfirmRemoveStaff] = useState(null)
   const [formData, setFormData] = useState({
     user_id: '',
     role_id: '',
@@ -245,19 +250,19 @@ export default function StaffPage({ embedded = false }) {
             }}
           />
           <div className="flex flex-wrap gap-2">
-            <select
-              className="neon-input min-w-40"
-              value={roleFilter}
-              onChange={(event) => {
-                setRoleFilter(event.target.value)
-                setPage(1)
-              }}
-            >
-              <option value="">All roles</option>
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>{role.name}</option>
-              ))}
-            </select>
+            <div className="min-w-52">
+              <SearchableSelect
+                id="staff-role-filter"
+                value={roleFilter}
+                onChange={(next) => {
+                  setRoleFilter(next)
+                  setPage(1)
+                }}
+                placeholder="All roles"
+                searchPlaceholder="Search role group..."
+                options={[{ value: '', label: 'All roles' }, ...roles.map((role) => ({ value: String(role.id), label: role.name }))]}
+              />
+            </div>
             <button className="neon-btn-ghost" onClick={() => { setActiveFilter('ALL'); setPage(1) }}>All</button>
             <button className="neon-btn-ghost" onClick={() => { setActiveFilter('ACTIVE'); setPage(1) }}>Active</button>
             <button className="neon-btn-ghost" onClick={() => { setActiveFilter('INACTIVE'); setPage(1) }}>Inactive</button>
@@ -298,11 +303,7 @@ export default function StaffPage({ embedded = false }) {
                       <button className="neon-btn-ghost text-xs" onClick={() => openEditModal(staff)}>Edit</button>
                       <button
                         className="neon-btn-ghost text-xs"
-                        onClick={() => {
-                          if (window.confirm(`Remove staff assignment for ${fullName(staff.user) || staff.user?.email || 'this user'}?`)) {
-                            deleteStaff.mutate(staff.id)
-                          }
-                        }}
+                        onClick={() => setConfirmRemoveStaff({ id: staff.id, name: fullName(staff.user) || staff.user?.email || 'this user' })}
                         disabled={deleteStaff.isPending}
                       >
                         Remove
@@ -340,59 +341,50 @@ export default function StaffPage({ embedded = false }) {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="field-label">User</label>
-                  <select
-                    className="neon-input"
+                  <SearchableSelect
+                    id="staff-user"
+                    label="User"
                     value={formData.user_id}
-                    onChange={(event) => setFormData((prev) => ({ ...prev, user_id: event.target.value }))}
+                    onChange={(next) => setFormData((prev) => ({ ...prev, user_id: next }))}
                     disabled={!!editingStaff}
-                    required
-                  >
-                    <option value="">Select admin user</option>
-                    {adminUsers.map((user) => (
-                      <option key={user.id} value={user.id}>{fullName(user)} ({user.email})</option>
-                    ))}
-                  </select>
+                    placeholder="Select admin user"
+                    searchPlaceholder="Search admin user..."
+                    options={adminUsers.map((user) => ({ value: String(user.id), label: `${fullName(user)} (${user.email})`, searchText: `${fullName(user)} ${user.email}` }))}
+                  />
                 </div>
 
                 <div>
-                  <label className="field-label">Role Group</label>
-                  <select
-                    className="neon-input"
+                  <SearchableSelect
+                    id="staff-role"
+                    label="Role Group"
                     value={formData.role_id}
-                    onChange={(event) => setFormData((prev) => ({ ...prev, role_id: event.target.value }))}
-                    required
-                  >
-                    <option value="">Select role group</option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </select>
+                    onChange={(next) => setFormData((prev) => ({ ...prev, role_id: next }))}
+                    placeholder="Select role group"
+                    searchPlaceholder="Search role group..."
+                    options={roles.map((role) => ({ value: String(role.id), label: role.name }))}
+                  />
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="field-label">Supervisor (Optional)</label>
-                  <select
-                    className="neon-input"
+                  <SearchableSelect
+                    id="staff-supervisor"
+                    label="Supervisor (Optional)"
                     value={formData.supervisor_id}
-                    onChange={(event) => setFormData((prev) => ({ ...prev, supervisor_id: event.target.value }))}
-                  >
-                    <option value="">No supervisor</option>
-                    {staffUsers.map((staff) => (
-                      <option key={staff.id} value={staff.user_id}>{fullName(staff.user)} ({staff.role?.name || 'No role'})</option>
-                    ))}
-                  </select>
+                    onChange={(next) => setFormData((prev) => ({ ...prev, supervisor_id: next }))}
+                    placeholder="No supervisor"
+                    searchPlaceholder="Search supervisor..."
+                    options={[{ value: '', label: 'No supervisor' }, ...staffUsers.map((staff) => ({ value: String(staff.user_id), label: `${fullName(staff.user)} (${staff.role?.name || 'No role'})` }))]}
+                  />
                 </div>
 
                 <div>
-                  <label className="field-label">Hire Date</label>
-                  <input
-                    type="date"
-                    className="neon-input"
+                  <RichDateInput
+                    id="staff-hire-date"
+                    label="Hire Date"
                     value={formData.hire_date}
-                    onChange={(event) => setFormData((prev) => ({ ...prev, hire_date: event.target.value }))}
+                    onChange={(next) => setFormData((prev) => ({ ...prev, hire_date: next }))}
                   />
                 </div>
               </div>
@@ -408,14 +400,12 @@ export default function StaffPage({ embedded = false }) {
                 />
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-[color:var(--muted)]">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, is_active: event.target.checked }))}
-                />
-                Active
-              </label>
+              <CustomCheckbox
+                id="staff-active"
+                checked={formData.is_active}
+                onChange={(checked) => setFormData((prev) => ({ ...prev, is_active: checked }))}
+                label="Active"
+              />
 
               {error ? <p className="text-sm text-[color:var(--danger)]">{error}</p> : null}
 
@@ -502,6 +492,21 @@ export default function StaffPage({ embedded = false }) {
           </div>
         </div>
       ) : null}
+
+      <ActionConfirmModal
+        isOpen={!!confirmRemoveStaff}
+        title="Remove Staff Assignment"
+        message={`Are you sure you want to remove staff assignment for ${confirmRemoveStaff?.name || ''}?`}
+        confirmLabel="Remove"
+        isSubmitting={deleteStaff.isPending}
+        onClose={() => setConfirmRemoveStaff(null)}
+        onConfirm={() => {
+          if (confirmRemoveStaff?.id) {
+            deleteStaff.mutate(confirmRemoveStaff.id)
+          }
+          setConfirmRemoveStaff(null)
+        }}
+      />
     </div>
   )
 }

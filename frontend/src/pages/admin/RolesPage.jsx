@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
 
 export default function RolesPage() {
   const queryClient = useQueryClient()
@@ -13,6 +15,7 @@ export default function RolesPage() {
   const [page, setPage] = useState(1)
   const [feedback, setFeedback] = useState('')
   const [error, setError] = useState('')
+  const [confirmDeleteRole, setConfirmDeleteRole] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -190,11 +193,7 @@ export default function RolesPage() {
                       <button className="neon-btn-ghost" onClick={() => openEditModal(role)}>Edit</button>
                       <button
                         className="neon-btn-ghost"
-                        onClick={() => {
-                          if (window.confirm(`Delete role group ${role.name}?`)) {
-                            deleteRole.mutate(role.id)
-                          }
-                        }}
+                        onClick={() => setConfirmDeleteRole({ id: role.id, name: role.name })}
                         disabled={deleteRole.isPending}
                       >
                         Delete
@@ -243,14 +242,12 @@ export default function RolesPage() {
                   />
                 </div>
                 <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm text-[color:var(--muted)]">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_active}
-                      onChange={(event) => setFormData((prev) => ({ ...prev, is_active: event.target.checked }))}
-                    />
-                    Active
-                  </label>
+                  <CustomCheckbox
+                    id="role-active"
+                    checked={formData.is_active}
+                    onChange={(checked) => setFormData((prev) => ({ ...prev, is_active: checked }))}
+                    label="Active"
+                  />
                 </div>
               </div>
 
@@ -277,6 +274,21 @@ export default function RolesPage() {
           </div>
         </div>
       ) : null}
+
+      <ActionConfirmModal
+        isOpen={!!confirmDeleteRole}
+        title="Delete Role Group"
+        message={`Are you sure you want to delete role group ${confirmDeleteRole?.name || ''}?`}
+        confirmLabel="Delete"
+        isSubmitting={deleteRole.isPending}
+        onClose={() => setConfirmDeleteRole(null)}
+        onConfirm={() => {
+          if (confirmDeleteRole?.id) {
+            deleteRole.mutate(confirmDeleteRole.id)
+          }
+          setConfirmDeleteRole(null)
+        }}
+      />
     </div>
   )
 }

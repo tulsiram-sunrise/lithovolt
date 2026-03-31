@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PublicSectionHeader from '../../components/public/PublicSectionHeader'
+import SearchableSelect from '../../components/common/SearchableSelect'
 
 const initialForm = {
   name: '',
@@ -75,13 +76,18 @@ export default function GuestContactPage() {
               <input id="phone" name="phone" value={form.phone} onChange={onChange} className="neon-input" />
             </div>
             <div>
-              <label htmlFor="topic" className="field-label">Topic</label>
-              <select id="topic" name="topic" value={form.topic} onChange={onChange} className="neon-input">
-                <option value="product">Product Advice</option>
-                <option value="fitment">Vehicle Fitment</option>
-                <option value="wholesale">Wholesale Partnership</option>
-                <option value="support">General Support</option>
-              </select>
+              <SearchableSelect
+                id="topic"
+                label="Topic"
+                value={form.topic}
+                onChange={(next) => setForm((prev) => ({ ...prev, topic: next }))}
+                options={[
+                  { value: 'product', label: 'Product Advice' },
+                  { value: 'fitment', label: 'Vehicle Fitment' },
+                  { value: 'wholesale', label: 'Wholesale Partnership' },
+                  { value: 'support', label: 'General Support' },
+                ]}
+              />
             </div>
           </div>
 

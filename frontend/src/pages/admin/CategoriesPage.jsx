@@ -3,11 +3,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import SearchableSelect from '../../components/common/SearchableSelect'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
 
 const emptyForm = { name: '', slug: '', parent_id: '', is_active: true }
 
 export default function CategoriesPage() {
   const [form, setForm] = useState(emptyForm)
+  const [confirmDelete, setConfirmDelete] = useState(null)
   const queryClient = useQueryClient()
   const addToast = useToastStore((state) => state.addToast)
 
@@ -79,27 +83,23 @@ export default function CategoriesPage() {
           />
         </div>
         <div>
-          <label className="field-label">Parent</label>
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="category-parent"
+            label="Parent"
             value={form.parent_id}
-            onChange={(event) => setForm((prev) => ({ ...prev, parent_id: event.target.value }))}
-          >
-            <option value="">None</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
+            onChange={(next) => setForm((prev) => ({ ...prev, parent_id: next }))}
+            placeholder="None"
+            searchPlaceholder="Search parent category..."
+            options={[{ value: '', label: 'None' }, ...categories.map((category) => ({ value: String(category.id), label: category.name }))]}
+          />
         </div>
         <div className="flex items-end gap-3">
-          <label className="flex items-center gap-2 text-sm text-[color:var(--muted)]">
-            <input
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(event) => setForm((prev) => ({ ...prev, is_active: event.target.checked }))}
-            />
-            Active
-          </label>
+          <CustomCheckbox
+            id="category-active"
+            checked={form.is_active}
+            onChange={(checked) => setForm((prev) => ({ ...prev, is_active: checked }))}
+            label="Active"
+          />
           <button className="neon-btn" type="submit" disabled={createCategory.isLoading}>
             {createCategory.isLoading ? 'Saving...' : 'Add'}
           </button>
@@ -130,11 +130,7 @@ export default function CategoriesPage() {
                     <button
                       className="neon-btn-ghost"
                       type="button"
-                      onClick={() => {
-                        if (window.confirm(`Delete category \"${category.name}\"?`)) {
-                          deleteCategory.mutate(category.id)
-                        }
-                      }}
+                      onClick={() => setConfirmDelete({ id: category.id, name: category.name })}
                       disabled={deleteCategory.isLoading}
                     >
                       Delete
@@ -149,6 +145,21 @@ export default function CategoriesPage() {
           ) : null}
         </div>
       </div>
+
+      <ActionConfirmModal
+        isOpen={!!confirmDelete}
+        title="Delete Category"
+        message={`Are you sure you want to delete \"${confirmDelete?.name || ''}\"?`}
+        confirmLabel="Delete"
+        isSubmitting={deleteCategory.isLoading}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (confirmDelete?.id) {
+            deleteCategory.mutate(confirmDelete.id)
+          }
+          setConfirmDelete(null)
+        }}
+      />
     </div>
   )
 }

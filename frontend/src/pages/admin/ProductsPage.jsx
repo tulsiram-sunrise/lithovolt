@@ -4,6 +4,9 @@ import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import ProductImage from '../../components/common/ProductImage'
+import SearchableSelect from '../../components/common/SearchableSelect'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
 import { isValidHttpImageUrl, normalizeImageUrlInput } from '../../utils/imageUrl'
 
 const emptyForm = {
@@ -21,6 +24,7 @@ const emptyForm = {
 
 export default function ProductsPage() {
   const [form, setForm] = useState(emptyForm)
+  const [confirmDelete, setConfirmDelete] = useState(null)
   const queryClient = useQueryClient()
   const addToast = useToastStore((state) => state.addToast)
 
@@ -108,18 +112,19 @@ export default function ProductsPage() {
           />
         </div>
         <div>
-          <label className="field-label">Type</label>
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="product-type"
+            label="Type"
             value={form.product_type}
-            onChange={(event) => setForm((prev) => ({ ...prev, product_type: event.target.value }))}
-          >
-            <option value="GENERIC">Generic</option>
-            <option value="ACCESSORY">Accessory</option>
-            <option value="PART">Part</option>
-            <option value="CONSUMABLE">Consumable</option>
-            <option value="SERVICE">Service</option>
-          </select>
+            onChange={(next) => setForm((prev) => ({ ...prev, product_type: next }))}
+            options={[
+              { value: 'GENERIC', label: 'Generic' },
+              { value: 'ACCESSORY', label: 'Accessory' },
+              { value: 'PART', label: 'Part' },
+              { value: 'CONSUMABLE', label: 'Consumable' },
+              { value: 'SERVICE', label: 'Service' },
+            ]}
+          />
         </div>
         <div>
           <label className="field-label">SKU</label>
@@ -142,17 +147,15 @@ export default function ProductsPage() {
           />
         </div>
         <div>
-          <label className="field-label">Category</label>
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="product-category"
+            label="Category"
             value={form.category_id}
-            onChange={(event) => setForm((prev) => ({ ...prev, category_id: event.target.value }))}
-          >
-            <option value="">Uncategorized</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
+            onChange={(next) => setForm((prev) => ({ ...prev, category_id: next }))}
+            placeholder="Uncategorized"
+            searchPlaceholder="Search category..."
+            options={[{ value: '', label: 'Uncategorized' }, ...categories.map((category) => ({ value: String(category.id), label: category.name }))]}
+          />
         </div>
         <div>
           <label className="field-label">Price</label>
@@ -196,14 +199,12 @@ export default function ProductsPage() {
           />
         </div>
         <div className="flex items-end gap-3">
-          <label className="flex items-center gap-2 text-sm text-[color:var(--muted)]">
-            <input
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(event) => setForm((prev) => ({ ...prev, is_active: event.target.checked }))}
-            />
-            Active
-          </label>
+          <CustomCheckbox
+            id="product-active"
+            checked={form.is_active}
+            onChange={(checked) => setForm((prev) => ({ ...prev, is_active: checked }))}
+            label="Active"
+          />
           <button className="neon-btn" type="submit" disabled={createProduct.isLoading}>
             {createProduct.isLoading ? 'Saving...' : 'Add'}
           </button>
@@ -256,11 +257,7 @@ export default function ProductsPage() {
                     <button
                       className="neon-btn-ghost"
                       type="button"
-                      onClick={() => {
-                        if (window.confirm(`Delete \"${product.name}\"?`)) {
-                          deleteProduct.mutate(product.id)
-                        }
-                      }}
+                      onClick={() => setConfirmDelete({ id: product.id, name: product.name })}
                       disabled={deleteProduct.isLoading}
                     >
                       Delete
@@ -275,6 +272,21 @@ export default function ProductsPage() {
           ) : null}
         </div>
       </div>
+
+      <ActionConfirmModal
+        isOpen={!!confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete \"${confirmDelete?.name || ''}\"?`}
+        confirmLabel="Delete"
+        isSubmitting={deleteProduct.isLoading}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => {
+          if (confirmDelete?.id) {
+            deleteProduct.mutate(confirmDelete.id)
+          }
+          setConfirmDelete(null)
+        }}
+      />
     </div>
   )
 }

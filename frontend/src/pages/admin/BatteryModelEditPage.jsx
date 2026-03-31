@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ProductImage from '../../components/common/ProductImage'
+import SearchableSelect from '../../components/common/SearchableSelect'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
 import { isValidHttpImageUrl, normalizeImageUrlInput } from '../../utils/imageUrl'
 
 const asNumber = (value) => (value === '' ? undefined : Number(value))
@@ -245,9 +247,13 @@ export default function BatteryModelEditPage() {
             <Field label="Terminal Layout" name="terminal_layout" value={form.terminal_layout} onChange={handleChange} />
             <Field label="Hold Down" name="hold_down" value={form.hold_down} onChange={handleChange} />
             <Field label="Vent Type" name="vent_type" value={form.vent_type} onChange={handleChange} />
-            <div className="flex items-center gap-2 pt-7">
-              <input id="maintenance_free" name="maintenance_free" type="checkbox" checked={form.maintenance_free} onChange={handleChange} />
-              <label htmlFor="maintenance_free" className="field-label m-0">Maintenance Free</label>
+            <div className="pt-7">
+              <CustomCheckbox
+                id="maintenance_free"
+                checked={!!form.maintenance_free}
+                onChange={(checked) => setForm((prev) => ({ ...prev, maintenance_free: checked }))}
+                label="Maintenance Free"
+              />
             </div>
           </div>
         </div>
@@ -273,13 +279,16 @@ export default function BatteryModelEditPage() {
             <Field label="Total Quantity" name="total_quantity" type="number" value={form.total_quantity} onChange={handleChange} required />
             <Field label="Available Quantity" name="available_quantity" type="number" value={form.available_quantity} onChange={handleChange} required />
             <Field label="Price" name="price" type="number" step="0.01" value={form.price} onChange={handleChange} required />
-            <div>
-              <label htmlFor="status" className="field-label">Status</label>
-              <select id="status" name="status" className="neon-input" value={form.status} onChange={handleChange}>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
+            <SearchableSelect
+              id="status"
+              label="Status"
+              value={form.status || 'active'}
+              onChange={(next) => setForm((prev) => ({ ...prev, status: next || 'active' }))}
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+              ]}
+            />
           </div>
         </div>
 

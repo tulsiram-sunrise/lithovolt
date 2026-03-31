@@ -4,6 +4,7 @@ import { inventoryAPI, userAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import ProductImage from '../../components/common/ProductImage'
+import SearchableSelect from '../../components/common/SearchableSelect'
 
 export default function InventoryPage() {
   const [allocation, setAllocation] = useState({ product_id: '', wholesaler_id: '', quantity: '' })
@@ -91,37 +92,29 @@ export default function InventoryPage() {
 
       <form onSubmit={handleSubmit} className="panel-card p-6 grid gap-4 md:grid-cols-4">
         <div>
-          <label className="field-label">Catalog Item</label>
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="inventory-model"
+            label="Catalog Item"
             value={allocation.product_id}
-            onChange={(event) => setAllocation((prev) => ({ ...prev, product_id: event.target.value }))}
-          >
-            <option value="">Select model</option>
-            {models.map((model) => (
-              <option
-                key={model.id}
-                value={model.id}
-              >
-                {model.name}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => setAllocation((prev) => ({ ...prev, product_id: next }))}
+            placeholder="Select model"
+            searchPlaceholder="Search battery model..."
+            options={models.map((model) => ({ value: String(model.id), label: model.name, searchText: `${model.name} ${model.sku || ''}` }))}
+          />
         </div>
         <div>
-          <label className="field-label">Wholesaler</label>
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="inventory-wholesaler"
+            label="Wholesaler"
             value={allocation.wholesaler_id}
-            onChange={(event) => setAllocation((prev) => ({ ...prev, wholesaler_id: event.target.value }))}
-          >
-            <option value="">Select wholesaler</option>
-            {wholesalers.map((wholesaler) => (
-              <option key={wholesaler.id} value={wholesaler.id}>
-                {wholesaler.full_name || `${wholesaler.first_name || ''} ${wholesaler.last_name || ''}`.trim() || wholesaler.email}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => setAllocation((prev) => ({ ...prev, wholesaler_id: next }))}
+            placeholder="Select wholesaler"
+            searchPlaceholder="Search wholesaler..."
+            options={wholesalers.map((wholesaler) => {
+              const name = wholesaler.full_name || `${wholesaler.first_name || ''} ${wholesaler.last_name || ''}`.trim() || wholesaler.email
+              return { value: String(wholesaler.id), label: name, searchText: `${name} ${wholesaler.email || ''}` }
+            })}
+          />
         </div>
         <div>
           <label className="field-label">Quantity</label>

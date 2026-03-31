@@ -6,6 +6,7 @@ import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
 import ProductImage from '../../components/common/ProductImage'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
 
 const SERVER_PAGE_SIZE = 15
 
@@ -17,6 +18,7 @@ export default function BatteryModelsPage() {
   const [draftQuery, setDraftQuery] = useState('')
   const [appliedQuery, setAppliedQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [confirmDeleteModel, setConfirmDeleteModel] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['battery-models', currentPage, appliedQuery],
@@ -190,12 +192,8 @@ export default function BatteryModelsPage() {
                         </button>
                         <button
                           className="neon-btn-ghost text-xs text-[color:var(--danger)]"
-                          onClick={() => {
-                            if (window.confirm(`Delete "${model.name}"?`)) {
-                                deleteModel.mutate(model.id)
-                            }
-                          }}
-                            disabled={deleteModel.isPending}
+                          onClick={() => setConfirmDeleteModel({ id: model.id, name: model.name })}
+                          disabled={deleteModel.isPending}
                         >
                           Delete
                         </button>
@@ -258,6 +256,21 @@ export default function BatteryModelsPage() {
           </div>
         )}
       </div>
+
+      <ActionConfirmModal
+        isOpen={!!confirmDeleteModel}
+        title="Delete Battery Model"
+        message={`Are you sure you want to delete "${confirmDeleteModel?.name || ''}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        isSubmitting={deleteModel.isPending}
+        onClose={() => setConfirmDeleteModel(null)}
+        onConfirm={() => {
+          if (confirmDeleteModel?.id) {
+            deleteModel.mutate(confirmDeleteModel.id)
+          }
+          setConfirmDeleteModel(null)
+        }}
+      />
     </div>
   )
 }

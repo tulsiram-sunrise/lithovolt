@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, orderAPI } from '../../services/api'
 import { extractApiErrorMessage } from '../../services/apiError'
 import { useToastStore } from '../../store/toastStore'
+import SearchableSelect from '../../components/common/SearchableSelect'
 
 const createEmptyItem = () => ({ product_type: 'BATTERY', item_id: '', quantity: 1 })
 
@@ -171,29 +172,28 @@ export default function PlaceOrderPage() {
         {items.map((item, index) => (
           <div key={`${item.product_type}-${item.item_id}-${index}`} className="grid gap-4 md:grid-cols-12">
             <div className="md:col-span-3">
-              <label htmlFor={`type-${index}`} className="field-label">Type</label>
-              <select
+              <SearchableSelect
                 id={`type-${index}`}
-                className="neon-input"
+                label="Type"
                 value={item.product_type}
-                onChange={(event) => handleItemChange(index, 'product_type', event.target.value)}
-              >
-                <option value="BATTERY">Battery Model</option>
-                <option value="ACCESSORY">Accessory</option>
-                <option value="PRODUCT">Product</option>
-              </select>
+                onChange={(next) => handleItemChange(index, 'product_type', next)}
+                options={[
+                  { value: 'BATTERY', label: 'Battery Model' },
+                  { value: 'ACCESSORY', label: 'Accessory' },
+                  { value: 'PRODUCT', label: 'Product' },
+                ]}
+              />
             </div>
 
             <div className="md:col-span-5">
-              <label htmlFor={`item-${index}`} className="field-label">Item</label>
-              <select
+              <SearchableSelect
                 id={`item-${index}`}
-                className="neon-input"
+                label="Item"
                 value={item.item_id}
-                onChange={(event) => handleItemChange(index, 'item_id', event.target.value)}
-              >
-                <option value="">Select item</option>
-                {catalogItems
+                onChange={(next) => handleItemChange(index, 'item_id', next)}
+                placeholder="Select item"
+                searchPlaceholder="Search item..."
+                options={catalogItems
                   .filter((catalogItem) => {
                     const type = String(catalogItem.product_type || 'BATTERY').toUpperCase()
                     if (item.product_type === 'BATTERY') {
@@ -204,10 +204,8 @@ export default function PlaceOrderPage() {
                     }
                     return type !== 'BATTERY' && type !== 'ACCESSORY'
                   })
-                  .map((catalogItem) => (
-                    <option key={catalogItem.id} value={catalogItem.id}>{catalogItem.name}</option>
-                  ))}
-              </select>
+                  .map((catalogItem) => ({ value: String(catalogItem.id), label: catalogItem.name }))}
+              />
             </div>
 
             <div className="md:col-span-3">

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { adminAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
+import SearchableSelect from '../../components/common/SearchableSelect'
 
 const EVENT_SCOPE_OPTIONS = ['ALL', 'USER', 'STAFF', 'ROLE', 'PERMISSION']
 
@@ -91,18 +92,19 @@ export default function ActivityPage() {
                 {option}
               </button>
             ))}
-            <select
-              className="neon-input min-w-36"
-              value={eventFilter}
-              onChange={(event) => {
-                setEventFilter(event.target.value)
-                setPage(1)
-              }}
-            >
-              {eventTypes.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+            <div className="min-w-44">
+              <SearchableSelect
+                id="activity-event-filter"
+                value={eventFilter}
+                onChange={(next) => {
+                  setEventFilter(next)
+                  setPage(1)
+                }}
+                placeholder="Event type"
+                searchPlaceholder="Search event type..."
+                options={eventTypes.map((option) => ({ value: option, label: option }))}
+              />
+            </div>
           </div>
         </div>
 

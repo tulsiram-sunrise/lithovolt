@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminAPI } from '../../services/api'
+import SearchableSelect from '../../components/common/SearchableSelect'
+import CustomCheckbox from '../../components/common/CustomCheckbox'
 
 const RESOURCES = ['INVENTORY', 'ORDERS', 'WARRANTY_CLAIMS', 'USERS', 'REPORTS', 'SETTINGS']
 const ACTIONS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE', 'APPROVE', 'ASSIGN']
@@ -93,20 +95,18 @@ export default function PermissionsPage() {
           <p className="text-[color:var(--muted)]">Control which actions each role group can perform.</p>
         </div>
         <div className="w-full md:w-80">
-          <select
-            className="neon-input"
+          <SearchableSelect
+            id="permissions-role"
             value={selectedRole}
-            onChange={(event) => {
-              setSelectedRole(event.target.value)
+            onChange={(next) => {
+              setSelectedRole(next)
               setFeedback('')
               setError('')
             }}
-          >
-            <option value="">Select role group</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>{role.name}</option>
-            ))}
-          </select>
+            placeholder="Select role group"
+            searchPlaceholder="Search role group..."
+            options={roles.map((role) => ({ value: String(role.id), label: role.name }))}
+          />
         </div>
       </div>
 
@@ -141,13 +141,14 @@ export default function PermissionsPage() {
                         const key = `${resource}:${action}`
                         return (
                           <td key={action} className="text-center">
-                            <input
-                              type="checkbox"
-                              checked={selectedPermissions.has(key)}
-                              onChange={() => togglePermission(resource, action)}
-                              disabled={roleLoading || savePermissions.isPending}
-                              className="h-4 w-4"
-                            />
+                            <div className="inline-flex justify-center">
+                              <CustomCheckbox
+                                id={`perm-${resource}-${action}`}
+                                checked={selectedPermissions.has(key)}
+                                onChange={() => togglePermission(resource, action)}
+                                disabled={roleLoading || savePermissions.isPending}
+                              />
+                            </div>
                           </td>
                         )
                       })}

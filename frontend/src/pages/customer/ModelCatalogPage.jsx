@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import ProductImage from '../../components/common/ProductImage'
+import SearchableSelect from '../../components/common/SearchableSelect'
 
 function normalizeList(data) {
   return Array.isArray(data) ? data : data?.results || data?.data || []
@@ -54,13 +55,17 @@ export default function ModelCatalogPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <select className="neon-input" value={series} onChange={(event) => setSeries(event.target.value)}>
-            {seriesOptions.map((item) => (
-              <option key={item} value={item}>
-                {item === 'all' ? 'All Series' : item.toUpperCase()}
-              </option>
-            ))}
-          </select>
+          <SearchableSelect
+            id="catalog-series"
+            value={series}
+            onChange={(next) => setSeries(next)}
+            placeholder="All Series"
+            searchPlaceholder="Search series..."
+            options={seriesOptions.map((item) => ({
+              value: item,
+              label: item === 'all' ? 'All Series' : item.toUpperCase(),
+            }))}
+          />
         </div>
       </div>
 
