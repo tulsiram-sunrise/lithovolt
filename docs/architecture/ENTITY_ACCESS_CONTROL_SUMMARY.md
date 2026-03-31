@@ -115,21 +115,21 @@ $ bash verify_entity_access.sh
 
 ### Test 1: Admin Has Full Access
 ```bash
-curl -X GET http://127.0.0.1:8001/api/orders/ \
+curl -X GET http://127.0.0.1:8000/api/orders/ \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 # Response: 200 OK (all orders)
 ```
 
 ### Test 2: Sales User Limited to Own Orders
 ```bash
-curl -X GET http://127.0.0.1:8001/api/orders/ \
+curl -X GET http://127.0.0.1:8000/api/orders/ \
   -H "Authorization: Bearer $SALES_TOKEN"
 # Response: 200 OK (only sales user's orders)
 ```
 
 ### Test 3: Support User Sees Only Assigned Claims
 ```bash
-curl -X GET http://127.0.0.1:8001/api/warranty-claims/ \
+curl -X GET http://127.0.0.1:8000/api/warranty-claims/ \
   -H "Authorization: Bearer $SUPPORT_TOKEN"
 # Response: 200 OK (only claims assigned to support user)
 ```

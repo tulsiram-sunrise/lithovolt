@@ -153,7 +153,7 @@ php artisan config:clear
 
 ## 📚 API Documentation
 
-See `IMPLEMENTATION.md` for:
+See `../implementation/IMPLEMENTATION.md` for:
 - Complete endpoint listing
 - Request/response examples
 - Database schema details
@@ -216,7 +216,7 @@ backend-laravel/
 │   └── seeders/ (3 seeders)
 ├── routes/api.php (40+ endpoints)
 ├── .env (database config)
-├── IMPLEMENTATION.md (full docs)
+├── docs/implementation/IMPLEMENTATION.md (full docs)
 └── test-api.sh (testing script)
 ```
 
@@ -245,7 +245,7 @@ backend-laravel/
 ## 📞 Support
 
 For issues or questions:
-1. Check `IMPLEMENTATION.md` - detailed documentation
+1. Check `../implementation/IMPLEMENTATION.md` - detailed documentation
 2. Review migration files - database schema
 3. Check controller specs - endpoint requirements
 4. Test with provided users - use test credentials

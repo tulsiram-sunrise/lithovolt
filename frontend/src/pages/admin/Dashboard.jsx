@@ -66,11 +66,11 @@ function normalizeMetricsPayload(source = {}) {
   const totals = source?.totals || {}
 
   // Backward-compatible: use existing detailed shape when present.
-  if (source?.users_by_role || source?.orders_by_status || source?.warranties_by_status) {
+  if (source?.users_by_role || source?.orders_by_status || source?.warranty_claims_by_status) {
     return {
       users_by_role: source?.users_by_role || {},
       orders_by_status: source?.orders_by_status || {},
-      warranties_by_status: source?.warranties_by_status || {},
+      warranty_claims_by_status: source?.warranty_claims_by_status || {},
       battery_models: Number(source?.battery_models ?? totals.products ?? 0),
       serials_by_status: source?.serials_by_status || {},
       totals: {
@@ -89,7 +89,7 @@ function normalizeMetricsPayload(source = {}) {
   return {
     users_by_role: {},
     orders_by_status: { PENDING: pendingOrders },
-    warranties_by_status: { CLAIMED: claimedWarranties },
+    warranty_claims_by_status: { PENDING: claimedWarranties },
     battery_models: Number(totals.products ?? 0),
     serials_by_status: {},
     totals: {
@@ -173,29 +173,46 @@ export default function AdminDashboard() {
 
   const stats = useMemo(() => {
     const users = normalizedMetrics?.users_by_role || {}
-    const totalUsersFromRoles = Object.values(users).reduce((sum, value) => sum + Number(value || 0), 0)
-    const totalUsers = totalUsersFromRoles > 0 ? totalUsersFromRoles : Number(normalizedMetrics?.totals?.users || 0)
+    const consumerCount = Number(users.CONSUMER || 0)
+    const wholesalerCount = Number(users.WHOLESALER || 0)
     const orders = normalizedMetrics?.orders_by_status || {}
-    const activeOrders = (orders.PENDING || 0) + (orders.ACCEPTED || 0)
-    const warranties = normalizedMetrics?.warranties_by_status || {}
-    const totalWarranties = Object.values(warranties).reduce((sum, value) => sum + value, 0)
-    const fallbackWarrantyTotal = Number(normalizedMetrics?.totals?.warranties || 0)
+    const pendingOrders = (orders.PENDING || 0)
+    const processingOrders = (orders.PROCESSING || 0)
+    const warranties = normalizedMetrics?.warranty_claims_by_status || {}
+    const pendingClaims = (warranties.PENDING || 0)
+    const processingClaims = (warranties.PROCESSING || 0)
 
     return [
-      { label: 'Total Users', value: totalUsers, trend: `${users.WHOLESALER || 0} wholesalers` },
-      { label: 'Battery Models', value: normalizedMetrics?.battery_models ?? 0, trend: `${normalizedMetrics?.serials_by_status?.AVAILABLE || 0} available` },
-      { label: 'Active Orders', value: activeOrders, trend: `${orders.PENDING || 0} pending` },
-      { label: 'Warranties Issued', value: totalWarranties > 0 ? totalWarranties : fallbackWarrantyTotal, trend: `${warranties.ACTIVE || 0} active` },
+      { 
+        label: 'Consumers', 
+        value: consumerCount, 
+        trend: `${wholesalerCount} wholesalers`
+      },
+      { 
+        label: 'Battery Models', 
+        value: normalizedMetrics?.battery_models ?? 0, 
+        trend: `${normalizedMetrics?.serials_by_status?.AVAILABLE || 0} available` 
+      },
+      { 
+        label: 'Orders', 
+        value: pendingOrders, 
+        trend: `${processingOrders} processing` 
+      },
+      { 
+        label: 'Warranty Claims', 
+        value: pendingClaims, 
+        trend: `${processingClaims} processing, ${warranties.RESOLVED || 0} resolved` 
+      },
     ]
   }, [normalizedMetrics])
 
   const orderMixRows = useMemo(() => buildMixRows(normalizedMetrics?.orders_by_status || {}), [normalizedMetrics])
-  const warrantyMixRows = useMemo(() => buildMixRows(normalizedMetrics?.warranties_by_status || {}), [normalizedMetrics])
+  const warrantyMixRows = useMemo(() => buildMixRows(normalizedMetrics?.warranty_claims_by_status || {}), [normalizedMetrics])
 
   const comparisonRows = useMemo(() => {
     const usersFromDashboard = getTotalFromObject(normalizedMetrics?.users_by_role || {}) || Number(normalizedMetrics?.totals?.users || 0)
     const ordersFromDashboard = getTotalFromObject(normalizedMetrics?.orders_by_status || {}) || Number(normalizedMetrics?.totals?.orders || 0)
-    const warrantiesFromDashboard = getTotalFromObject(normalizedMetrics?.warranties_by_status || {}) || Number(normalizedMetrics?.totals?.warranties || 0)
+    const warrantiesFromDashboard = getTotalFromObject(normalizedMetrics?.warranty_claims_by_status || {}) || Number(normalizedMetrics?.totals?.warranties || 0)
 
     const usersFromReports = Number(reportStats?.users?.total || 0)
     const ordersFromReports = Number(reportStats?.orders?.total || 0)
@@ -213,7 +230,7 @@ export default function AdminDashboard() {
         reportValue: ordersFromReports,
       },
       {
-        label: 'Warranties',
+        label: 'Warranty Claims',
         dashboardValue: warrantiesFromDashboard,
         reportValue: warrantiesFromReports,
       },

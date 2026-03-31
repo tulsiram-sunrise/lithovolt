@@ -323,7 +323,7 @@
 - Maintained backward compatibility for existing phone-based OTP requests.
 - Added email OTP delivery path with debug-safe fallback behavior.
 
-### Live Validation Results (127.0.0.1:8001)
+### Live Validation Results (127.0.0.1:8000)
 - `OTP_SEND_STATUS=200`
 - `OTP_CHANNEL=email`
 - `OTP_DELIVERY_STATUS=sent`
@@ -377,7 +377,7 @@ This confirms wholesaler invitation emails are now sending successfully from the
 
 ### What was executed
 - Added consolidated verifier script `verify_laravel_auth_matrix.sh` and switched VS Code task `Laravel Remaining Endpoint Checks` to use it.
-- Started Laravel API on `127.0.0.1:8001` for a non-interactive verification pass.
+- Started Laravel API on `127.0.0.1:8000` for a non-interactive verification pass.
 - Ran authenticated smoke matrix after restoring baseline credentials with `php artisan db:seed`.
 - Corrected Postman profile route drift in `backend/docs/postman/Lithovolt.postman_collection.json`:
 	- Updated `Get Me` request to canonical `GET /api/auth/profile/`.

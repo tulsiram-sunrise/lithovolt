@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\BatteryModel;
 use App\Models\Order;
+use App\Models\SerialNumber;
 use App\Models\User;
 use App\Models\Warranty;
+use App\Models\WarrantyClaim;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -79,8 +81,41 @@ class AdminController extends Controller
         $totalProducts = BatteryModel::count();
         $totalWarranties = Warranty::count();
 
-        $pendingOrders = Order::whereIn('status', ['pending', 'PENDING'])->count();
-        $claimedWarranties = Warranty::where('status', 'claimed')->count();
+        // Get users by role (using relationship)
+        $usersByRole = [
+            'ADMIN' => User::whereHas('modelRole', function($query) {
+                $query->where('name', 'ADMIN');
+            })->count(),
+            'WHOLESALER' => User::whereHas('modelRole', function($query) {
+                $query->where('name', 'WHOLESALER');
+            })->count(),
+            'CONSUMER' => User::whereHas('modelRole', function($query) {
+                $query->where('name', 'CONSUMER');
+            })->count(),
+        ];
+
+        // Get order statuses
+        $ordersByStatus = [
+            'PENDING' => Order::where('status', 'pending')->count(),
+            'PROCESSING' => Order::where('status', 'processing')->count(),
+            'SHIPPED' => Order::where('status', 'shipped')->count(),
+            'DELIVERED' => Order::where('status', 'delivered')->count(),
+            'CANCELLED' => Order::where('status', 'cancelled')->count(),
+        ];
+
+        // Get serial numbers by status
+        $serialsByStatus = [
+            'AVAILABLE' => \App\Models\SerialNumber::where('status', 'AVAILABLE')->count(),
+            'ALLOCATED' => \App\Models\SerialNumber::where('status', 'ALLOCATED')->count(),
+            'SOLD' => \App\Models\SerialNumber::where('status', 'SOLD')->count(),
+        ];
+
+        // Get warranty claim statuses
+        $warrantyClaimsByStatus = [
+            'PENDING' => WarrantyClaim::where('status', 'pending')->count(),
+            'PROCESSING' => WarrantyClaim::where('status', 'processing')->count(),
+            'RESOLVED' => WarrantyClaim::where('status', 'resolved')->count(),
+        ];
 
         return response()->json([
             'totals' => [
@@ -89,8 +124,11 @@ class AdminController extends Controller
                 'products' => $totalProducts,
                 'warranties' => $totalWarranties,
             ],
-            'pending_orders' => $pendingOrders,
-            'claimed_warranties' => $claimedWarranties,
+            'users_by_role' => $usersByRole,
+            'orders_by_status' => $ordersByStatus,
+            'serials_by_status' => $serialsByStatus,
+            'warranty_claims_by_status' => $warrantyClaimsByStatus,
+            'battery_models' => $totalProducts,
         ]);
     }
 

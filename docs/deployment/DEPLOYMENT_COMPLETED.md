@@ -93,8 +93,8 @@ All migrations and seeders have been successfully executed:
 - [backend-laravel/database/seeders/RolePermissionSeeder.php](backend-laravel/database/seeders/RolePermissionSeeder.php) - Laravel seeder
 
 ### Verification Scripts (NEW)
-- [verify_setup.sh](verify_setup.sh) - Database setup verification
-- [smoke_test.sh](smoke_test.sh) - Automated testing script
+- [verify_setup.sh](../../verify_setup.sh) - Database setup verification
+- [smoke_test.sh](../../smoke_test.sh) - Automated testing script
 
 ### Fixed Issues (Previously)
 - [frontend/src/pages/admin/WarrantyClaimsPage.jsx](frontend/src/pages/admin/WarrantyClaimsPage.jsx) - Reject handler bug fixed
@@ -102,8 +102,8 @@ All migrations and seeders have been successfully executed:
 - [backend/apps/users/serializers.py](backend/apps/users/serializers.py) - Circular supervisor validation added
 
 ### Documentation (UPDATED)
-- [TESTING_ANALYSIS.md](TESTING_ANALYSIS.md) - Updated with all fixes applied status
-- [FIXES_APPLIED.md](FIXES_APPLIED.md) - Detailed fix information
+- [TESTING_ANALYSIS.md](../testing/TESTING_ANALYSIS.md) - Updated with all fixes applied status
+- [FIXES_APPLIED.md](../reports/FIXES_APPLIED.md) - Detailed fix information
 - [DEPLOYMENT_NEXT_STEPS.md](DEPLOYMENT_NEXT_STEPS.md) - Deployment guide
 
 ---
@@ -146,8 +146,8 @@ python manage.py runserver
 **Terminal 2 - Laravel:**
 ```bash
 cd backend-laravel
-php artisan serve --port=8001
-# Server runs on http://localhost:8001
+php artisan serve --port=8000
+# Server runs on http://localhost:8000
 ```
 
 **Terminal 3 - React Frontend:**

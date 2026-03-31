@@ -11,7 +11,7 @@
 	- Full frontend suite: `24` files, `110` tests passed
 
 ### Immediate next slice for tomorrow
-1. Baseline verification first: frontend tests + Laravel auth smoke (`:8001`).
+1. Baseline verification first: frontend tests + Laravel auth smoke (`:8000`).
 2. Admin flow spot-check: pagination, user detail modal, wholesaler tabs.
 3. Start next smallest high-value enhancement and pair it with tests.
 
@@ -19,7 +19,7 @@
 "Win the first hour, and the rest of the day follows."
 
 ### Exact prompt to use tomorrow
-"Resume from RESTART_RESUME_FLAG.md and SESSION_LOG.md. First run baseline verification (frontend tests + Laravel auth smoke on :8001), then execute the next smallest high-value admin slice with tests."
+"Resume from docs/session/RESTART_RESUME_FLAG.md and docs/session/SESSION_LOG.md. First run baseline verification (frontend tests + Laravel auth smoke on :8000), then execute the next smallest high-value admin slice with tests."
 
 ## Current Delivery State
 - Cross-stack readiness is green.
@@ -27,7 +27,7 @@
 - Frontend tests: 20 files, 97 tests passed.
 - Mobile CI: 22 suites, 33 tests passed.
 - Laravel Feature tests: 63 passed, 156 assertions.
-- Authenticated Laravel smoke on :8001: login pass and all core/admin endpoints returned 200.
+- Authenticated Laravel smoke on :8000: login pass and all core/admin endpoints returned 200.
 
 ## Latest Important Decisions
 - Canonical profile endpoint is `/api/auth/profile/` (not `/api/users/me/`).
@@ -44,7 +44,7 @@
 ## Exact Prompt To Use Next Time
 Use this message in your first chat after reboot:
 
-"Resume from RESTART_RESUME_FLAG.md and continue with the next development step. First read READINESS_REPORT.md, SESSION_LOG.md, API_TEST_REPORT.md, and then propose the next highest-value implementation slice and start executing it immediately."
+"Resume from docs/session/RESTART_RESUME_FLAG.md and continue with the next development step. First read docs/session/READINESS_REPORT.md, docs/session/SESSION_LOG.md, docs/testing/API_TEST_REPORT.md, and then propose the next highest-value implementation slice and start executing it immediately."
 
 ## Fallback Short Prompt
 "Continue Lithovolt from the latest readiness closure and execute the next development step end-to-end."

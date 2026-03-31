@@ -826,8 +826,8 @@ ebd175e - feat: frontend - consumer, wholesaler, business admin
 - `QUICK_START.md` - Quick start guide
 - `development-guide/` - Implementation logs
 - `backend/README.md` - Django documentation
-- `backend-laravel/IMPLEMENTATION.md` - Laravel details
-- `backend-laravel/QUICKSTART.md` - Laravel quick start
+- `backend-laravel/docs/implementation/IMPLEMENTATION.md` - Laravel details
+- `backend-laravel/docs/guides/QUICKSTART.md` - Laravel quick start
 - `frontend/README.md` - Frontend documentation
 - `mobile/README.md` - Mobile app documentation
 - `docs/DEPLOYMENT.md` - Deployment guide

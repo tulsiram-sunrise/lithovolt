@@ -12,7 +12,7 @@ All frontend-backend integration issues have been **identified, fixed, and verif
 - [x] **Frontend React server running** on `http://localhost:3002`
 - [x] **MySQL database** properly seeded
 - [x] **Environment configuration** complete
-- [x] **All critical bugs fixed** (see TESTING_COMPLETE.md)
+- [x] **All critical bugs fixed** (see TESTING_ANALYSIS.md)
 
 ### How to Verify Services Are Running
 
@@ -520,10 +520,10 @@ echo "✅ All systems operational!"
 
 If you encounter any issues, check these files:
 
-1. **[TESTING_COMPLETE.md](TESTING_COMPLETE.md)** - All issues and fixes documented
-2. **[API_REFERENCE.md](API_REFERENCE.md)** - Complete API documentation
-3. **[QUICK_START_TESTING.md](QUICK_START_TESTING.md)** - Quick reference
-4. **[FRONTEND_BACKEND_TEST_REPORT.md](FRONTEND_BACKEND_TEST_REPORT.md)** - Integration status
+1. **[TESTING_ANALYSIS.md](TESTING_ANALYSIS.md)** - All issues and fixes documented
+2. **[API_TEST_REPORT.md](API_TEST_REPORT.md)** - API verification and outcomes
+3. **[QUICK_START.md](../guides/QUICK_START.md)** - Quick reference
+4. **[LARAVEL_API_VERIFICATION.md](LARAVEL_API_VERIFICATION.md)** - Integration status
 
 ### Common Issues & Solutions
 

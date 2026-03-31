@@ -97,7 +97,7 @@ python manage.py runserver
 # Terminal 2 - Laravel  
 cd backend-laravel
 php artisan serve --port=8001
-# Runs on http://localhost:8001
+# Runs on http://localhost:8000
 
 # Terminal 3 - React
 cd frontend
@@ -115,7 +115,7 @@ cd /d/kiran-negi/lithovolt/project
 Expected: `LOGIN=PASS`, all listed endpoints return `200`, and `MATRIX_STATUS=PASS`.
 
 If it fails quickly:
-- `DIAGNOSIS=Server unreachable` -> start Laravel server on `:8001`.
+- `DIAGNOSIS=Server unreachable` -> start Laravel server on `:8000`.
 - `ERROR_MESSAGE=Invalid credentials` -> run `cd backend-laravel && php artisan db:seed` and retry.
 
 ### Verify Wholesaler Invite Email (SMTP smoke)

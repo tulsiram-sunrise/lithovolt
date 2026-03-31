@@ -208,7 +208,7 @@ ENTITY_ACCESS_CONTROL_SUMMARY.md
 ### Testing SALES User Access
 ```bash
 # 1. Login as SALES user
-curl -X POST http://localhost:8001/api/auth/login \
+curl -X POST http://localhost:8000/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"sales@company.com","password":"****"}'
 
@@ -216,7 +216,7 @@ curl -X POST http://localhost:8001/api/auth/login \
 TOKEN="eyJhbGc..."
 
 # 3. Try to view orders - should see only own orders
-curl http://localhost:8001/api/orders \
+curl http://localhost:8000/api/orders \
   -H "Authorization: Bearer $TOKEN"
 
 # Expected: 

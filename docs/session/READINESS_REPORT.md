@@ -13,7 +13,7 @@
 - ✅ Frontend tests (`frontend`): `20` files passed, `97` tests passed
 - ✅ Mobile CI (`mobile`): `22` suites passed, `33` tests passed
 - ✅ Laravel Feature tests (`backend-laravel`): `63` passed (`156` assertions)
-- ✅ Laravel authenticated smoke (`127.0.0.1:8001`):
+- ✅ Laravel authenticated smoke (`127.0.0.1:8000`):
   - `LOGIN=PASS`
   - `auth/profile=200`
   - `inventory/categories=200`
@@ -232,7 +232,7 @@ npx expo start
 ```bash
 cd backend-laravel
 php artisan serve --port=8001
-# Runs on http://localhost:8001/api
+# Runs on http://localhost:8000/api
 ```
 
 ### Production Build

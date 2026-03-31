@@ -19,7 +19,7 @@
 
 ### Tomorrow starting plan
 1. Re-run frontend tests as baseline.
-2. Re-run Laravel authenticated smoke matrix on `127.0.0.1:8001`.
+2. Re-run Laravel authenticated smoke matrix on `127.0.0.1:8000`.
 3. Spot-check admin flows: pagination, detail modal fields, wholesalers tab behavior.
 4. Pick one small forward slice and ship with tests.
 
@@ -37,7 +37,7 @@
   - Frontend tests remain green (`20` files, `97` tests).
 - ✅ Route/doc drift cleanup:
   - Updated Postman profile request from `/api/users/me/` to canonical `/api/auth/profile/`.
-- ✅ Non-interactive backend verification hardened on `:8001`:
+- ✅ Non-interactive backend verification hardened on `:8000`:
   - Added reusable root script `verify_laravel_auth_matrix.sh` and wired task `Laravel Remaining Endpoint Checks` to it.
   - Initial `000` indicated server not reachable.
   - Subsequent `401` indicated stale credential state.
@@ -45,7 +45,7 @@
   - Final authenticated endpoints all returned `200`.
 
 ### Current operational state
-- Laravel authenticated smoke matrix on `127.0.0.1:8001` is green again.
+- Laravel authenticated smoke matrix on `127.0.0.1:8000` is green again.
 - Canonical profile endpoint remains `/api/auth/profile/`.
 
 ### Deployment hardening continuation (SMTP)
@@ -67,7 +67,7 @@
 - ✅ Frontend test run passed (`20` files, `97` tests)
 - ✅ Mobile CI passed (`22` suites, `33` tests)
 - ✅ Laravel Feature suite passed (`63` tests, `156` assertions)
-- ✅ Authenticated Laravel smoke matrix on `:8001` passed (core + admin endpoints all `200`)
+- ✅ Authenticated Laravel smoke matrix on `:8000` passed (core + admin endpoints all `200`)
 
 ### Finalization details
 - `readiness_check.sh` paused on Expo CLI availability check; equivalent direct non-interactive checks were run to complete verification.
@@ -78,7 +78,7 @@
 **Status:** ✅ Final backend runtime recovery + authenticated smoke closure complete
 
 ### What was completed in final pass
-- ✅ Confirmed Laravel serve process active on `127.0.0.1:8001`
+- ✅ Confirmed Laravel serve process active on `127.0.0.1:8000`
 - ✅ Cleared stale Laravel caches (`optimize:clear`) to remove outdated runtime behavior
 - ✅ Re-seeded baseline data (`db:seed`) to restore deterministic login credentials/roles
 - ✅ Re-ran authenticated endpoint matrix and verified all core + admin routes at `200`
@@ -320,7 +320,7 @@ python manage.py runserver
 ```bash
 cd /d/kiran-negi/lithovolt/project/backend-laravel
 php artisan serve --port=8001
-# Runs on http://localhost:8001
+# Runs on http://localhost:8000
 ```
 
 **Terminal 3 - React Frontend:**

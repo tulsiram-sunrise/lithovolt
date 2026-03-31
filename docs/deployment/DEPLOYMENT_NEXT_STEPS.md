@@ -202,12 +202,12 @@ These are **optional enhancements** - base system fully functional without them.
 - Backend: [backend/apps/users/serializers.py](backend/apps/users/serializers.py)
 
 **Documentation:**
-- [FIXES_APPLIED.md](FIXES_APPLIED.md) - Detailed fix information
-- [TESTING_ANALYSIS.md](TESTING_ANALYSIS.md) - Comprehensive testing report
-- [SESSION_SUMMARY.md](SESSION_SUMMARY.md) - What was built
-- [ADMIN_SCREENS_DOCUMENTATION.md](ADMIN_SCREENS_DOCUMENTATION.md) - API contracts
+- [FIXES_APPLIED.md](../reports/FIXES_APPLIED.md) - Detailed fix information
+- [TESTING_ANALYSIS.md](../testing/TESTING_ANALYSIS.md) - Comprehensive testing report
+- [SESSION_SUMMARY.md](../session/SESSION_SUMMARY.md) - What was built
+- [ADMIN_SCREENS_DOCUMENTATION.md](../architecture/ADMIN_SCREENS_DOCUMENTATION.md) - API contracts
 
-**Seeder Templates:** See [CONTEXT.md](CONTEXT.md) - Search for "Django Seeder Template" and "Laravel Seeder Template"
+**Seeder Templates:** See [CONTEXT.md](../session/CONTEXT.md) - Search for "Django Seeder Template" and "Laravel Seeder Template"
 
 ---
 
