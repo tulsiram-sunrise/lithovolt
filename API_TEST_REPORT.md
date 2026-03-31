@@ -516,10 +516,10 @@ This confirms wholesaler invitation emails are now sending successfully from the
 ## Test Data Available
 
 ### Test Users
-- admin@lithovolt.com (role: ADMIN) - password: password123
-- wholesaler@lithovolt.com (role: WHOLESALER) - password: password123
-- retailer@lithovolt.com (role: RETAILER) - password: password123
-- customer@lithovolt.com (role: CONSUMER) - password: password123
+- admin@lithovolt.com.au (role: ADMIN) - password: password123
+- wholesaler@lithovolt.com.au (role: WHOLESALER) - password: password123
+- retailer@lithovolt.com.au (role: RETAILER) - password: password123
+- customer@lithovolt.com.au (role: CONSUMER) - password: password123
 
 ### Battery Models
 1. LithoVolt Pro 48V 100Ah - $8,999.99
