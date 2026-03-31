@@ -125,4 +125,38 @@ describe('Wholesaler PlaceOrderPage', () => {
       })
     })
   })
+
+  it('prevents duplicate order creation on rapid submit clicks', async () => {
+    let resolveCreate
+    api.orderAPI.createOrder = vi.fn(() => new Promise((resolve) => {
+      resolveCreate = resolve
+    }))
+
+    render(
+      <TestWrapper>
+        <PlaceOrderPage />
+      </TestWrapper>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Submit Order')).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: mockBatteryModel.name })).toBeInTheDocument()
+    })
+
+    fireEvent.change(screen.getByLabelText(/Item/i), { target: { value: String(mockBatteryModel.id) } })
+    fireEvent.change(screen.getByLabelText(/Quantity/i), { target: { value: '1' } })
+
+    const submitButton = screen.getByRole('button', { name: 'Submit Order' })
+    fireEvent.click(submitButton)
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(api.orderAPI.createOrder).toHaveBeenCalledTimes(1)
+    })
+
+    resolveCreate({ data: mockOrder })
+    await waitFor(() => {
+      expect(api.orderAPI.createOrder).toHaveBeenCalledTimes(1)
+    })
+  })
 })

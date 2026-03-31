@@ -238,10 +238,10 @@ NotificationSetting
 ## Sample Data
 
 ### Seeded Users
-1. **Admin** - admin@lithovolt.com / password123
-2. **Wholesaler** - wholesaler@lithovolt.com / password123
-3. **Retailer** - retailer@lithovolt.com / password123
-4. **Customer** - customer@lithovolt.com / password123
+1. **Admin** - admin@lithovolt.com.au / password123
+2. **Wholesaler** - wholesaler@lithovolt.com.au / password123
+3. **Retailer** - retailer@lithovolt.com.au / password123
+4. **Customer** - customer@lithovolt.com.au / password123
 
 ### Seeded Battery Models
 1. LithoVolt Pro 48V 100Ah - ₹8,999.99 (60-month warranty)
@@ -300,7 +300,7 @@ Server runs on: `http://localhost:8000`
 ```bash
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}'
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}'
 ```
 
 Response includes `access_token` - use in subsequent requests:

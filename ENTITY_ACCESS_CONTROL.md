@@ -164,7 +164,7 @@ Users can bypass all scoping restrictions by adding their email to `.env`:
 
 ```bash
 # .env
-BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com,superuser@lithovolt.com
+BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com.au,superuser@lithovolt.com.au
 ```
 
 These users will see all data regardless of role permissions.
@@ -173,9 +173,9 @@ These users will see all data regardless of role permissions.
 
 ### Test 1: Verify SALES User Cannot See TECH's Orders
 ```bash
-# Login as SALES user (sales@lithovolt.com)
+# Login as SALES user (sales@lithovolt.com.au)
 POST /api/auth/login {
-  "email": "sales@lithovolt.com",
+  "email": "sales@lithovolt.com.au",
   "password": "password123"
 }
 
@@ -188,7 +188,7 @@ GET /api/orders/
 ```bash
 # Login as MANAGER user
 POST /api/auth/login {
-  "email": "manager@lithovolt.com",
+  "email": "manager@lithovolt.com.au",
   "password": "password123"
 }
 

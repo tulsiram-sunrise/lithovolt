@@ -526,7 +526,7 @@ Small: 12px, Regular
 
 #### Scene 7 (28-30 seconds)
 **Visual**: Hold on app icon with URL  
-**Text Overlay**: "lithovolt.com"  
+**Text Overlay**: "lithovolt.com.au"  
 **Audio**: Music fades out
 
 ### Production Notes
@@ -582,7 +582,7 @@ Download now:
 
 Our advanced QR scanning technology ensures you're always dealing with genuine products. Perfect for wholesalers, retailers, and consumers.
 
-Learn more: lithovolt.com
+Learn more: lithovolt.com.au
 ```
 
 #### Post 3: Use Case (Wholesalers)
@@ -634,7 +634,7 @@ Best regards,
 The Lithovolt Team
 
 ---
-Lithovolt Inc. | lithovolt.com | support@lithovolt.com
+Lithovolt Inc. | lithovolt.com.au | support@lithovolt.com.au
 ```
 
 ### Website Banner
@@ -703,8 +703,8 @@ Lithovolt Inc. | lithovolt.com | support@lithovolt.com
 **Questions about assets?**
 
 Contact:
-- Design Lead: design@lithovolt.com
-- Marketing Team: marketing@lithovolt.com
+- Design Lead: design@lithovolt.com.au
+- Marketing Team: marketing@lithovolt.com.au
 
 **External Resources**:
 - [Apple Design Resources](https://developer.apple.com/design/resources/)

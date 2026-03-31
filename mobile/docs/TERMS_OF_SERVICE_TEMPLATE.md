@@ -209,7 +209,7 @@ This includes:
 ### 7.3 Copyright Infringement
 
 If you believe content infringes your copyright:
-- Email: copyright@lithovolt.com
+- Email: copyright@lithovolt.com.au
 - Include detailed description and proof of ownership
 - We will investigate and take appropriate action
 
@@ -330,7 +330,7 @@ These Terms are governed by the laws of [Your Jurisdiction] without regard to co
 ### 12.2 Informal Resolution
 
 Before filing a claim:
-- Contact us at legal@lithovolt.com
+- Contact us at legal@lithovolt.com.au
 - Provide detailed description of dispute
 - Attempt good-faith resolution for 60 days
 
@@ -385,7 +385,7 @@ By using the App, you consent to:
 You may opt out of marketing communications:
 - Adjust settings in the App
 - Click "unsubscribe" in emails
-- Contact support@lithovolt.com
+- Contact support@lithovolt.com.au
 
 **Note**: You cannot opt out of transactional or administrative communications.
 
@@ -424,7 +424,7 @@ If you disagree with changes:
 You may terminate at any time by:
 - Deleting the App from your device
 - Closing your account through App settings
-- Contacting support@lithovolt.com
+- Contacting support@lithovolt.com.au
 
 ### 16.2 Termination by Us
 
@@ -505,8 +505,8 @@ Section headings are for convenience only and do not affect interpretation.
 
 For questions about these Terms:
 
-**Email**: legal@lithovolt.com  
-**Support**: support@lithovolt.com  
+**Email**: legal@lithovolt.com.au  
+**Support**: support@lithovolt.com.au  
 **Address**:  
 Lithovolt Inc.  
 [Street Address]  

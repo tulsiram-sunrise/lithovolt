@@ -140,7 +140,15 @@ describe('API Services', () => {
 
       await orderAPI.rejectOrder(1)
 
-      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/reject')
+      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/reject', {})
+    })
+
+    it('cancels order', async () => {
+      mockClient.post.mockResolvedValue({ data: {} })
+
+      await orderAPI.cancelOrder(1)
+
+      expect(mockClient.post).toHaveBeenCalledWith('/orders/1/cancel', {})
     })
 
     it('fulfills order', async () => {

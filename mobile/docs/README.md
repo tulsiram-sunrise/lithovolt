@@ -84,7 +84,7 @@ Contains:
 **⚠️ IMPORTANT**: 
 - Review with legal counsel before publishing
 - Customize company information and addresses
-- Host on public URL (https://lithovolt.com/privacy)
+- Host on public URL (https://lithovolt.com.au/privacy)
 - Keep updated as app features change
 
 ---
@@ -107,7 +107,7 @@ Contains:
 **⚠️ IMPORTANT**:
 - Review with legal counsel
 - Customize for your business
-- Host on public URL (https://lithovolt.com/terms)
+- Host on public URL (https://lithovolt.com.au/terms)
 
 ---
 
@@ -170,11 +170,11 @@ Contains:
 
 Before submission, ensure these URLs are live:
 
-- [ ] **Privacy Policy**: https://lithovolt.com/privacy
-- [ ] **Terms of Service**: https://lithovolt.com/terms
-- [ ] **Support Page**: https://lithovolt.com/support
-- [ ] **Website**: https://lithovolt.com
-- [ ] **Marketing URL**: https://lithovolt.com/app (optional)
+- [ ] **Privacy Policy**: https://lithovolt.com.au/privacy
+- [ ] **Terms of Service**: https://lithovolt.com.au/terms
+- [ ] **Support Page**: https://lithovolt.com.au/support
+- [ ] **Website**: https://lithovolt.com.au
+- [ ] **Marketing URL**: https://lithovolt.com.au/app (optional)
 
 ---
 
@@ -182,9 +182,9 @@ Before submission, ensure these URLs are live:
 
 Prepare these before starting submission:
 
-- **Support Email**: support@lithovolt.com
-- **Business Email**: business@lithovolt.com
-- **Legal/Privacy Email**: privacy@lithovolt.com
+- **Support Email**: support@lithovolt.com.au
+- **Business Email**: business@lithovolt.com.au
+- **Legal/Privacy Email**: privacy@lithovolt.com.au
 - **Phone Number**: [Your business phone]
 - **Mailing Address**: [Your registered business address]
 - **Company Name**: Lithovolt Inc. (or your legal entity)
@@ -333,15 +333,15 @@ After launch, test different screenshots, icons, and descriptions
 
 **Development Team**:
 - Lead Developer: [Email]
-- Design Team: design@lithovolt.com
+- Design Team: design@lithovolt.com.au
 
 **Business Team**:
 - Product Manager: [Email]
-- Marketing: marketing@lithovolt.com
+- Marketing: marketing@lithovolt.com.au
 
 **Support**:
-- General: support@lithovolt.com
-- Legal/Privacy: legal@lithovolt.com
+- General: support@lithovolt.com.au
+- Legal/Privacy: legal@lithovolt.com.au
 
 ---
 
@@ -362,4 +362,4 @@ With these comprehensive documents, you have everything needed to:
 **Last Updated**: February 19, 2026  
 **Maintained By**: Lithovolt Development Team
 
-For questions or updates to this documentation, contact: dev@lithovolt.com
+For questions or updates to this documentation, contact: dev@lithovolt.com.au

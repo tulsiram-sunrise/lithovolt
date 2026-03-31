@@ -379,7 +379,7 @@
             <p><strong>LithoVolt Backend API</strong> - Powered by Laravel</p>
             <div class="footer-links">
                 <a href="/download/app">Download App</a>
-                <a href="mailto:support@lithovolt.com">Support</a>
+                <a href="mailto:support@lithovolt.com.au">Support</a>
                 <a href="https://www.lithovolt.com.au" target="_blank">Website</a>
             </div>
             <div class="version">

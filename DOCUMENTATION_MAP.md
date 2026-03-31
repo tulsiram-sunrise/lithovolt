@@ -196,10 +196,10 @@ EXECUTIVE_SUMMARY.md (Start - High level)
 
 ### Users Seeded (4 total)
 ```
-1. admin@lithovolt.com (Role: ADMIN)
-2. wholesaler@lithovolt.com (Role: WHOLESALER)
-3. retailer@lithovolt.com (Role: RETAILER)
-4. customer@lithovolt.com (Role: CONSUMER)
+1. admin@lithovolt.com.au (Role: ADMIN)
+2. wholesaler@lithovolt.com.au (Role: WHOLESALER)
+3. retailer@lithovolt.com.au (Role: RETAILER)
+4. customer@lithovolt.com.au (Role: CONSUMER)
 ```
 All passwords: `password123`
 

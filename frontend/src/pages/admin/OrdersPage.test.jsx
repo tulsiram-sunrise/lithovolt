@@ -30,6 +30,37 @@ describe('Admin OrdersPage', () => {
     })
   })
 
+  it('renders View action for order detail page navigation', async () => {
+    const enrichedOrder = {
+      ...mockOrder,
+      user: { full_name: 'Wholesaler User', email: 'wholesaler@example.com' },
+      items: [{ id: 1, quantity: 2, unit_price: 100, total_price: 200, product: { name: 'LV Battery' } }],
+      payment_method: 'PAY_LATER',
+      payment_status: 'PENDING',
+      notes: 'Urgent delivery',
+    }
+
+    api.orderAPI.getOrders = vi.fn(() =>
+      Promise.resolve({ data: { results: [enrichedOrder] } })
+    )
+
+    render(
+      <TestWrapper>
+        <OrdersPage />
+      </TestWrapper>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('View')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByText('View'))
+
+    await waitFor(() => {
+      expect(screen.getByText('View')).toBeInTheDocument()
+    })
+  })
+
   it('filters orders by status', async () => {
     api.orderAPI.getOrders = vi.fn(() =>
       Promise.resolve({ data: { results: [] } })
@@ -50,6 +81,24 @@ describe('Admin OrdersPage', () => {
     expect(api.orderAPI.getOrders).toHaveBeenCalledWith({
       ordering: '-created_at',
       status: 'PENDING',
+      page: 1,
+      per_page: 10,
+    })
+  })
+
+  it('renders orders when API uses Laravel paginator data field', async () => {
+    api.orderAPI.getOrders = vi.fn(() =>
+      Promise.resolve({ data: { data: [mockOrder] } })
+    )
+
+    render(
+      <TestWrapper>
+        <OrdersPage />
+      </TestWrapper>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText(`ORD-${mockOrder.id}`)).toBeInTheDocument()
     })
   })
 
@@ -99,9 +148,15 @@ describe('Admin OrdersPage', () => {
     })
 
     fireEvent.click(screen.getByText('Reject'))
+    fireEvent.change(screen.getByLabelText('Rejection Reason'), {
+      target: { value: 'Insufficient compliance documents' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Reject' }))
 
     await waitFor(() => {
-      expect(api.orderAPI.rejectOrder).toHaveBeenCalledWith(pendingOrder.id)
+      expect(api.orderAPI.rejectOrder).toHaveBeenCalledWith(pendingOrder.id, {
+        reason: 'Insufficient compliance documents',
+      })
     })
   })
 

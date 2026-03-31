@@ -153,23 +153,23 @@ Lithovolt Battery Manager is the professional solution for battery manufacturers
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Need help? We're here for you!
-• Email: support@lithovolt.com
-• Website: https://lithovolt.com
-• Knowledge Base: https://lithovolt.com/help
+• Email: support@lithovolt.com.au
+• Website: https://lithovolt.com.au
+• Knowledge Base: https://lithovolt.com.au/help
 • Video Tutorials available in-app
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔒 PRIVACY & COMPLIANCE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your data security is our top priority. We comply with all international data protection regulations including GDPR, CCPA, and local privacy laws. Read our privacy policy at: https://lithovolt.com/privacy
+Your data security is our top priority. We comply with all international data protection regulations including GDPR, CCPA, and local privacy laws. Read our privacy policy at: https://lithovolt.com.au/privacy
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Download Lithovolt Battery Manager today and revolutionize how you manage batteries and warranties!
 
-For business inquiries: business@lithovolt.com
-For technical support: support@lithovolt.com
+For business inquiries: business@lithovolt.com.au
+For technical support: support@lithovolt.com.au
 
 © 2026 Lithovolt. All rights reserved.
 ```
@@ -384,8 +384,8 @@ For technical support: support@lithovolt.com
 ## 📜 Privacy Policy (REQUIRED)
 
 ### URL
-**Production**: `https://lithovolt.com/privacy`  
-**Staging**: `https://staging.lithovolt.com/privacy`  
+**Production**: `https://lithovolt.com.au/privacy`  
+**Staging**: `https://staging.lithovolt.com.au/privacy`  
 **Temporary**: Can host on GitHub Pages or similar
 
 ### Requirements
@@ -434,7 +434,7 @@ For technical support: support@lithovolt.com
    - Opt-out of marketing
 
 6. **Contact Information**
-   - Email: privacy@lithovolt.com
+   - Email: privacy@lithovolt.com.au
    - Address: [Your company address]
    - Privacy officer contact
 
@@ -523,16 +523,16 @@ Download Lithovolt Battery Manager today!
 ## 🌐 Website & Marketing URLs
 
 ### Required URLs
-- **Website**: https://lithovolt.com
-- **Privacy Policy**: https://lithovolt.com/privacy
-- **Terms of Service**: https://lithovolt.com/terms
-- **Support/Help**: https://lithovolt.com/support
+- **Website**: https://lithovolt.com.au
+- **Privacy Policy**: https://lithovolt.com.au/privacy
+- **Terms of Service**: https://lithovolt.com.au/terms
+- **Support/Help**: https://lithovolt.com.au/support
 
 ### Marketing URLs
-- **Product Page**: https://lithovolt.com/app
-- **Demo**: https://lithovolt.com/demo
-- **Pricing**: https://lithovolt.com/pricing
-- **Contact**: https://lithovolt.com/contact
+- **Product Page**: https://lithovolt.com.au/app
+- **Demo**: https://lithovolt.com.au/demo
+- **Pricing**: https://lithovolt.com.au/pricing
+- **Contact**: https://lithovolt.com.au/contact
 
 ### Social Media (Optional)
 - **Twitter/X**: @lithovolt
@@ -546,9 +546,9 @@ Download Lithovolt Battery Manager today!
 
 ### Developer/Company Information
 **Company Name**: Lithovolt Inc. (or your registered company name)  
-**Email**: contact@lithovolt.com  
-**Support Email**: support@lithovolt.com  
-**Business Email**: business@lithovolt.com  
+**Email**: contact@lithovolt.com.au  
+**Support Email**: support@lithovolt.com.au  
+**Business Email**: business@lithovolt.com.au  
 **Address**: [Your registered business address]  
 **Phone**: [Your business phone number]  
 
@@ -582,7 +582,7 @@ Download Lithovolt Battery Manager today!
 - [ ] Privacy policy written and published
 - [ ] Privacy policy URL live and accessible
 - [ ] Terms of service written and published
-- [ ] Contact email set up (support@lithovolt.com)
+- [ ] Contact email set up (support@lithovolt.com.au)
 - [ ] Company website live
 - [ ] Copyright notice prepared
 

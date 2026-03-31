@@ -5,6 +5,7 @@ import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
+import ProductImage from '../../components/common/ProductImage'
 
 const SERVER_PAGE_SIZE = 15
 
@@ -153,6 +154,7 @@ export default function BatteryModelsPage() {
           <table className="data-table">
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Model</th>
                 <th>SKU</th>
                 <th>Available</th>
@@ -161,10 +163,13 @@ export default function BatteryModelsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? <ShimmerTableRows rows={6} columns={5} /> : null}
+              {isLoading ? <ShimmerTableRows rows={6} columns={6} /> : null}
               {filteredModels.length > 0 ? (
                 filteredModels.map((model) => (
                   <tr key={model.id}>
+                    <td>
+                      <ProductImage src={model.image_url} alt={model.name} className="h-12 w-12" fallbackText="N/A" />
+                    </td>
                     <td>{model.name}</td>
                     <td>{model.sku}</td>
                     <td>{model.available_quantity ?? model.available_stock ?? 0}</td>
@@ -200,7 +205,7 @@ export default function BatteryModelsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-8 text-[color:var(--muted)]">
+                  <td colSpan="6" className="text-center py-8 text-[color:var(--muted)]">
                     {draftQuery ? 'No models match current page filter.' : 'No battery models found.'}
                   </td>
                 </tr>

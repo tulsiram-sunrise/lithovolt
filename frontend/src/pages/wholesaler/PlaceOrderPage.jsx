@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, orderAPI } from '../../services/api'
@@ -12,6 +12,8 @@ export default function PlaceOrderPage() {
   const [paymentMethod, setPaymentMethod] = useState('PAY_LATER')
   const [items, setItems] = useState([createEmptyItem()])
   const [formError, setFormError] = useState('')
+  const [isSubmitLocked, setIsSubmitLocked] = useState(false)
+  const submitLockRef = useRef(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const addToast = useToastStore((state) => state.addToast)
@@ -60,6 +62,10 @@ export default function PlaceOrderPage() {
         message: extractApiErrorMessage(error, 'Unable to place order.'),
       })
     },
+    onSettled: () => {
+      submitLockRef.current = false
+      setIsSubmitLocked(false)
+    },
   })
 
   const catalogItems = Array.isArray(catalogData) ? catalogData : catalogData?.results || catalogData?.data || []
@@ -87,6 +93,10 @@ export default function PlaceOrderPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setFormError('')
+
+    if (createOrder.isPending || submitLockRef.current) {
+      return
+    }
 
     if (!items.length) {
       setFormError('Add at least one item before submitting.')
@@ -116,6 +126,8 @@ export default function PlaceOrderPage() {
       return
     }
 
+    submitLockRef.current = true
+    setIsSubmitLocked(true)
     createOrder.mutate({ notes, payment_method: paymentMethod, items: payloadItems })
   }
 
@@ -232,8 +244,8 @@ export default function PlaceOrderPage() {
 
         <div className="flex items-center justify-end gap-2">
           <Link className="neon-btn-secondary" to="/wholesaler/orders">Cancel</Link>
-          <button className="neon-btn" type="submit" disabled={createOrder.isLoading}>
-            {createOrder.isLoading ? 'Submitting...' : (paymentMethod === 'ONLINE' ? 'Proceed to Stripe' : 'Submit Order')}
+          <button className="neon-btn" type="submit" disabled={createOrder.isPending || isSubmitLocked}>
+            {(createOrder.isPending || isSubmitLocked) ? 'Submitting...' : (paymentMethod === 'ONLINE' ? 'Proceed to Stripe' : 'Submit Order')}
           </button>
         </div>
       </form>

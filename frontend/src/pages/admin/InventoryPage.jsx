@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI, userAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import ProductImage from '../../components/common/ProductImage'
 
 export default function InventoryPage() {
   const [allocation, setAllocation] = useState({ product_id: '', wholesaler_id: '', quantity: '' })
@@ -49,6 +50,7 @@ export default function InventoryPage() {
 
   const getAvailableQuantity = (item) => Number(item.available_quantity ?? item.available_stock ?? 0)
   const getAllocatedQuantity = (item) => Number(item.allocated_stock ?? ((item.total_quantity ?? 0) - getAvailableQuantity(item)) ?? 0)
+  const selectedModel = models.find((item) => String(item.id) === String(allocation.product_id))
 
   const totals = useMemo(() => {
     const available = models.reduce((sum, item) => sum + getAvailableQuantity(item), 0)
@@ -135,6 +137,12 @@ export default function InventoryPage() {
             {allocateStock.isLoading ? 'Allocating...' : 'Allocate'}
           </button>
         </div>
+        {selectedModel ? (
+          <div className="md:col-span-4">
+            <p className="mb-2 text-xs uppercase tracking-wide text-[color:var(--muted)]">Selected Model Preview</p>
+            <ProductImage src={selectedModel.image_url} alt={selectedModel.name} className="h-36 w-full max-w-sm" fallbackText="No model image" />
+          </div>
+        ) : null}
       </form>
 
       <div className="panel-card p-6">
@@ -145,15 +153,19 @@ export default function InventoryPage() {
           <table className="data-table">
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Battery Model</th>
                 <th>Wholesaler</th>
                 <th>Quantity</th>
               </tr>
             </thead>
             <tbody>
-              {allocationsLoading ? <ShimmerTableRows rows={6} columns={3} /> : null}
+              {allocationsLoading ? <ShimmerTableRows rows={6} columns={4} /> : null}
               {allocations.map((allocationItem) => (
                 <tr key={allocationItem.id}>
+                  <td>
+                    <ProductImage src={allocationItem.image_url} alt={allocationItem.product_name || allocationItem.battery_model_name || 'Battery model'} className="h-10 w-10" fallbackText="N/A" />
+                  </td>
                   <td>{allocationItem.product_name || allocationItem.battery_model_name || 'Unknown item'}</td>
                   <td>{allocationItem.wholesaler_email}</td>
                   <td>{allocationItem.quantity}</td>

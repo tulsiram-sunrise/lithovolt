@@ -130,7 +130,11 @@ export default function CategoriesPage() {
                     <button
                       className="neon-btn-ghost"
                       type="button"
-                      onClick={() => deleteCategory.mutate(category.id)}
+                      onClick={() => {
+                        if (window.confirm(`Delete category \"${category.name}\"?`)) {
+                          deleteCategory.mutate(category.id)
+                        }
+                      }}
                       disabled={deleteCategory.isLoading}
                     >
                       Delete

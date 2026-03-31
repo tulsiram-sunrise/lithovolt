@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             BatteryModelSeeder::class,
             VehicleFitmentSeeder::class,
+            EmptyTablesFakeDataSeeder::class,
         ]);
     }
 }

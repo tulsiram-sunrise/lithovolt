@@ -41,7 +41,7 @@ describe('LoginScreen', () => {
 
     const { getByTestId } = render(<LoginScreen navigation={navigation} />);
 
-    fireEvent.changeText(getByTestId('login-email'), 'wholesaler1@lithovolt.com');
+    fireEvent.changeText(getByTestId('login-email'), 'wholesaler1@lithovolt.com.au');
     fireEvent.changeText(getByTestId('login-password'), 'Wholesaler@123');
     fireEvent.press(getByTestId('login-submit'));
 

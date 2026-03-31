@@ -139,7 +139,7 @@ curl -X GET http://127.0.0.1:8001/api/warranty-claims/ \
 ### Enable Super-Admin Bypass
 ```bash
 # .env
-BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com,superuser@example.com
+BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com.au,superuser@example.com
 ```
 
 These users bypass all visibility restrictions.

@@ -26,7 +26,7 @@ curl http://localhost:3002
 # Login Test
 curl -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}'
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}'
 ```
 
 ---
@@ -42,10 +42,10 @@ curl -X POST http://127.0.0.1:8000/api/auth/login \
 
 | Email | Password | Expected Role |
 |-------|----------|---------------|
-| admin@lithovolt.com | password123 | ADMIN |
-| wholesaler@lithovolt.com | password123 | WHOLESALER |
-| retailer@lithovolt.com | password123 | RETAILER |
-| customer@lithovolt.com | password123 | CONSUMER |
+| admin@lithovolt.com.au | password123 | ADMIN |
+| wholesaler@lithovolt.com.au | password123 | WHOLESALER |
+| retailer@lithovolt.com.au | password123 | RETAILER |
+| customer@lithovolt.com.au | password123 | CONSUMER |
 
 3. Click "Login"
 4. Verify token is stored in localStorage
@@ -60,7 +60,7 @@ curl -X POST http://127.0.0.1:8000/api/auth/login \
 # Test login endpoint directly
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}' | jq -r '.access')
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}' | jq -r '.access')
 
 echo "Token retrieved: $TOKEN"
 
@@ -100,7 +100,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ## Phase 2: Role-Based Access Control Testing
 
 ### 2.1 ADMIN Role Access
-**User**: admin@lithovolt.com
+**User**: admin@lithovolt.com.au
 
 **Routes to Verify**:
 - [ ] `/admin/dashboard` - loads admin dashboard
@@ -113,7 +113,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}' | jq -r '.access')
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}' | jq -r '.access')
 
 # Test admin routes
 curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/users/
@@ -122,7 +122,7 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/admin/metrics/
 ```
 
 ### 2.2 WHOLESALER Role Access
-**User**: wholesaler@lithovolt.com
+**User**: wholesaler@lithovolt.com.au
 
 **Routes to Verify**:
 - [ ] `/wholesaler/dashboard` - loads wholesaler dashboard
@@ -130,7 +130,7 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/admin/metrics/
 - [x] `/admin/*` - should NOT access (show error or unauthorized)
 
 ### 2.3 RETAILER Role Access
-**User**: retailer@lithovolt.com
+**User**: retailer@lithovolt.com.au
 
 **Routes to Verify**:
 - [ ] `/customer/*` - can access customer features
@@ -138,7 +138,7 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/admin/metrics/
 - [x] `/admin/*` - should NOT access (show error or unauthorized)
 
 ### 2.4 CONSUMER Role Access
-**User**: customer@lithovolt.com
+**User**: customer@lithovolt.com.au
 
 **Routes to Verify**:
 - [ ] `/customer/*` - can access customer features
@@ -155,7 +155,7 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/admin/metrics/
 ```bash
 curl -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}'
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}'
 ```
 - [ ] Returns: `access_token`, `refresh_token`, `user` object
 - [ ] User object includes: `id`, `email`, `name`, `role` (UPPERCASE)
@@ -281,7 +281,7 @@ curl -H "Authorization: Bearer {oldtoken}" \
 # Login as customer, try to access admin endpoint
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"customer@lithovolt.com","password":"password123"}' | jq -r '.access')
+  -d '{"email":"customer@lithovolt.com.au","password":"password123"}' | jq -r '.access')
 
 curl -H "Authorization: Bearer $TOKEN" \
   http://127.0.0.1:8000/api/users/
@@ -300,7 +300,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}' | jq -r '.access')
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}' | jq -r '.access')
 
 curl -H "Authorization: Bearer $TOKEN" \
   http://127.0.0.1:8000/api/users/ | jq '.data[0]'
@@ -310,7 +310,7 @@ Expected JSON structure:
 {
   "id": 1,
   "name": "Admin User",
-  "email": "admin@lithovolt.com",
+  "email": "admin@lithovolt.com.au",
   "role": {
     "id": 1,
     "name": "ADMIN"
@@ -380,7 +380,7 @@ curl http://127.0.0.1:8000/api/inventory/models/ | jq '.data'
 ## Phase 7: Role-Specific Dashboard Testing
 
 ### 7.1 ADMIN Dashboard
-**Login**: admin@lithovolt.com / password123
+**Login**: admin@lithovolt.com.au / password123
 
 **Expected Page Elements**:
 - [ ] User Management section loads
@@ -395,7 +395,7 @@ curl http://127.0.0.1:8000/api/inventory/models/ | jq '.data'
 - [ ] Dashboard metrics display correctly
 
 ### 7.2 WHOLESALER Dashboard
-**Login**: wholesaler@lithovolt.com / password123
+**Login**: wholesaler@lithovolt.com.au / password123
 
 **Expected Page Elements**:
 - [ ] Wholesaler-specific dashboard loads
@@ -404,7 +404,7 @@ curl http://127.0.0.1:8000/api/inventory/models/ | jq '.data'
 - [ ] Can access customer features
 
 ### 7.3 RETAILER Dashboard
-**Login**: retailer@lithovolt.com / password123
+**Login**: retailer@lithovolt.com.au / password123
 
 **Expected Page Elements**:
 - [ ] Retailer-specific dashboard loads
@@ -412,7 +412,7 @@ curl http://127.0.0.1:8000/api/inventory/models/ | jq '.data'
 - [ ] Can access customer features
 
 ### 7.4 CONSUMER Dashboard
-**Login**: customer@lithovolt.com / password123
+**Login**: customer@lithovolt.com.au / password123
 
 **Expected Page Elements**:
 - [ ] Customer dashboard loads
@@ -484,7 +484,7 @@ fi
 echo "3️⃣ Testing Login..."
 RESPONSE=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}')
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}')
 
 if echo "$RESPONSE" | jq -e '.access' > /dev/null 2>&1; then
   echo "✅ Login working"

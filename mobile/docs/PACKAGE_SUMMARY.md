@@ -74,14 +74,14 @@ Each screenshot brief includes:
 - GDPR, CCPA, and international compliance
 - 14 major sections covering all requirements
 - Contact information templates
-- Ready to publish at: https://lithovolt.com/privacy
+- Ready to publish at: https://lithovolt.com.au/privacy
 
 ### ✅ Terms of Service (Complete)
 - 7,000+ word detailed terms
 - 20 major sections
 - User agreement, warranties, liability
 - Business-specific terms
-- Ready to publish at: https://lithovolt.com/terms
+- Ready to publish at: https://lithovolt.com.au/terms
 
 ### ✅ Submission Checklist
 - 60+ verification items
@@ -102,8 +102,8 @@ Each screenshot brief includes:
 - [ ] Review Terms of Service with legal counsel
 - [ ] Customize company information (address, contact details)
 - [ ] Host on your website at:
-  - https://lithovolt.com/privacy
-  - https://lithovolt.com/terms
+  - https://lithovolt.com.au/privacy
+  - https://lithovolt.com.au/terms
 - [ ] Verify URLs are publicly accessible
 
 #### 2. Visual Assets (Priority: HIGH)
@@ -265,10 +265,10 @@ Each screenshot brief includes:
 ## 📞 Support & Resources
 
 ### Internal Contacts
-- **Development**: dev@lithovolt.com
-- **Design**: design@lithovolt.com
-- **Legal**: legal@lithovolt.com
-- **Support**: support@lithovolt.com
+- **Development**: dev@lithovolt.com.au
+- **Design**: design@lithovolt.com.au
+- **Legal**: legal@lithovolt.com.au
+- **Support**: support@lithovolt.com.au
 
 ### External Resources
 - **Apple Developer**: https://developer.apple.com
@@ -373,9 +373,9 @@ mobile/docs/
 ## 📧 Questions?
 
 Feel free to reach out:
-- **Technical**: dev@lithovolt.com
-- **Design**: design@lithovolt.com
-- **Business**: business@lithovolt.com
+- **Technical**: dev@lithovolt.com.au
+- **Design**: design@lithovolt.com.au
+- **Business**: business@lithovolt.com.au
 
 ---
 

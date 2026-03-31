@@ -247,10 +247,10 @@ GET /api/inventory/products → Active items only
 ### Environment Variables (Already Configured)
 ```bash
 # .env
-BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com
+BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com.au
 
 # Add more admins if needed:
-BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com,cto@lithovolt.com,owner@lithovolt.com
+BACKOFFICE_SUPER_ADMIN_EMAILS=admin@lithovolt.com.au,cto@lithovolt.com.au,owner@lithovolt.com.au
 ```
 
 Users in this list bypass ALL visibility restrictions.
@@ -264,10 +264,10 @@ A: `backend-laravel/app/Services/EntityAccessService.php` - all visibility rules
 
 **Q: How do I test with different roles?**  
 A: Use seeded test accounts:
-- MANAGER: manager@lithovolt.com
-- SALES: sales@lithovolt.com (create a test user)
-- SUPPORT: support@lithovolt.com (create a test user)
-- TECH: tech@lithovolt.com (create a test user)
+- MANAGER: manager@lithovolt.com.au
+- SALES: sales@lithovolt.com.au (create a test user)
+- SUPPORT: support@lithovolt.com.au (create a test user)
+- TECH: tech@lithovolt.com.au (create a test user)
 
 **Q: What if a role needs different visibility?**  
 A: Update `getVisibilityScope()` in EntityAccessService with new rules

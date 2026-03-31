@@ -9,6 +9,7 @@ export default function WholesalersPage() {
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState('')
   const [page, setPage] = useState(1)
+  const [pendingToggleUserId, setPendingToggleUserId] = useState(null)
   const [selectedWholesalerDetail, setSelectedWholesalerDetail] = useState(null)
   const [showWholesalerDetailModal, setShowWholesalerDetailModal] = useState(false)
 
@@ -52,6 +53,17 @@ export default function WholesalersPage() {
   const handleViewWholesalerDetail = (wholesaler) => {
     setSelectedWholesalerDetail(wholesaler)
     setShowWholesalerDetailModal(true)
+  }
+
+  const handleToggleActive = (userId) => {
+    if (toggleActive.isPending) {
+      return
+    }
+
+    setPendingToggleUserId(userId)
+    toggleActive.mutate(userId, {
+      onSettled: () => setPendingToggleUserId(null),
+    })
   }
 
   return (
@@ -108,10 +120,10 @@ export default function WholesalersPage() {
                       </button>
                       <button
                         className="neon-btn-ghost text-xs"
-                        onClick={() => toggleActive.mutate(user.id)}
+                        onClick={() => handleToggleActive(user.id)}
                         disabled={toggleActive.isPending}
                       >
-                        {user.is_active ? 'Deactivate' : 'Activate'}
+                        {pendingToggleUserId === user.id ? 'Updating...' : (user.is_active ? 'Deactivate' : 'Activate')}
                       </button>
                     </div>
                   </td>

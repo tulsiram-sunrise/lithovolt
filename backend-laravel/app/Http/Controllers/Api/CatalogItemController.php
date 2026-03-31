@@ -67,6 +67,7 @@ class CatalogItemController extends Controller
             ->orderBy($field, $direction)
             ->paginate($perPage);
 
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $items */
         $items->setCollection(
             $items->getCollection()->map(fn (Product $product) => $this->toCatalogPayload($product))
         );
@@ -88,6 +89,7 @@ class CatalogItemController extends Controller
             'sku' => 'required|string|max:100|unique:products,sku',
             'category_id' => 'nullable|integer|exists:product_categories,id',
             'description' => 'nullable|string',
+            'image_url' => 'nullable|url|max:500',
             'price' => 'required|numeric|min:0',
             'total_quantity' => 'required|integer|min:0',
             'available_quantity' => 'required|integer|min:0',
@@ -119,6 +121,7 @@ class CatalogItemController extends Controller
             'sku' => 'nullable|string|max:100|unique:products,sku,' . $catalogItem->id,
             'category_id' => 'nullable|integer|exists:product_categories,id',
             'description' => 'nullable|string',
+            'image_url' => 'nullable|url|max:500',
             'price' => 'nullable|numeric|min:0',
             'total_quantity' => 'nullable|integer|min:0',
             'available_quantity' => 'nullable|integer|min:0',
@@ -158,7 +161,7 @@ class CatalogItemController extends Controller
             : (is_array($existing?->metadata) ? $existing->metadata : []);
 
         $extraBatteryFields = [
-            'brand', 'series', 'model_code', 'group_size', 'voltage', 'capacity', 'chemistry',
+            'brand', 'series', 'model_code', 'group_size', 'image_url', 'voltage', 'capacity', 'chemistry',
             'battery_type', 'cca', 'reserve_capacity', 'capacity_ah', 'length_mm', 'width_mm',
             'height_mm', 'total_height_mm', 'terminal_type', 'terminal_layout', 'hold_down',
             'vent_type', 'maintenance_free', 'private_warranty_months', 'commercial_warranty_months',
@@ -191,6 +194,7 @@ class CatalogItemController extends Controller
             'sku' => $validated['sku'],
             'category_id' => $validated['category_id'] ?? null,
             'description' => $validated['description'] ?? null,
+            'image_url' => $validated['image_url'] ?? ($existing?->image_url ?? data_get($metadata, 'image_url')),
             'price' => $validated['price'] ?? 0,
             'total_quantity' => $validated['total_quantity'] ?? 0,
             'available_quantity' => $validated['available_quantity'] ?? 0,
@@ -229,6 +233,7 @@ class CatalogItemController extends Controller
             'sku' => $product->sku,
             'category_name' => $product->category?->name,
             'description' => $product->description,
+            'image_url' => $product->image_url ?? data_get($metadata, 'image_url'),
             'price' => $product->price,
             'total_quantity' => $product->total_quantity,
             'available_quantity' => $product->available_quantity,

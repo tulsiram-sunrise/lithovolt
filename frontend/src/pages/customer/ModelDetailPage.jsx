@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
+import ProductImage from '../../components/common/ProductImage'
 
 function valueOrDash(value) {
   return value === null || value === undefined || value === '' ? '-' : value
@@ -48,12 +49,22 @@ export default function CustomerModelDetailPage() {
       {!isLoading && !isError && model ? (
         <div className="space-y-4">
           <div className="panel-card p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="grid gap-4 md:grid-cols-[220px,1fr] md:items-center">
+              <ProductImage
+                src={model.image_url}
+                alt={model.name || 'Battery model'}
+                className="h-44 w-full"
+                fallbackText="No model image"
+              />
               <div>
-                <h2 className="text-2xl font-semibold">{valueOrDash(model.name)}</h2>
-                <p className="mt-1 text-sm text-[color:var(--muted)]">{valueOrDash(model.application_segment)}</p>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-semibold">{valueOrDash(model.name)}</h2>
+                    <p className="mt-1 text-sm text-[color:var(--muted)]">{valueOrDash(model.application_segment)}</p>
+                  </div>
+                  <span className="tag">{valueOrDash(model.series || 'LithoVolt')}</span>
+                </div>
               </div>
-              <span className="tag">{valueOrDash(model.series || 'LithoVolt')}</span>
             </div>
           </div>
 

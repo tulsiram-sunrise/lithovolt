@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import ProductImage from '../../components/common/ProductImage'
 
 export default function ProductsPage() {
   const [search, setSearch] = useState('')
@@ -40,17 +41,21 @@ export default function ProductsPage() {
           <table className="data-table">
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>SKU</th>
                 <th>Category</th>
               </tr>
             </thead>
             {isLoading ? (
-              <ShimmerTableRows rows={5} columns={3} />
+              <ShimmerTableRows rows={5} columns={4} />
             ) : (
               <tbody>
                 {products.map((item) => (
                 <tr key={item.id}>
+                  <td>
+                    <ProductImage src={item.image_url} alt={item.name} className="h-12 w-12" fallbackText="N/A" />
+                  </td>
                   <td>{item.name}</td>
                   <td>{item.sku}</td>
                   <td>{item.category_name || '-'}</td>

@@ -112,8 +112,8 @@ export default function GuestContactPage() {
           <article className="panel-card animate-fade-up p-5" style={{ animationDelay: '100ms' }}>
             <h2 className="text-xl font-semibold">Support Channels</h2>
             <ul className="mt-3 space-y-2 text-sm text-[color:var(--muted)]">
-              <li>Email: support@lithovolt.com</li>
-              <li>Sales: sales@lithovolt.com</li>
+              <li>Email: support@lithovolt.com.au</li>
+              <li>Sales: sales@lithovolt.com.au</li>
               <li>Phone: +61 3 9000 1200</li>
             </ul>
           </article>

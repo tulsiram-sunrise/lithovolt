@@ -163,7 +163,8 @@ class OrderController extends Controller
                 $itemable = $resolved['itemable'];
                 $product = $resolved['product'];
 
-                $unitPrice = $itemable->price ?? 0;
+                // Prefer canonical catalog product price when available.
+                $unitPrice = (float) ($product?->price ?? $itemable->price ?? 0);
                 $totalPrice = $unitPrice * $quantity;
                 $totalAmount += $totalPrice;
 
@@ -311,7 +312,52 @@ class OrderController extends Controller
 
     public function reject(Request $request, Order $order)
     {
-        return $this->transitionOrder($request->user(), $order, self::STATUS_REJECTED, 'Order rejected successfully');
+        $validated = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        return $this->transitionOrder(
+            $request->user(),
+            $order,
+            self::STATUS_REJECTED,
+            'Order rejected successfully',
+            (string) $validated['reason'],
+            'Rejection Reason'
+        );
+    }
+
+    public function cancel(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $actor = $request->user();
+        if (!$this->canAccessOrder($actor, $order)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        // Wholesalers can cancel only their own orders while still pending.
+        if ((int) $order->user_id !== (int) $actor->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $current = $this->normalizeOrderStatus((string) $order->status);
+        if ($current !== self::STATUS_PENDING) {
+            return response()->json([
+                'message' => 'Order can be canceled only while it is pending.',
+            ], 422);
+        }
+
+        $order->update([
+            'status' => self::STATUS_CANCELLED,
+            'notes' => $this->appendActionReasonToNotes($order->notes, 'Cancellation Reason', (string) $validated['reason']),
+        ]);
+
+        return response()->json([
+            'message' => 'Order canceled successfully',
+            'order' => $order->fresh()->load('user', 'items.itemable', 'items.product'),
+        ]);
     }
 
     public function fulfill(Request $request, Order $order)
@@ -558,7 +604,14 @@ class OrderController extends Controller
             ->exists();
     }
 
-    private function transitionOrder(?User $actor, Order $order, string $nextStatus, string $successMessage)
+    private function transitionOrder(
+        ?User $actor,
+        Order $order,
+        string $nextStatus,
+        string $successMessage,
+        ?string $reason = null,
+        string $reasonLabel = 'Action Reason'
+    )
     {
         if (!$this->isPrivileged($actor)) {
             return response()->json(['message' => 'Forbidden'], 403);
@@ -571,7 +624,12 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $order->update(['status' => $nextStatus]);
+        $payload = ['status' => $nextStatus];
+        if (!empty($reason)) {
+            $payload['notes'] = $this->appendActionReasonToNotes($order->notes, $reasonLabel, (string) $reason);
+        }
+
+        $order->update($payload);
 
         $freshOrder = $order->fresh()->load('user', 'items.itemable', 'items.product');
 
@@ -596,6 +654,18 @@ class OrderController extends Controller
             'message' => $successMessage,
             'order' => $freshOrder,
         ]);
+    }
+
+    private function appendActionReasonToNotes(?string $existingNotes, string $label, string $reason): string
+    {
+        $base = trim((string) $existingNotes);
+        $line = trim($label . ': ' . trim($reason));
+
+        if ($base === '') {
+            return $line;
+        }
+
+        return $base . "\n" . $line;
     }
 
     private function sendOrderLifecycleEmail(Order $order, string $subject, array $data): void

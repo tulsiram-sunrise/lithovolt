@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { userAPI } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
 import UserDetailModal from '../../components/admin/UserDetailModal'
@@ -14,9 +15,11 @@ const normalizeStatus = (value) => String(value || '').toLowerCase()
 export default function WholesalerManagementPage() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState('approved') // 'approved' or 'applications'
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState('')
   const [page, setPage] = useState(1)
+  const [pendingAction, setPendingAction] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [showDetail, setShowDetail] = useState(false)
 
@@ -92,10 +95,30 @@ export default function WholesalerManagementPage() {
   }, [wholesalersData, applicationsData, activeTab, wholesalers, applications])
 
   const handleDetailClick = (user) => {
-    setSelectedUser(user)
-    setShowDetail(true)
+    // Check if this is a user (has first_name) or an application (has business_name)
+    if (user.first_name !== undefined) {
+      // It's a user - navigate to detail page
+      navigate(`/admin/wholesalers/${user.id}`)
+    } else if (user.business_name !== undefined) {
+      // It's an application - show modal
+      setSelectedUser(user)
+      setShowDetail(true)
+    }
   }
 
+  const isMutating = toggleActive.isPending || approveApp.isPending || rejectApp.isPending
+
+  const runAction = (type, id, mutation) => {
+    if (isMutating) {
+      return
+    }
+
+    setPendingAction({ type, id })
+    mutation.mutate(id, {
+      onSettled: () => setPendingAction(null),
+    })
+  }
+  
   const isLoading = activeTab === 'approved' ? wholesalersLoading : applicationsLoading
 
   return (
@@ -229,10 +252,12 @@ export default function WholesalerManagementPage() {
                         </button>
                         <button
                           className="neon-btn-ghost text-xs"
-                          onClick={() => toggleActive.mutate(user.id)}
-                          disabled={toggleActive.isPending}
+                          onClick={() => runAction('toggle', user.id, toggleActive)}
+                          disabled={isMutating}
                         >
-                          {user.is_active ? 'Deactivate' : 'Activate'}
+                          {pendingAction?.type === 'toggle' && pendingAction?.id === user.id
+                            ? 'Updating...'
+                            : (user.is_active ? 'Deactivate' : 'Activate')}
                         </button>
                       </div>
                     </td>
@@ -270,17 +295,17 @@ export default function WholesalerManagementPage() {
                             <>
                               <button
                                 className="neon-btn-ghost text-xs"
-                                onClick={() => approveApp.mutate(app.id)}
-                                disabled={approveApp.isPending || rejectApp.isPending}
+                                onClick={() => runAction('approve', app.id, approveApp)}
+                                disabled={isMutating}
                               >
-                                Approve
+                                {pendingAction?.type === 'approve' && pendingAction?.id === app.id ? 'Approving...' : 'Approve'}
                               </button>
                               <button
                                 className="neon-btn-ghost text-xs"
-                                onClick={() => rejectApp.mutate(app.id)}
-                                disabled={approveApp.isPending || rejectApp.isPending}
+                                onClick={() => runAction('reject', app.id, rejectApp)}
+                                disabled={isMutating}
                               >
-                                Reject
+                                {pendingAction?.type === 'reject' && pendingAction?.id === app.id ? 'Rejecting...' : 'Reject'}
                               </button>
                             </>
                           )}

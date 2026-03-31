@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
+import ProductImage from '../../components/common/ProductImage'
 
 export default function BatteryModelDetailPage() {
   const { id } = useParams()
@@ -65,6 +66,11 @@ export default function BatteryModelDetailPage() {
           </button>
           <Link className="neon-btn-secondary" to="/admin/battery-models">Back To List</Link>
         </div>
+      </div>
+
+      <div className="panel-card p-6">
+        <h3 className="mb-4 text-base font-bold uppercase text-[color:var(--text-primary)] tracking-wider">Model Image</h3>
+        <ProductImage src={model.image_url} alt={model.name} className="h-56 w-full max-w-md" fallbackText="No model image" />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

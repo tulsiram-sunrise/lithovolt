@@ -583,8 +583,8 @@ screenshots/
 ## 📞 Support
 
 For questions about screenshot creation:
-- Design Team: design@lithovolt.com
-- Marketing Team: marketing@lithovolt.com
+- Design Team: design@lithovolt.com.au
+- Marketing Team: marketing@lithovolt.com.au
 
 **External Resources**:
 - [Google Play Asset Guidelines](https://support.google.com/googleplay/android-developer/answer/9866151)

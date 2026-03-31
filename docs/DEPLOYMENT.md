@@ -136,7 +136,7 @@ Add:
 # API Server
 server {
     listen 80;
-    server_name api.lithovolt.com;
+    server_name api.lithovolt.com.au;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -158,7 +158,7 @@ server {
 # Frontend
 server {
     listen 80;
-    server_name lithovolt.com www.lithovolt.com;
+    server_name lithovolt.com.au www.lithovolt.com.au;
 
     root /var/www/lithovolt/frontend/dist;
     index index.html;
@@ -186,7 +186,7 @@ sudo systemctl restart nginx
 
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d lithovolt.com -d www.lithovolt.com -d api.lithovolt.com
+sudo certbot --nginx -d lithovolt.com.au -d www.lithovolt.com.au -d api.lithovolt.com.au
 ```
 
 ## Mobile App Deployment
@@ -270,7 +270,7 @@ MAIL_PORT=587
 MAIL_USERNAME=your-mail-username
 MAIL_PASSWORD=your-mail-password
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@lithovolt.com
+MAIL_FROM_ADDRESS=noreply@lithovolt.com.au
 MAIL_FROM_NAME="Lithovolt"
 FRONTEND_URL=https://www.lithovolt.com.au
 APP_ENV=production

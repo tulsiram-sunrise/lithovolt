@@ -119,6 +119,7 @@ export const userAPI = {
   getMe: () => api.get('/auth/profile'),
   updateProfile: (data) => api.patch('/users/update_profile', data),
   getUsers: (params) => api.get('/users', { params }),
+  getUser: (id) => api.get(`/users/${id}`),
   createUser: (data) => api.post('/users', data),
   updateUser: (id, data) => api.patch(`/users/${id}`, data),
   deleteUser: (id) => api.delete(`/users/${id}`),
@@ -172,11 +173,13 @@ export const inventoryAPI = {
 // Order API
 export const orderAPI = {
   getOrders: (params) => api.get('/orders', { params }),
+  getOrdersByUser: (userId, params) => api.get(`/orders/user/${userId}`, { params }),
   createOrder: (data) => api.post('/orders', data),
   getOrder: (id) => api.get(`/orders/${id}`),
   updateOrder: (id, data) => api.patch(`/orders/${id}`, data),
   acceptOrder: (id) => api.post(`/orders/${id}/accept`),
-  rejectOrder: (id) => api.post(`/orders/${id}/reject`),
+  rejectOrder: (id, data = {}) => api.post(`/orders/${id}/reject`, data),
+  cancelOrder: (id, data = {}) => api.post(`/orders/${id}/cancel`, data),
   fulfillOrder: (id) => api.post(`/orders/${id}/fulfill`),
   getInvoice: (id) => api.get(`/orders/${id}/invoice`, { responseType: 'blob' }),
 }

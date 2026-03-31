@@ -11,7 +11,7 @@ jest.mock('../../src/services/api', () => ({
 
 const navigation = { navigate: jest.fn() };
 
-const route = { params: { email: 'consumer@lithovolt.com' } };
+const route = { params: { email: 'consumer@lithovolt.com.au' } };
 
 describe('PasswordResetConfirmScreen', () => {
   beforeEach(() => {

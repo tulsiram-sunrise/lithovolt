@@ -13,6 +13,7 @@ class BatteryModel extends Model
 
     protected $fillable = [
         'name', 'brand', 'series', 'description', 'sku', 'model_code', 'group_size',
+        'image_url',
         'voltage', 'capacity', 'chemistry', 'battery_type', 'cca', 'reserve_capacity',
         'capacity_ah', 'length_mm', 'width_mm', 'height_mm', 'total_height_mm',
         'terminal_type', 'terminal_layout', 'hold_down', 'vent_type', 'maintenance_free',

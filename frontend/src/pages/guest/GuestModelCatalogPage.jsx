@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { publicCatalogAPI } from '../../services/api'
 import PublicSectionHeader from '../../components/public/PublicSectionHeader'
+import ProductImage from '../../components/common/ProductImage'
 
 function normalizeList(data) {
   return Array.isArray(data) ? data : data?.results || data?.data || []
@@ -63,6 +64,12 @@ export default function GuestModelCatalogPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {(isLoading ? Array.from({ length: 6 }).map((_, index) => ({ id: `guest-model-shimmer-${index}` })) : models).map((item) => (
           <article key={item.id} className="panel-card p-5">
+            <ProductImage
+              src={item.image_url}
+              alt={item.name || item.model_code || item.sku || 'Battery model'}
+              className="mb-4 h-40 w-full"
+              fallbackText="No model image"
+            />
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-lg font-semibold">{item.model_code || item.sku}</h2>
               <span className="tag">{item.series || 'LithoVolt'}</span>

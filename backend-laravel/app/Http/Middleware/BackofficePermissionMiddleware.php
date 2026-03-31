@@ -9,7 +9,7 @@ class BackofficePermissionMiddleware
 {
     private function isWhitelistedSuperAdmin(?string $email): bool
     {
-        $value = (string) env('BACKOFFICE_SUPER_ADMIN_EMAILS', 'admin@lithovolt.com');
+        $value = (string) env('BACKOFFICE_SUPER_ADMIN_EMAILS', 'admin@lithovolt.com.au');
         $allowed = array_values(array_filter(array_map(
             static fn ($item) => strtolower(trim($item)),
             explode(',', $value)

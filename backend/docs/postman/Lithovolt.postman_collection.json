@@ -229,7 +229,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"consumer1@lithovolt.com\",\n  \"phone\": \"+919999999998\",\n  \"first_name\": \"Consumer\",\n  \"last_name\": \"One\",\n  \"password\": \"Consumer@123\",\n  \"password_confirm\": \"Consumer@123\"\n}"
+              "raw": "{\n  \"email\": \"consumer1@lithovolt.com.au\",\n  \"phone\": \"+919999999998\",\n  \"first_name\": \"Consumer\",\n  \"last_name\": \"One\",\n  \"password\": \"Consumer@123\",\n  \"password_confirm\": \"Consumer@123\"\n}"
             }
           }
         },
@@ -281,7 +281,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"consumer1@lithovolt.com\"\n}"
+              "raw": "{\n  \"email\": \"consumer1@lithovolt.com.au\"\n}"
             }
           }
         },
@@ -310,7 +310,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"consumer1@lithovolt.com\",\n  \"otp_code\": \"123456\",\n  \"new_password\": \"NewPass@123\",\n  \"new_password_confirm\": \"NewPass@123\"\n}"
+              "raw": "{\n  \"email\": \"consumer1@lithovolt.com.au\",\n  \"otp_code\": \"123456\",\n  \"new_password\": \"NewPass@123\",\n  \"new_password_confirm\": \"NewPass@123\"\n}"
             }
           }
         }
@@ -393,7 +393,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"wholesaler_new@lithovolt.com\",\n  \"password\": \"Wholesaler@123\",\n  \"first_name\": \"Wholesale\",\n  \"last_name\": \"User\",\n  \"role\": \"WHOLESALER\",\n  \"company_name\": \"Lithovolt Distributors\"\n}"
+              "raw": "{\n  \"email\": \"wholesaler_new@lithovolt.com.au\",\n  \"password\": \"Wholesaler@123\",\n  \"first_name\": \"Wholesale\",\n  \"last_name\": \"User\",\n  \"role\": \"WHOLESALER\",\n  \"company_name\": \"Lithovolt Distributors\"\n}"
             }
           },
           "event": [

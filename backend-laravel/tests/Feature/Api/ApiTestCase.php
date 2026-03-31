@@ -57,7 +57,7 @@ abstract class ApiTestCase extends TestCase
 
         $admin = User::factory()->create([
             'role_id' => $adminRole->id,
-            'email' => 'admin@lithovolt.com',
+            'email' => 'admin@lithovolt.com.au',
         ]);
 
         StaffUser::create([

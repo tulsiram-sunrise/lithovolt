@@ -14,7 +14,7 @@ base_url="http://127.0.0.1:8001"
 echo "1️⃣  Testing ADMIN (Super-Admin) Access..."
 admin_response=$(curl -s -X POST "$base_url/api/auth/login/" \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}')
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}')
 
 admin_token=$(printf '%s' "$admin_response" | sed -n 's/.*"access":"\([^"]*\)\".*/\1/p')
 

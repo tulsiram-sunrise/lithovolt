@@ -31,9 +31,12 @@ import InventoryPage from './pages/admin/InventoryPage'
 import ProductsPage from './pages/admin/ProductsPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
 import OrdersPage from './pages/admin/OrdersPage'
+import OrderDetailPage from './pages/admin/OrderDetailPage'
 import WarrantiesPage from './pages/admin/WarrantiesPage'
 import WarrantyClaimsPage from './pages/admin/WarrantyClaimsPage'
 import WholesalerManagementPage from './pages/admin/WholesalerManagementPage'
+import ConsumerDetailPage from './pages/admin/ConsumerDetailPage'
+import WholesalerDetailPage from './pages/admin/WholesalerDetailPage'
 import ConsumersPage from './pages/admin/ConsumersPage'
 import ReportsPage from './pages/admin/ReportsPage'
 
@@ -41,6 +44,7 @@ import ReportsPage from './pages/admin/ReportsPage'
 import WholesalerDashboard from './pages/wholesaler/Dashboard'
 import WholesalerInventory from './pages/wholesaler/InventoryPage'
 import WholesalerOrders from './pages/wholesaler/OrdersPage'
+import WholesalerOrderDetail from './pages/wholesaler/OrderDetailPage'
 import WholesalerPlaceOrder from './pages/wholesaler/PlaceOrderPage'
 import WholesalerSales from './pages/wholesaler/SalesPage'
 import WholesalerProducts from './pages/wholesaler/ProductsPage'
@@ -166,7 +170,9 @@ function App() {
         <Route path="profile/change-password" element={<CustomerChangePasswordPage />} />
         <Route path="users" element={<UsersPage defaultTab="users" />} />
         <Route path="consumers" element={<ConsumersPage />} />
+        <Route path="consumers/:userId" element={<ConsumerDetailPage />} />
         <Route path="wholesalers" element={<WholesalerManagementPage />} />
+        <Route path="wholesalers/:userId" element={<WholesalerDetailPage />} />
         <Route path="roles" element={<RolesPage />} />
         <Route path="permissions" element={<PermissionsPage />} />
         <Route path="staff" element={<UsersPage defaultTab="staff" />} />
@@ -180,6 +186,7 @@ function App() {
         <Route path="products" element={<ProductsPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
+        <Route path="orders/:orderId" element={<OrderDetailPage />} />
         <Route path="warranties" element={<WarrantiesPage />} />
         <Route path="warranty-claims" element={<WarrantyClaimsPage />} />
       </Route>
@@ -200,6 +207,7 @@ function App() {
         <Route path="inventory" element={<WholesalerInventory />} />
         <Route path="products" element={<WholesalerProducts />} />
         <Route path="orders" element={<WholesalerOrders />} />
+        <Route path="orders/:orderId" element={<WholesalerOrderDetail />} />
         <Route path="orders/new" element={<WholesalerPlaceOrder />} />
         <Route path="sales" element={<WholesalerSales />} />
       </Route>

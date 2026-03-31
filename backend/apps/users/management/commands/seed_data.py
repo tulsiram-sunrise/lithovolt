@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Seed initial data for development.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--admin-email', default='admin@lithovolt.com')
+        parser.add_argument('--admin-email', default='admin@lithovolt.com.au')
         parser.add_argument('--admin-password', default='Admin@123')
         parser.add_argument('--wholesaler-count', type=int, default=2)
         parser.add_argument('--consumer-count', type=int, default=3)
@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
         wholesalers = []
         for idx in range(options['wholesaler_count']):
-            email = f'wholesaler{idx + 1}@lithovolt.com'
+            email = f'wholesaler{idx + 1}@lithovolt.com.au'
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
         consumers = []
         for idx in range(options['consumer_count']):
-            email = f'consumer{idx + 1}@lithovolt.com'
+            email = f'consumer{idx + 1}@lithovolt.com.au'
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={

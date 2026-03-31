@@ -10,8 +10,12 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create roles
+        // Fetch the base roles created by RoleSeeder (ADMIN, WHOLESALER, RETAILER, CONSUMER)
+        $adminRole = Role::where('name', 'ADMIN')->firstOrFail();
+        
+        // Create or get staff roles (these are secondary roles for staff assignments)
         $roles = [
+            'ADMIN' => $adminRole,
             'MANAGER' => Role::updateOrCreate(
                 ['name' => 'MANAGER'],
                 [
@@ -41,9 +45,19 @@ class RolePermissionSeeder extends Seeder
                 ]
             ),
         ];
+
         
         // Define permissions per role
         $rolePermissions = [
+            'ADMIN' => [
+                // Admin has all permissions
+                ['INVENTORY', 'VIEW'], ['INVENTORY', 'CREATE'], ['INVENTORY', 'UPDATE'], ['INVENTORY', 'DELETE'],
+                ['ORDERS', 'VIEW'], ['ORDERS', 'CREATE'], ['ORDERS', 'UPDATE'], ['ORDERS', 'APPROVE'], ['ORDERS', 'ASSIGN'],
+                ['WARRANTY_CLAIMS', 'VIEW'], ['WARRANTY_CLAIMS', 'UPDATE'], ['WARRANTY_CLAIMS', 'APPROVE'], ['WARRANTY_CLAIMS', 'ASSIGN'],
+                ['USERS', 'VIEW'], ['USERS', 'CREATE'], ['USERS', 'UPDATE'], ['USERS', 'DELETE'], ['USERS', 'APPROVE'], ['USERS', 'ASSIGN'],
+                ['SETTINGS', 'VIEW'], ['SETTINGS', 'UPDATE'],
+                ['REPORTS', 'VIEW'],
+            ],
             'MANAGER' => [
                 ['INVENTORY', 'VIEW'], ['INVENTORY', 'CREATE'], ['INVENTORY', 'UPDATE'], 
                 ['INVENTORY', 'DELETE'],

@@ -180,7 +180,7 @@ Use this checklist to ensure you have everything ready before submitting to app 
   - Complies with GDPR, CCPA, and local laws
   - Includes contact information
   - Updated date current
-  - URL: https://lithovolt.com/privacy
+  - URL: https://lithovolt.com.au/privacy
 
 - [ ] **Terms of Service**
   - Written and complete
@@ -189,10 +189,10 @@ Use this checklist to ensure you have everything ready before submitting to app 
   - URL accessible and working
   - Legal disclaimers included
   - Updated date current
-  - URL: https://lithovolt.com/terms
+  - URL: https://lithovolt.com.au/terms
 
 - [ ] **Support/Contact Page**
-  - Email address provided: support@lithovolt.com
+  - Email address provided: support@lithovolt.com.au
   - Support page URL working
   - Response time expectations set
   - Multiple contact methods available
@@ -454,7 +454,7 @@ Use this checklist to ensure you have everything ready before submitting to app 
 
 ### Support Preparation
 
-- [ ] Support email monitored: support@lithovolt.com
+- [ ] Support email monitored: support@lithovolt.com.au
 - [ ] FAQ document created
 - [ ] Knowledge base prepared
 - [ ] Support team trained (if applicable)
@@ -548,11 +548,11 @@ Use this checklist to ensure you have everything ready before submitting to app 
 - Marketing: [Name/Email]
 
 **Support**:
-- Support Email: support@lithovolt.com
+- Support Email: support@lithovolt.com.au
 - Emergency Contact: [Phone]
 
 **Legal**:
-- Privacy/Legal: legal@lithovolt.com
+- Privacy/Legal: legal@lithovolt.com.au
 
 ---
 

@@ -212,7 +212,7 @@ Depending on your location, you may have the following rights:
 
 ### 5.4 How to Exercise Your Rights
 To exercise these rights:
-1. Email us at: privacy@lithovolt.com
+1. Email us at: privacy@lithovolt.com.au
 2. Use the in-app data request form (Settings > Privacy > Data Request)
 3. Write to us at: [Company Address]
 
@@ -238,7 +238,7 @@ Anonymized or aggregated data may be retained indefinitely for analytics and res
 
 Lithovolt Battery Manager is not intended for use by individuals under the age of 18 (or the age of majority in your jurisdiction). We do not knowingly collect personal information from children.
 
-If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@lithovolt.com, and we will delete the information promptly.
+If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@lithovolt.com.au, and we will delete the information promptly.
 
 ---
 
@@ -260,7 +260,7 @@ By using our app, you consent to the transfer of your information to countries o
 ### 9.1 European Economic Area (EEA) - GDPR
 - Legal basis for processing: Consent, contract, legitimate interests
 - Right to lodge complaint with supervisory authority
-- Data Protection Officer contact: dpo@lithovolt.com
+- Data Protection Officer contact: dpo@lithovolt.com.au
 
 ### 9.2 California - CCPA/CPRA
 California residents have additional rights:
@@ -332,8 +332,8 @@ We may update this Privacy Policy periodically to reflect:
 
 If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
 
-**Email**: privacy@lithovolt.com  
-**Support**: support@lithovolt.com  
+**Email**: privacy@lithovolt.com.au  
+**Support**: support@lithovolt.com.au  
 **Phone**: [Your phone number]
 
 **Mailing Address**:  
@@ -343,7 +343,7 @@ Lithovolt Inc.
 [Country]
 
 **Data Protection Officer** (for GDPR inquiries):  
-Email: dpo@lithovolt.com
+Email: dpo@lithovolt.com.au
 
 **Response Time**: We will respond to all inquiries within 30 days (or as required by applicable law).
 

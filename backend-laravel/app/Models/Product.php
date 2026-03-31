@@ -17,7 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'product_type', 'sku', 'category_id', 'legacy_battery_model_id', 'legacy_accessory_id',
-        'description', 'price',
+        'description', 'image_url', 'price',
         'total_quantity', 'available_quantity', 'low_stock_threshold',
         'metadata', 'is_active', 'is_serialized', 'is_warranty_eligible', 'is_fitment_eligible',
         'default_warranty_months'

@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { userAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
 import PaginationControls from '../../components/common/PaginationControls'
 
 export default function ConsumersPage() {
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState('')
   const [page, setPage] = useState(1)
+  const [pendingToggleUserId, setPendingToggleUserId] = useState(null)
   const [selectedConsumerDetail, setSelectedConsumerDetail] = useState(null)
   const [showConsumerDetailModal, setShowConsumerDetailModal] = useState(false)
 
@@ -50,8 +53,18 @@ export default function ConsumersPage() {
   }, [users, usersData])
 
   const handleViewConsumerDetail = (consumer) => {
-    setSelectedConsumerDetail(consumer)
-    setShowConsumerDetailModal(true)
+    navigate(`/admin/consumers/${consumer.id}`)
+  }
+
+  const handleToggleActive = (userId) => {
+    if (toggleActive.isPending) {
+      return
+    }
+
+    setPendingToggleUserId(userId)
+    toggleActive.mutate(userId, {
+      onSettled: () => setPendingToggleUserId(null),
+    })
   }
 
   return (
@@ -108,10 +121,10 @@ export default function ConsumersPage() {
                       </button>
                       <button
                         className="neon-btn-ghost text-xs"
-                        onClick={() => toggleActive.mutate(user.id)}
+                        onClick={() => handleToggleActive(user.id)}
                         disabled={toggleActive.isPending}
                       >
-                        {user.is_active ? 'Deactivate' : 'Activate'}
+                        {pendingToggleUserId === user.id ? 'Updating...' : (user.is_active ? 'Deactivate' : 'Activate')}
                       </button>
                     </div>
                   </td>

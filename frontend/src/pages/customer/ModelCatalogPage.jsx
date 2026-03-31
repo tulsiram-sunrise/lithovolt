@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
+import ProductImage from '../../components/common/ProductImage'
 
 function normalizeList(data) {
   return Array.isArray(data) ? data : data?.results || data?.data || []
@@ -79,6 +80,12 @@ export default function ModelCatalogPage() {
           ))
           : models.map((item) => (
           <article key={item.id} className="panel-card p-5">
+            <ProductImage
+              src={item.image_url}
+              alt={item.name || item.model_code || item.sku || 'Battery model'}
+              className="mb-4 h-44 w-full"
+              fallbackText="No model image"
+            />
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">{item.name}</h2>

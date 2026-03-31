@@ -1,12 +1,14 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { userAPI } from '../../services/api'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
 
 const normalizeStatus = (value) => String(value || '').toLowerCase()
 
 export default function WholesalerApplicationsPage() {
   const queryClient = useQueryClient()
+  const [confirmRejectAppId, setConfirmRejectAppId] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['wholesaler-applications'],
@@ -23,7 +25,7 @@ export default function WholesalerApplicationsPage() {
   })
 
   const rejectApp = useMutation({
-    mutationFn: (id) => userAPI.rejectWholesalerApplication(id, {}),
+    mutationFn: ({ id, notes }) => userAPI.rejectWholesalerApplication(id, { notes }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wholesaler-applications'] })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
@@ -79,7 +81,7 @@ export default function WholesalerApplicationsPage() {
                         </button>
                         <button
                           className="neon-btn-ghost"
-                          onClick={() => rejectApp.mutate(app.id)}
+                          onClick={() => setConfirmRejectAppId(app.id)}
                           disabled={approveApp.isPending || rejectApp.isPending}
                         >
                           Reject
@@ -99,6 +101,25 @@ export default function WholesalerApplicationsPage() {
           <p className="mt-3 text-sm text-[color:var(--muted)]">No applications yet.</p>
         ) : null}
       </div>
+
+      <ActionConfirmModal
+        isOpen={confirmRejectAppId !== null}
+        title="Reject Application"
+        message="Are you sure you want to reject this wholesaler application?"
+        confirmLabel="Confirm Reject"
+        requireReason={true}
+        reasonLabel="Rejection Reason"
+        reasonPlaceholder="Why is this application being rejected?"
+        isSubmitting={rejectApp.isPending}
+        onClose={() => setConfirmRejectAppId(null)}
+        onConfirm={(reason) => {
+          const appId = confirmRejectAppId
+          setConfirmRejectAppId(null)
+          if (appId) {
+            rejectApp.mutate({ id: appId, notes: reason })
+          }
+        }}
+      />
     </div>
   )
 }

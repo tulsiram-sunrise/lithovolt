@@ -6,7 +6,7 @@ echo ""
 echo "1. Testing Login..."
 curl -s -X POST http://127.0.0.1:8000/api/auth/login/ \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}' > /tmp/auth.json
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}' > /tmp/auth.json
 
 TOKEN=$(grep -o '"access":"[^"]*"' /tmp/auth.json | sed 's/"access":"//' | sed 's/"$//')
 echo "Token: ${TOKEN:0:30}..."

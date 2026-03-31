@@ -32,12 +32,12 @@ describe('PasswordResetRequestScreen', () => {
       <PasswordResetRequestScreen navigation={navigation} />
     );
 
-    fireEvent.changeText(getByTestId('password-reset-email'), 'consumer@lithovolt.com');
+    fireEvent.changeText(getByTestId('password-reset-email'), 'consumer@lithovolt.com.au');
     fireEvent.press(getByTestId('password-reset-submit'));
 
     await waitFor(() => {
-      expect(authAPI.passwordResetRequest).toHaveBeenCalledWith({ email: 'consumer@lithovolt.com' });
-      expect(navigation.navigate).toHaveBeenCalledWith('PasswordResetConfirm', { email: 'consumer@lithovolt.com' });
+      expect(authAPI.passwordResetRequest).toHaveBeenCalledWith({ email: 'consumer@lithovolt.com.au' });
+      expect(navigation.navigate).toHaveBeenCalledWith('PasswordResetConfirm', { email: 'consumer@lithovolt.com.au' });
     });
   });
 });

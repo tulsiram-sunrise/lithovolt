@@ -3,11 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import ProductImage from '../../components/common/ProductImage'
+import { isValidHttpImageUrl, normalizeImageUrlInput } from '../../utils/imageUrl'
 
 const emptyForm = {
   name: '',
   product_type: 'GENERIC',
   sku: '',
+  image_url: '',
   category_id: '',
   price: '',
   total_quantity: '',
@@ -62,10 +65,22 @@ export default function ProductsPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault()
+
+    const normalizedImageUrl = normalizeImageUrlInput(form.image_url)
+    if (normalizedImageUrl !== form.image_url) {
+      setForm((prev) => ({ ...prev, image_url: normalizedImageUrl }))
+    }
+
+    if (!isValidHttpImageUrl(normalizedImageUrl)) {
+      addToast({ type: 'error', title: 'Invalid image URL', message: 'Please provide a valid http/https image URL.' })
+      return
+    }
+
     createProduct.mutate({
       name: form.name.trim(),
       product_type: form.product_type,
       sku: form.sku.trim(),
+      image_url: normalizedImageUrl || undefined,
       category_id: form.category_id ? Number(form.category_id) : null,
       price: Number(form.price || 0),
       total_quantity: Number(form.total_quantity || 0),
@@ -113,6 +128,17 @@ export default function ProductsPage() {
             value={form.sku}
             onChange={(event) => setForm((prev) => ({ ...prev, sku: event.target.value }))}
             required
+          />
+        </div>
+        <div>
+          <label className="field-label">Image URL</label>
+          <input
+            className="neon-input"
+            type="url"
+            value={form.image_url}
+            onChange={(event) => setForm((prev) => ({ ...prev, image_url: event.target.value }))}
+            onBlur={(event) => setForm((prev) => ({ ...prev, image_url: normalizeImageUrlInput(event.target.value) }))}
+            placeholder="https://..."
           />
         </div>
         <div>
@@ -182,6 +208,15 @@ export default function ProductsPage() {
             {createProduct.isLoading ? 'Saving...' : 'Add'}
           </button>
         </div>
+        {form.image_url?.trim() ? (
+          <div className="md:col-span-4">
+            <p className="mb-2 text-xs uppercase tracking-wide text-[color:var(--muted)]">Live Preview</p>
+            <ProductImage src={form.image_url.trim()} alt={form.name || 'Product preview'} className="h-40 w-full max-w-sm" fallbackText="Preview unavailable" />
+          </div>
+        ) : null}
+        <div className="md:col-span-4">
+          <p className="text-xs text-[color:var(--muted)]">Use a direct image URL (http/https). Broken links will automatically fall back to a placeholder.</p>
+        </div>
       </form>
 
       <div className="panel-card p-6">
@@ -189,6 +224,7 @@ export default function ProductsPage() {
           <table className="data-table">
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>SKU</th>
@@ -199,9 +235,17 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? <ShimmerTableRows rows={6} columns={7} /> : null}
+              {isLoading ? <ShimmerTableRows rows={6} columns={8} /> : null}
               {products.map((product) => (
                 <tr key={product.id}>
+                  <td>
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      className="h-12 w-12"
+                      fallbackText="N/A"
+                    />
+                  </td>
                   <td>{product.name}</td>
                   <td><span className="tag">{String(product.product_type || 'GENERIC').toUpperCase()}</span></td>
                   <td>{product.sku}</td>
@@ -212,7 +256,11 @@ export default function ProductsPage() {
                     <button
                       className="neon-btn-ghost"
                       type="button"
-                      onClick={() => deleteProduct.mutate(product.id)}
+                      onClick={() => {
+                        if (window.confirm(`Delete \"${product.name}\"?`)) {
+                          deleteProduct.mutate(product.id)
+                        }
+                      }}
                       disabled={deleteProduct.isLoading}
                     >
                       Delete

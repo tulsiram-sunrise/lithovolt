@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 
 class EntityAccessService
 {
@@ -69,6 +70,8 @@ class EntityAccessService
 
         $resource = strtoupper($resource);
         $roleName = strtoupper($user->staffUser->role?->name ?? '');
+        $hasOrderAssignmentsTable = Schema::hasTable('order_staff_assignments');
+        $hasWarrantyClaimAssignmentsTable = Schema::hasTable('warranty_claim_staff_assignments');
 
         // Role-based visibility rules
         return match ($resource) {
@@ -81,12 +84,16 @@ class EntityAccessService
             },
 
             // ORDERS: MANAGER sees all, SALES/SUPPORT see assigned or created, TECH sees none
-            'ORDERS' => function (Builder $query) use ($user, $roleName) {
+            'ORDERS' => function (Builder $query) use ($user, $roleName, $hasOrderAssignmentsTable) {
                 if ($roleName === 'MANAGER') {
                     return $query; // Manager sees all
                 }
                 if ($roleName === 'SALES') {
                     // Sales sees orders they created or are assigned to
+                    if (!$hasOrderAssignmentsTable) {
+                        return $query->where('user_id', $user->id);
+                    }
+
                     return $query->where(function ($q) use ($user) {
                         $q->where('user_id', $user->id)
                           ->orWhereExists(function ($subquery) use ($user) {
@@ -99,6 +106,10 @@ class EntityAccessService
                 }
                 if ($roleName === 'SUPPORT') {
                     // Support sees orders assigned to them
+                    if (!$hasOrderAssignmentsTable) {
+                        return $query->whereRaw('1 = 0');
+                    }
+
                     return $query->whereExists(function ($subquery) use ($user) {
                         $subquery->selectRaw(1)
                             ->from('order_staff_assignments')
@@ -111,12 +122,16 @@ class EntityAccessService
             },
 
             // WARRANTY_CLAIMS: MANAGER/SUPPORT see assigned claims or all if manager, TECH/SALES see none
-            'WARRANTY_CLAIMS' => function (Builder $query) use ($user, $roleName) {
+            'WARRANTY_CLAIMS' => function (Builder $query) use ($user, $roleName, $hasWarrantyClaimAssignmentsTable) {
                 if ($roleName === 'MANAGER') {
                     return $query; // Manager sees all
                 }
                 if ($roleName === 'SUPPORT') {
                     // Support sees claims assigned to them
+                    if (!$hasWarrantyClaimAssignmentsTable) {
+                        return $query->whereRaw('1 = 0');
+                    }
+
                     return $query->whereExists(function ($subquery) use ($user) {
                         $subquery->selectRaw(1)
                             ->from('warranty_claim_staff_assignments')
@@ -183,7 +198,7 @@ class EntityAccessService
      */
     private function isSuperAdmin(User $user): bool
     {
-        $superAdminEmails = explode(',', config('auth.backoffice_super_admin_emails', 'admin@lithovolt.com'));
+        $superAdminEmails = explode(',', config('auth.backoffice_super_admin_emails', 'admin@lithovolt.com.au'));
         return in_array($user->email, array_map('trim', $superAdminEmails));
     }
 

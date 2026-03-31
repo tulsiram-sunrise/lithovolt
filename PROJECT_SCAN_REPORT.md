@@ -229,7 +229,7 @@ All endpoints return standardized JSON:
   "user": {
     "id": 1,
     "name": "Admin User",
-    "email": "admin@lithovolt.com",
+    "email": "admin@lithovolt.com.au",
     "role": "admin",
     ...
   }
@@ -256,10 +256,10 @@ All endpoints return standardized JSON:
 
 #### Test Users Available
 ```
-1. admin@lithovolt.com / password123 (ADMIN role)
-2. wholesaler@lithovolt.com / password123 (WHOLESALER role)
-3. retailer@lithovolt.com / password123 (RETAILER role)
-4. customer@lithovolt.com / password123 (CUSTOMER role)
+1. admin@lithovolt.com.au / password123 (ADMIN role)
+2. wholesaler@lithovolt.com.au / password123 (WHOLESALER role)
+3. retailer@lithovolt.com.au / password123 (RETAILER role)
+4. customer@lithovolt.com.au / password123 (CUSTOMER role)
 ```
 
 #### Known Good Status

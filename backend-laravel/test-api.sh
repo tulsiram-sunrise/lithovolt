@@ -12,7 +12,7 @@ echo "1. Testing Login..."
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@lithovolt.com",
+    "email": "admin@lithovolt.com.au",
     "password": "password123"
   }')
 

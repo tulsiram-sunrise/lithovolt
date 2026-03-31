@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryAPI } from '../../services/api'
 import { useToastStore } from '../../store/toastStore'
+import ProductImage from '../../components/common/ProductImage'
+import { isValidHttpImageUrl, normalizeImageUrlInput } from '../../utils/imageUrl'
 
 const initialForm = {
   name: '',
   brand: '',
   series: '',
   description: '',
+  image_url: '',
   sku: '',
   model_code: '',
   group_size: '',
@@ -80,6 +83,16 @@ export default function BatteryModelCreatePage() {
     event.preventDefault()
     setFormError('')
 
+    const normalizedImageUrl = normalizeImageUrlInput(form.image_url)
+    if (normalizedImageUrl !== form.image_url) {
+      setForm((prev) => ({ ...prev, image_url: normalizedImageUrl }))
+    }
+
+    if (!isValidHttpImageUrl(normalizedImageUrl)) {
+      setFormError('Image URL must be a valid http/https URL.')
+      return
+    }
+
     const totalQty = asInteger(form.total_quantity) ?? 0
     const availableQty = asInteger(form.available_quantity) ?? 0
     if (availableQty > totalQty) {
@@ -107,6 +120,7 @@ export default function BatteryModelCreatePage() {
       brand: form.brand || undefined,
       series: form.series || undefined,
       description: form.description || undefined,
+      image_url: normalizedImageUrl || undefined,
       sku: form.sku,
       model_code: form.model_code || undefined,
       group_size: form.group_size || undefined,
@@ -249,10 +263,18 @@ export default function BatteryModelCreatePage() {
         {/* Additional Information */}
         <div>
           <h3 className="mb-6 text-base font-bold uppercase text-[color:var(--text-primary)] tracking-wider">Additional Information</h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <Field label="Application Segment" name="application_segment" value={form.application_segment} onChange={handleChange} />
             <Field label="Datasheet URL" name="datasheet_url" type="url" value={form.datasheet_url} onChange={handleChange} />
+            <Field label="Image URL" name="image_url" type="url" value={form.image_url} onChange={handleChange} onBlur={(event) => setForm((prev) => ({ ...prev, image_url: normalizeImageUrlInput(event.target.value) }))} />
           </div>
+          <p className="mt-2 text-xs text-[color:var(--muted)]">Use a direct image URL (http/https). Unsupported or broken links automatically show a fallback tile.</p>
+          {form.image_url.trim() ? (
+            <div className="mt-4">
+              <p className="mb-2 text-xs uppercase tracking-wide text-[color:var(--muted)]">Live Preview</p>
+              <ProductImage src={form.image_url.trim()} alt={form.name || 'Battery model preview'} className="h-44 w-full max-w-sm" fallbackText="Preview unavailable" />
+            </div>
+          ) : null}
         </div>
 
         <div className="border-t border-[color:var(--border)]"></div>
@@ -290,7 +312,7 @@ export default function BatteryModelCreatePage() {
   )
 }
 
-function Field({ label, name, value, onChange, type = 'text', required = false, step }) {
+function Field({ label, name, value, onChange, type = 'text', required = false, step, onBlur }) {
   return (
     <div>
       <label htmlFor={name} className="field-label">{label}</label>
@@ -301,6 +323,7 @@ function Field({ label, name, value, onChange, type = 'text', required = false, 
         type={type}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         required={required}
         step={step}
       />

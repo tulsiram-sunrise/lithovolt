@@ -1,21 +1,58 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { orderAPI } from '../../services/api'
 import { extractApiErrorMessage } from '../../services/apiError'
 import { useToastStore } from '../../store/toastStore'
 import ShimmerTableRows from '../../components/common/ShimmerTableRows'
+import PaginationControls from '../../components/common/PaginationControls'
+import ActionConfirmModal from '../../components/common/ActionConfirmModal'
+
+function getStatusTagClass(status) {
+  const normalized = String(status || '').toUpperCase()
+
+  if (normalized === 'PENDING') return 'tag-warning'
+  if (normalized === 'ACCEPTED') return 'tag-info'
+  if (normalized === 'FULFILLED') return 'tag-success'
+  if (normalized === 'REJECTED' || normalized === 'CANCELLED') return 'tag-error'
+
+  return ''
+}
 
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [pendingAction, setPendingAction] = useState(null)
+  const [confirmCancelOrderId, setConfirmCancelOrderId] = useState(null)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const addToast = useToastStore((state) => state.addToast)
 
   const { data: ordersData, isLoading: ordersLoading } = useQuery({
-    queryKey: ['wholesaler-orders', statusFilter],
-    queryFn: () => orderAPI.getOrders({ ordering: '-created_at', status: statusFilter || undefined }),
+    queryKey: ['wholesaler-orders', statusFilter, page],
+    queryFn: () => orderAPI.getOrders({ ordering: '-created_at', status: statusFilter || undefined, page, per_page: 10 }),
     select: (response) => response.data,
   })
-  const orders = useMemo(() => (Array.isArray(ordersData) ? ordersData : ordersData?.results || []), [ordersData])
+  const orders = useMemo(() => {
+    const list = Array.isArray(ordersData)
+      ? ordersData
+      : ordersData?.results || ordersData?.data || []
+
+    return Array.isArray(list) ? list : []
+  }, [ordersData])
+
+  const pagination = useMemo(() => {
+    if (Array.isArray(ordersData)) {
+      return { current_page: 1, last_page: 1, total: ordersData.length }
+    }
+
+    return {
+      current_page: ordersData?.current_page || 1,
+      last_page: ordersData?.last_page || 1,
+      total: ordersData?.total || orders.length,
+    }
+  }, [ordersData, orders])
+
   const isFulfilledStatus = (value) => String(value || '').toUpperCase() === 'FULFILLED'
   const normalizeStatus = (value) => String(value || 'PENDING').toUpperCase()
   const normalizePaymentMethod = (value) => {
@@ -46,6 +83,22 @@ export default function OrdersPage() {
     }
   }
 
+  const cancelOrder = useMutation({
+    mutationFn: ({ id, reason }) => orderAPI.cancelOrder(id, { reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wholesaler-orders'] })
+      queryClient.invalidateQueries({ queryKey: ['wholesaler-order'] })
+      addToast({ type: 'success', title: 'Order canceled' })
+    },
+    onError: (error) => {
+      addToast({
+        type: 'error',
+        title: 'Unable to cancel order',
+        message: extractApiErrorMessage(error, 'Order can be canceled only while pending.'),
+      })
+    },
+  })
+
   const totals = useMemo(() => {
     return orders.reduce((acc, order) => {
       const status = normalizeStatus(order.status)
@@ -56,6 +109,19 @@ export default function OrdersPage() {
       return acc
     }, { total: 0, pending: 0, accepted: 0, fulfilled: 0 })
   }, [orders])
+
+  const isMutating = cancelOrder.isPending
+
+  const runCancelAction = (orderId, reason) => {
+    if (isMutating) {
+      return
+    }
+
+    setPendingAction({ type: 'cancel', orderId })
+    cancelOrder.mutate({ id: orderId, reason }, {
+      onSettled: () => setPendingAction(null),
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -88,11 +154,11 @@ export default function OrdersPage() {
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
-          <button type="button" className="neon-btn-ghost" onClick={() => setStatusFilter('')}>All</button>
-          <button type="button" className="neon-btn-ghost" onClick={() => setStatusFilter('PENDING')}>Pending</button>
-          <button type="button" className="neon-btn-ghost" onClick={() => setStatusFilter('ACCEPTED')}>Accepted</button>
-          <button type="button" className="neon-btn-ghost" onClick={() => setStatusFilter('FULFILLED')}>Fulfilled</button>
-          <button type="button" className="neon-btn-ghost" onClick={() => setStatusFilter('REJECTED')}>Rejected</button>
+          <button type="button" className="neon-btn-ghost" onClick={() => { setStatusFilter(''); setPage(1) }}>All</button>
+          <button type="button" className="neon-btn-ghost" onClick={() => { setStatusFilter('PENDING'); setPage(1) }}>Pending</button>
+          <button type="button" className="neon-btn-ghost" onClick={() => { setStatusFilter('ACCEPTED'); setPage(1) }}>Accepted</button>
+          <button type="button" className="neon-btn-ghost" onClick={() => { setStatusFilter('FULFILLED'); setPage(1) }}>Fulfilled</button>
+          <button type="button" className="neon-btn-ghost" onClick={() => { setStatusFilter('REJECTED'); setPage(1) }}>Rejected</button>
         </div>
 
         <table className="data-table">
@@ -112,19 +178,28 @@ export default function OrdersPage() {
             {orders.map((order) => (
               <tr key={order.id}>
                 <td>ORD-{order.id}</td>
-                <td><span className="tag">{normalizeStatus(order.status)}</span></td>
+                <td><span className={`tag ${getStatusTagClass(order.status)}`}>{normalizeStatus(order.status)}</span></td>
                 <td>{normalizePaymentMethod(order.payment_method)}</td>
                 <td>{order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}</td>
                 <td>{order.total_items || order.items?.length || 0}</td>
-                <td>{Number(order.total_amount || 0).toFixed(2)}</td>
-                <td>
+                <td>${Number(order.total_amount || 0).toFixed(2)}</td>
+                <td className="flex gap-2">
+                  <button className="neon-btn-ghost" onClick={() => navigate(`/wholesaler/orders/${order.id}`)}>View</button>
+                  {normalizeStatus(order.status) === 'PENDING' ? (
+                    <button
+                      className="neon-btn-ghost"
+                      type="button"
+                      onClick={() => setConfirmCancelOrderId(order.id)}
+                      disabled={isMutating}
+                    >
+                      {pendingAction?.type === 'cancel' && pendingAction?.orderId === order.id ? 'Cancelling...' : 'Cancel'}
+                    </button>
+                  ) : null}
                   {isFulfilledStatus(order.status) ? (
                     <button className="neon-btn-secondary" type="button" onClick={() => handleDownloadInvoice(order.id)}>
                       Invoice
                     </button>
-                  ) : (
-                    <span className="text-xs text-[color:var(--muted)]">Available after fulfillment</span>
-                  )}
+                  ) : null}
                 </td>
               </tr>
             ))}
@@ -133,7 +208,36 @@ export default function OrdersPage() {
         {!ordersLoading && orders.length === 0 ? (
           <p className="mt-3 text-sm text-[color:var(--muted)]">No orders yet.</p>
         ) : null}
+
+        {!ordersLoading && orders.length > 0 ? (
+          <PaginationControls
+            currentPage={pagination.current_page}
+            lastPage={pagination.last_page}
+            total={pagination.total}
+            pageSize={10}
+            onPageChange={setPage}
+          />
+        ) : null}
       </div>
+
+      <ActionConfirmModal
+        isOpen={confirmCancelOrderId !== null}
+        title="Cancel Order"
+        message="Are you sure you want to cancel this order? This action is allowed only while order is pending."
+        confirmLabel="Confirm Cancel"
+        requireReason={true}
+        reasonLabel="Cancellation Reason"
+        reasonPlaceholder="Why are you canceling this order?"
+        isSubmitting={cancelOrder.isPending}
+        onClose={() => setConfirmCancelOrderId(null)}
+        onConfirm={(reason) => {
+          const orderId = confirmCancelOrderId
+          setConfirmCancelOrderId(null)
+          if (orderId) {
+            runCancelAction(orderId, reason)
+          }
+        }}
+      />
     </div>
   )
 }

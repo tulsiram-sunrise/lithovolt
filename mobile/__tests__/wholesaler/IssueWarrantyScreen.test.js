@@ -22,7 +22,7 @@ describe('IssueWarrantyScreen', () => {
   it('prefills consumer contact from order payload', async () => {
     ordersAPI.getOrder.mockResolvedValue({
       data: {
-        consumer_email: 'consumer1@lithovolt.com',
+        consumer_email: 'consumer1@lithovolt.com.au',
         consumer_phone: '+15550001111',
         consumer_first_name: 'Consumer',
         consumer_last_name: 'One',
@@ -35,7 +35,7 @@ describe('IssueWarrantyScreen', () => {
 
     await waitFor(() => {
       expect(ordersAPI.getOrder).toHaveBeenCalled();
-      expect(getByPlaceholderText('Consumer email').props.value).toBe('consumer1@lithovolt.com');
+      expect(getByPlaceholderText('Consumer email').props.value).toBe('consumer1@lithovolt.com.au');
       expect(getByPlaceholderText('Consumer phone').props.value).toBe('+15550001111');
       expect(getByPlaceholderText('First name').props.value).toBe('Consumer');
       expect(getByPlaceholderText('Last name').props.value).toBe('One');

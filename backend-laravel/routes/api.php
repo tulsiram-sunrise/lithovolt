@@ -159,6 +159,7 @@ Route::middleware('auth:jwt')->group(function () {
         Route::delete('/{order}/', [OrderController::class, 'destroy']);
         Route::post('/{order}/accept/', [OrderController::class, 'accept']);
         Route::post('/{order}/reject/', [OrderController::class, 'reject']);
+        Route::post('/{order}/cancel/', [OrderController::class, 'cancel']);
         Route::post('/{order}/fulfill/', [OrderController::class, 'fulfill']);
         Route::get('/{order}/invoice/', [OrderController::class, 'invoice']);
         Route::get('/user/{userId}/', [OrderController::class, 'ordersByUser']);

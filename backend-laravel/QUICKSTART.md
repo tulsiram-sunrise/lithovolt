@@ -13,7 +13,7 @@ The full Laravel backend is now deployed and tested with all database tables, mo
 # 1. Login
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@lithovolt.com","password":"password123"}'
+  -d '{"email":"admin@lithovolt.com.au","password":"password123"}'
 
 # Response includes:
 # - access_token: Use in Authorization header for other requests
@@ -54,10 +54,10 @@ curl -X GET http://localhost:8000/api/auth/profile \
 
 | Role | Email | Password | Status |
 |------|-------|----------|--------|
-| Admin | admin@lithovolt.com | password123 | ✓ Verified |
-| Wholesaler | wholesaler@lithovolt.com | password123 | ✓ Verified |
-| Retailer | retailer@lithovolt.com | password123 | ✓ Verified |
-| Customer | customer@lithovolt.com | password123 | ✗ Unverified |
+| Admin | admin@lithovolt.com.au | password123 | ✓ Verified |
+| Wholesaler | wholesaler@lithovolt.com.au | password123 | ✓ Verified |
+| Retailer | retailer@lithovolt.com.au | password123 | ✓ Verified |
+| Customer | customer@lithovolt.com.au | password123 | ✗ Unverified |
 
 ## 🔋 Battery Models
 
