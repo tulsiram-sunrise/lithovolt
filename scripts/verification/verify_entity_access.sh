@@ -8,7 +8,7 @@ echo "Entity Access Control Verification"
 echo "=========================================="
 echo ""
 
-base_url="http://127.0.0.1:8001"
+base_url="http://127.0.0.1:8000"
 
 # 1. Admin login (full access)
 echo "1️⃣  Testing ADMIN (Super-Admin) Access..."

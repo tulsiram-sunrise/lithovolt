@@ -583,8 +583,7 @@ class OrderController extends Controller
             return false;
         }
 
-        $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
-        return $roleName === 'ADMIN' || (bool) $user->staffUser;
+        return $user->hasRole('ADMIN') || (bool) $user->staffUser;
     }
 
     private function isAdmin(?User $user): bool
@@ -593,8 +592,7 @@ class OrderController extends Controller
             return false;
         }
 
-        $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
-        return $roleName === 'ADMIN';
+        return $user->hasRole('ADMIN');
     }
 
     private function canAccessOrder(?User $actor, Order $order): bool

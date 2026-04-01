@@ -386,9 +386,9 @@ php artisan tinker
 
 ```bash
 # 6. Test new endpoints
-curl http://localhost:8001/api/inventory/catalog
-curl "http://localhost:8001/api/inventory/catalog?type=BATTERY&in_stock=true"
-curl "http://localhost:8001/api/inventory/catalog/1"
+curl http://localhost:8000/api/inventory/catalog
+curl "http://localhost:8000/api/inventory/catalog?type=BATTERY&in_stock=true"
+curl "http://localhost:8000/api/inventory/catalog/1"
 ```
 
 ### Frontend Testing

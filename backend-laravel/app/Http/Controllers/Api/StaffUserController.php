@@ -82,7 +82,7 @@ class StaffUserController extends Controller
 
         // Ensure user is an admin
         $user = User::findOrFail($validated['user_id']);
-        if (strtoupper((string) $user->role) !== 'ADMIN') {
+        if (!$user->hasRole('ADMIN')) {
             return response()->json([
                 'error' => 'Only admin users can be assigned staff roles'
             ], 422);
@@ -100,7 +100,7 @@ class StaffUserController extends Controller
             }
 
             $supervisor = User::findOrFail($validated['supervisor_id']);
-            if (strtoupper((string) $supervisor->role) !== 'ADMIN' && !$supervisor->staffUser) {
+            if (!$supervisor->hasRole('ADMIN') && !$supervisor->staffUser) {
                 return response()->json([
                     'error' => 'Supervisor must be an admin or staff member'
                 ], 422);
@@ -135,7 +135,7 @@ class StaffUserController extends Controller
             }
 
             $supervisor = User::findOrFail($validated['supervisor_id']);
-            if (strtoupper((string) $supervisor->role) !== 'ADMIN' && !$supervisor->staffUser) {
+            if (!$supervisor->hasRole('ADMIN') && !$supervisor->staffUser) {
                 return response()->json([
                     'error' => 'Supervisor must be an admin or staff member'
                 ], 422);

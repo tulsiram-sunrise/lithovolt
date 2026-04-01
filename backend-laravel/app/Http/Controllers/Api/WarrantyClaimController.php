@@ -161,8 +161,7 @@ class WarrantyClaimController extends Controller
             return false;
         }
 
-        $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
-        return $roleName === 'ADMIN';
+        return $user->hasRole('ADMIN');
     }
 
     private function canAccessClaim(?User $user, WarrantyClaim $claim): bool

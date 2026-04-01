@@ -30,8 +30,7 @@ class BackofficePermissionMiddleware
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $roleName = strtoupper((string) ($user?->role?->name ?? $user?->role ?? ''));
-        if ($roleName !== 'ADMIN') {
+        if (!$user->hasRole('ADMIN')) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

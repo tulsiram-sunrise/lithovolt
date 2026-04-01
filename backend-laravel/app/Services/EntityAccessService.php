@@ -150,7 +150,9 @@ class EntityAccessService
                 }
                 // SALES can see consumers, SUPPORT/TECH cannot see backoffice users
                 if ($roleName === 'SALES') {
-                    return $query->where('role', 'CONSUMER');
+                    return $query->whereHas('role', function (Builder $roleQuery) {
+                        $roleQuery->where('name', 'CONSUMER');
+                    });
                 }
                 return $query->whereRaw('1 = 0');
             },

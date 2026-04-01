@@ -5,7 +5,7 @@ email="admin@lithovolt.com.au"
 password="password123"
 
 echo "1. Login..."
-login_response=$(curl -s -X POST http://127.0.0.1:8001/api/auth/login/ \
+login_response=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login/ \
   -H 'Content-Type: application/json' \
   -d "{\"email\":\"$email\",\"password\":\"$password\"}")
 
@@ -20,13 +20,13 @@ if [ -z "$token" ]; then
 fi
 
 echo -e "\n2. Check profile..."
-profile=$(curl -s -X GET http://127.0.0.1:8001/api/auth/profile/ \
+profile=$(curl -s -X GET http://127.0.0.1:8000/api/auth/profile/ \
   -H "Authorization: Bearer $token")
 
 echo "Profile: $profile"
 
 echo -e "\n3. Try admin/roles..."
-roles=$(curl -s -X GET http://127.0.0.1:8001/api/admin/roles/ \
+roles=$(curl -s -X GET http://127.0.0.1:8000/api/admin/roles/ \
   -H "Authorization: Bearer $token" \
   -w "\nHTTP_CODE:%{http_code}\n")
 

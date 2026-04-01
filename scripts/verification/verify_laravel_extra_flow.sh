@@ -2,7 +2,7 @@
 
 set -u
 
-BASE_URL="${BASE_URL:-http://127.0.0.1:8001/api}"
+BASE_URL="${BASE_URL:-http://127.0.0.1:8000/api}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@lithovolt.com.au}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-password123}"
 

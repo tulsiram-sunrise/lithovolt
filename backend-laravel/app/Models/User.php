@@ -76,23 +76,40 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getRoleAttribute()
     {
-        // Prefer canonical role_id / roles table mapping.
-        // This prevents legacy role text from overriding invitation-assigned roles
-        // (for example, invited WHOLESALER users incorrectly reading as CONSUMER).
+        return $this->resolveRoleName();
+    }
+
+    /**
+     * Resolve role name using role_id mapping first, then legacy role text fallback.
+     */
+    public function resolveRoleName(string $default = 'customer'): string
+    {
         if ($this->role_id) {
-            if ($this->relationLoaded('role')) {
-                return $this->role?->name ?? 'customer';
+            if ($this->relationLoaded('modelRole')) {
+                $name = $this->getRelation('modelRole')?->name;
+                return $name ?: $default;
             }
 
-            return Role::find($this->role_id)?->name ?? 'customer';
+            if ($this->relationLoaded('role')) {
+                $name = $this->getRelation('role')?->name;
+                return $name ?: $default;
+            }
+
+            $name = $this->modelRole()->value('name');
+            return is_string($name) && $name !== '' ? $name : $default;
         }
 
-        // Fallback for legacy datasets that may still have a direct role string.
-        if ($this->attributes['role'] ?? null) {
-            return $this->attributes['role'];
+        $legacyRole = $this->attributes['role'] ?? null;
+        if (is_string($legacyRole) && $legacyRole !== '') {
+            return $legacyRole;
         }
 
-        return 'customer';
+        return $default;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return strtoupper($this->resolveRoleName()) === strtoupper(trim($role));
     }
 
     public function modelRole(): BelongsTo

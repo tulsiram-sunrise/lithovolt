@@ -10,7 +10,7 @@ echo ""
 
 # Configuration
 DJANGO_API="http://localhost:8000/api"
-LARAVEL_API="http://localhost:8001/api"
+LARAVEL_API="http://localhost:8000/api"
 ADMIN_TOKEN="${ADMIN_TOKEN:-test-admin-token}"
 
 # Test counters
