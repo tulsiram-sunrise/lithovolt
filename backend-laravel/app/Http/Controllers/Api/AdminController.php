@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\BatteryModel;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\SerialNumber;
 use App\Models\User;
 use App\Models\Warranty;
@@ -76,9 +77,18 @@ class AdminController extends Controller
 
     public function metrics()
     {
+        $batteryCatalogQuery = Product::query()->where('product_type', 'BATTERY');
+        $catalogBatteryModels = (clone $batteryCatalogQuery)->count();
+        $catalogAvailableBatteryUnits = (int) (clone $batteryCatalogQuery)->sum('available_quantity');
+
+        $legacyBatteryModels = BatteryModel::count();
+        $legacyAvailableBatteryUnits = (int) BatteryModel::sum('available_quantity');
+
+        $totalProducts = $catalogBatteryModels > 0 ? $catalogBatteryModels : $legacyBatteryModels;
+        $totalAvailableBatteryUnits = $catalogBatteryModels > 0 ? $catalogAvailableBatteryUnits : $legacyAvailableBatteryUnits;
+
         $totalUsers = User::count();
         $totalOrders = Order::count();
-        $totalProducts = BatteryModel::count();
         $totalWarranties = Warranty::count();
 
         // Get users by role (using relationship)
@@ -105,9 +115,9 @@ class AdminController extends Controller
 
         // Get serial numbers by status
         $serialsByStatus = [
-            'AVAILABLE' => \App\Models\SerialNumber::where('status', 'AVAILABLE')->count(),
-            'ALLOCATED' => \App\Models\SerialNumber::where('status', 'ALLOCATED')->count(),
-            'SOLD' => \App\Models\SerialNumber::where('status', 'SOLD')->count(),
+            'AVAILABLE' => SerialNumber::query()->whereRaw('UPPER(status) = ?', ['AVAILABLE'])->count(),
+            'ALLOCATED' => SerialNumber::query()->whereRaw('UPPER(status) = ?', ['ALLOCATED'])->count(),
+            'SOLD' => SerialNumber::query()->whereRaw('UPPER(status) = ?', ['SOLD'])->count(),
         ];
 
         // Get warranty claim statuses
@@ -129,6 +139,7 @@ class AdminController extends Controller
             'serials_by_status' => $serialsByStatus,
             'warranty_claims_by_status' => $warrantyClaimsByStatus,
             'battery_models' => $totalProducts,
+            'battery_available_total' => $totalAvailableBatteryUnits,
         ]);
     }
 

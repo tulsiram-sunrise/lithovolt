@@ -89,65 +89,65 @@ Route::middleware('auth:jwt')->group(function () {
     // Inventory - Battery Models
     Route::prefix('inventory/models')->group(function () {
         Route::get('/', [BatteryModelController::class, 'index']);
-        Route::post('/', [BatteryModelController::class, 'store']);
+        Route::post('/', [BatteryModelController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{battery}/', [BatteryModelController::class, 'show']);
-        Route::put('/{battery}/', [BatteryModelController::class, 'update']);
-        Route::delete('/{battery}/', [BatteryModelController::class, 'destroy']);
+        Route::put('/{battery}/', [BatteryModelController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{battery}/', [BatteryModelController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
     });
     
     // Inventory - Serial Numbers
     Route::prefix('inventory/serials')->group(function () {
         Route::get('/', [SerialNumberController::class, 'index']);
-        Route::post('/', [SerialNumberController::class, 'store']);
-        Route::post('/generate/', [SerialNumberController::class, 'generate']);
+        Route::post('/', [SerialNumberController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
+        Route::post('/generate/', [SerialNumberController::class, 'generate'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{serial}/', [SerialNumberController::class, 'show']);
-        Route::put('/{serial}/', [SerialNumberController::class, 'update']);
-        Route::delete('/{serial}/', [SerialNumberController::class, 'destroy']);
-        Route::post('/{serial}/allocate/', [SerialNumberController::class, 'allocate']);
-        Route::post('/{serial}/mark-sold/', [SerialNumberController::class, 'markSold']);
+        Route::put('/{serial}/', [SerialNumberController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{serial}/', [SerialNumberController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
+        Route::post('/{serial}/allocate/', [SerialNumberController::class, 'allocate'])->middleware('backoffice.permission:INVENTORY,ASSIGN');
+        Route::post('/{serial}/mark-sold/', [SerialNumberController::class, 'markSold'])->middleware('backoffice.permission:INVENTORY,UPDATE');
     });
 
     // Inventory - Allocations
     Route::prefix('inventory/allocations')->group(function () {
         Route::get('/', [SerialNumberController::class, 'allocationsIndex']);
-        Route::post('/', [SerialNumberController::class, 'allocateStock']);
+        Route::post('/', [SerialNumberController::class, 'allocateStock'])->middleware('backoffice.permission:INVENTORY,ASSIGN');
     });
     
     // Inventory - Accessories
     Route::prefix('inventory/accessories')->group(function () {
         Route::get('/', [AccessoryController::class, 'index']);
-        Route::post('/', [AccessoryController::class, 'store']);
+        Route::post('/', [AccessoryController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{accessory}/', [AccessoryController::class, 'show']);
-        Route::put('/{accessory}/', [AccessoryController::class, 'update']);
-        Route::delete('/{accessory}/', [AccessoryController::class, 'destroy']);
+        Route::put('/{accessory}/', [AccessoryController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{accessory}/', [AccessoryController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
     });
 
     // Inventory - Product Categories
     Route::prefix('inventory/categories')->group(function () {
         Route::get('/', [ProductCategoryController::class, 'index']);
-        Route::post('/', [ProductCategoryController::class, 'store']);
+        Route::post('/', [ProductCategoryController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{category}/', [ProductCategoryController::class, 'show']);
-        Route::put('/{category}/', [ProductCategoryController::class, 'update']);
-        Route::delete('/{category}/', [ProductCategoryController::class, 'destroy']);
+        Route::put('/{category}/', [ProductCategoryController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{category}/', [ProductCategoryController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
     });
 
     // Inventory - Products
     Route::prefix('inventory/products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
-        Route::post('/', [ProductController::class, 'store']);
+        Route::post('/', [ProductController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{product}/', [ProductController::class, 'show']);
-        Route::put('/{product}/', [ProductController::class, 'update']);
-        Route::delete('/{product}/', [ProductController::class, 'destroy']);
+        Route::put('/{product}/', [ProductController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{product}/', [ProductController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
     });
 
     // Unified Catalog (new backbone)
     Route::prefix('inventory/catalog')->group(function () {
         Route::get('/summary/', [CatalogItemController::class, 'summary']);
         Route::get('/', [CatalogItemController::class, 'index']);
-        Route::post('/', [CatalogItemController::class, 'store']);
+        Route::post('/', [CatalogItemController::class, 'store'])->middleware('backoffice.permission:INVENTORY,CREATE');
         Route::get('/{catalogItem}/', [CatalogItemController::class, 'show']);
-        Route::put('/{catalogItem}/', [CatalogItemController::class, 'update']);
-        Route::delete('/{catalogItem}/', [CatalogItemController::class, 'destroy']);
+        Route::put('/{catalogItem}/', [CatalogItemController::class, 'update'])->middleware('backoffice.permission:INVENTORY,UPDATE');
+        Route::delete('/{catalogItem}/', [CatalogItemController::class, 'destroy'])->middleware('backoffice.permission:INVENTORY,DELETE');
     });
     
     // Orders
@@ -157,10 +157,10 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/{order}/', [OrderController::class, 'show']);
         Route::put('/{order}/', [OrderController::class, 'update']);
         Route::delete('/{order}/', [OrderController::class, 'destroy']);
-        Route::post('/{order}/accept/', [OrderController::class, 'accept']);
-        Route::post('/{order}/reject/', [OrderController::class, 'reject']);
+        Route::post('/{order}/accept/', [OrderController::class, 'accept'])->middleware('backoffice.permission:ORDERS,APPROVE');
+        Route::post('/{order}/reject/', [OrderController::class, 'reject'])->middleware('backoffice.permission:ORDERS,APPROVE');
         Route::post('/{order}/cancel/', [OrderController::class, 'cancel']);
-        Route::post('/{order}/fulfill/', [OrderController::class, 'fulfill']);
+        Route::post('/{order}/fulfill/', [OrderController::class, 'fulfill'])->middleware('backoffice.permission:ORDERS,APPROVE');
         Route::get('/{order}/invoice/', [OrderController::class, 'invoice']);
         Route::get('/user/{userId}/', [OrderController::class, 'ordersByUser']);
     });
@@ -170,8 +170,8 @@ Route::middleware('auth:jwt')->group(function () {
         Route::get('/', [WarrantyController::class, 'index']);
         Route::post('/', [WarrantyController::class, 'store']);
         Route::get('/{warranty}/', [WarrantyController::class, 'show']);
-        Route::put('/{warranty}/', [WarrantyController::class, 'update']);
-        Route::delete('/{warranty}/', [WarrantyController::class, 'destroy']);
+        Route::put('/{warranty}/', [WarrantyController::class, 'update'])->middleware('admin');
+        Route::delete('/{warranty}/', [WarrantyController::class, 'destroy'])->middleware('admin');
     });
     
     // Warranty Claims
@@ -180,7 +180,7 @@ Route::middleware('auth:jwt')->group(function () {
         Route::post('/', [WarrantyClaimController::class, 'store']);
         Route::get('/warranty/{warrantyId}/', [WarrantyClaimController::class, 'claimsByWarranty']);
         Route::get('/{claim}/', [WarrantyClaimController::class, 'show']);
-        Route::put('/{claim}/', [WarrantyClaimController::class, 'update']);
+        Route::put('/{claim}/', [WarrantyClaimController::class, 'update'])->middleware('backoffice.permission:WARRANTY_CLAIMS,APPROVE');
         Route::delete('/{claim}/', [WarrantyClaimController::class, 'destroy']);
     });
     

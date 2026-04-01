@@ -64,6 +64,14 @@ function formatDelta(delta) {
 
 function normalizeMetricsPayload(source = {}) {
   const totals = source?.totals || {}
+  const serialsByStatus = source?.serials_by_status || {}
+  const serialAvailable = Number(
+    serialsByStatus?.AVAILABLE ??
+    serialsByStatus?.available ??
+    serialsByStatus?.Available ??
+    0
+  )
+  const batteryAvailableTotal = Number(source?.battery_available_total ?? serialAvailable)
 
   // Backward-compatible: use existing detailed shape when present.
   if (source?.users_by_role || source?.orders_by_status || source?.warranty_claims_by_status) {
@@ -72,7 +80,8 @@ function normalizeMetricsPayload(source = {}) {
       orders_by_status: source?.orders_by_status || {},
       warranty_claims_by_status: source?.warranty_claims_by_status || {},
       battery_models: Number(source?.battery_models ?? totals.products ?? 0),
-      serials_by_status: source?.serials_by_status || {},
+      serials_by_status: serialsByStatus,
+      battery_available_total: batteryAvailableTotal,
       totals: {
         users: Number(totals.users ?? 0),
         orders: Number(totals.orders ?? 0),
@@ -91,7 +100,8 @@ function normalizeMetricsPayload(source = {}) {
     orders_by_status: { PENDING: pendingOrders },
     warranty_claims_by_status: { PENDING: claimedWarranties },
     battery_models: Number(totals.products ?? 0),
-    serials_by_status: {},
+    serials_by_status: serialsByStatus,
+    battery_available_total: batteryAvailableTotal,
     totals: {
       users: Number(totals.users ?? 0),
       orders: Number(totals.orders ?? 0),
@@ -191,7 +201,7 @@ export default function AdminDashboard() {
       { 
         label: 'Battery Models', 
         value: normalizedMetrics?.battery_models ?? 0, 
-        trend: `${normalizedMetrics?.serials_by_status?.AVAILABLE || 0} available` 
+        trend: `${normalizedMetrics?.battery_available_total || 0} available` 
       },
       { 
         label: 'Orders', 
@@ -353,7 +363,7 @@ export default function AdminDashboard() {
           <div className="mt-4 space-y-4 text-sm text-[color:var(--muted)]">
             <div>
               <p className="text-[color:var(--text)]">Low stock alerts</p>
-              <p>{metrics?.serials_by_status?.AVAILABLE || 0} units available across models.</p>
+              <p>{normalizedMetrics?.battery_available_total || 0} units available across models.</p>
             </div>
             <div>
               <p className="text-[color:var(--text)]">Pending approvals</p>

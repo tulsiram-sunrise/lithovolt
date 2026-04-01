@@ -46,8 +46,16 @@ class WarrantyController extends Controller
 
     public function store(Request $request)
     {
+        $actor = $request->user();
+
         if (!$request->filled('warranty_number')) {
             return $this->issueFromSerial($request);
+        }
+
+        if (!$this->isPrivileged($actor)) {
+            return response()->json([
+                'message' => 'Forbidden',
+            ], 403);
         }
 
         $validated = $request->validate([
@@ -84,6 +92,8 @@ class WarrantyController extends Controller
 
     private function issueFromSerial(Request $request)
     {
+        $actor = $request->user();
+
         $validated = $request->validate([
             'serial_number' => 'required|string|exists:serial_numbers,serial_number',
             'consumer_email' => 'nullable|email',
@@ -93,7 +103,7 @@ class WarrantyController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        if (empty($validated['consumer_email']) && empty($validated['consumer_phone'])) {
+        if ($this->isPrivileged($actor) && empty($validated['consumer_email']) && empty($validated['consumer_phone'])) {
             return response()->json([
                 'message' => 'Provide consumer_email or consumer_phone.',
             ], 422);
@@ -107,27 +117,32 @@ class WarrantyController extends Controller
             ], 422);
         }
 
-        $consumer = null;
-        if (!empty($validated['consumer_email'])) {
-            $consumer = User::where('email', $validated['consumer_email'])->first();
-        }
-        if (!$consumer && !empty($validated['consumer_phone'])) {
-            $consumer = User::where('phone', $validated['consumer_phone'])->first();
-        }
+        if (!$this->isPrivileged($actor)) {
+            // Consumer/wholesaler self-registration always issues to current account.
+            $consumer = $actor;
+        } else {
+            $consumer = null;
+            if (!empty($validated['consumer_email'])) {
+                $consumer = User::where('email', $validated['consumer_email'])->first();
+            }
+            if (!$consumer && !empty($validated['consumer_phone'])) {
+                $consumer = User::where('phone', $validated['consumer_phone'])->first();
+            }
 
-        if (!$consumer) {
-            $email = $validated['consumer_email'] ?? ('consumer+' . now()->timestamp . random_int(100, 999) . '@example.com');
-            $phone = $validated['consumer_phone'] ?? $this->generateUniquePhone();
+            if (!$consumer) {
+                $email = $validated['consumer_email'] ?? ('consumer+' . now()->timestamp . random_int(100, 999) . '@example.com');
+                $phone = $validated['consumer_phone'] ?? $this->generateUniquePhone();
 
-            $consumer = User::create([
-                'first_name' => $validated['consumer_first_name'] ?? 'Consumer',
-                'last_name' => $validated['consumer_last_name'] ?? 'User',
-                'email' => $email,
-                'phone' => $phone,
-                'password' => Str::random(20),
-                'is_verified' => true,
-                'is_active' => true,
-            ]);
+                $consumer = User::create([
+                    'first_name' => $validated['consumer_first_name'] ?? 'Consumer',
+                    'last_name' => $validated['consumer_last_name'] ?? 'User',
+                    'email' => $email,
+                    'phone' => $phone,
+                    'password' => Str::random(20),
+                    'is_verified' => true,
+                    'is_active' => true,
+                ]);
+            }
         }
 
         $product = $serial->product;
@@ -194,6 +209,16 @@ class WarrantyController extends Controller
     {
         $warranty->delete();
         return response()->json(['message' => 'Warranty deleted successfully']);
+    }
+
+    private function isPrivileged(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
+        return $roleName === 'ADMIN';
     }
 
     public function validateQRCode($qrCode)

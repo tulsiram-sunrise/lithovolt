@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Services\EntityAccessService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -52,7 +51,13 @@ class Warranty extends Model
      */
     public function scopeVisibleToUser(Builder $query, User $user): Builder
     {
-        $accessService = new EntityAccessService();
-        return $accessService->applyVisibility($user, 'INVENTORY', $query);
+        $roleName = strtoupper((string) ($user?->role?->name ?? $user?->role ?? ''));
+
+        if ($roleName === 'ADMIN') {
+            return $query;
+        }
+
+        // Non-admin users should only see warranties owned by their account.
+        return $query->where('user_id', $user->id);
     }
 }

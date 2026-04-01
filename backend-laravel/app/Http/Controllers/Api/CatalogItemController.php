@@ -3,291 +3,494 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\CatalogItem;
+use App\Models\CatalogItemAuditLog;
+use App\Models\CatalogVariation;
+use App\Services\EntityAccessService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * Unified Catalog Item Controller
+ * 
+ * Single source of truth for all catalog operations (batteries, accessories, parts, services, etc.)
+ * Replaces legacy BatteryModelController, ProductController, and AccessoryController
+ */
 class CatalogItemController extends Controller
 {
+    private EntityAccessService $accessService;
+
+    public function __construct()
+    {
+        $this->accessService = new EntityAccessService();
+    }
+
+    /**
+     * POST /inventory/catalog/summary
+     * Get overview of catalog
+     */
     public function summary()
     {
-        $base = Product::query();
+        $user = auth()->user();
 
-        return response()->json([
-            'total' => (clone $base)->count(),
-            'active' => (clone $base)->where('is_active', true)->count(),
-            'by_type' => (clone $base)
-                ->selectRaw('product_type, COUNT(*) as count')
-                ->groupBy('product_type')
-                ->pluck('count', 'product_type'),
-            'serialized' => (clone $base)->where('is_serialized', true)->count(),
-            'warranty_eligible' => (clone $base)->where('is_warranty_eligible', true)->count(),
-            'fitment_eligible' => (clone $base)->where('is_fitment_eligible', true)->count(),
-        ]);
+        $query = CatalogItem::query()
+            ->visibleToUser($user)
+            ->active();
+
+        $summary = [
+            'total_items' => $query->count(),
+            'total_quantity' => $query->sum('available_quantity'),
+            'total_value' => $query->sum(DB::raw('available_quantity * price')),
+            'by_type' => CatalogItem::select('type')
+                ->selectRaw('COUNT(*) as count')
+                ->selectRaw('SUM(available_quantity) as total_available')
+                ->selectRaw('SUM(available_quantity * price) as total_value')
+                ->visibleToUser($user)
+                ->groupBy('type')
+                ->get()
+                ->map(fn ($row) => [
+                    'type' => $row->type,
+                    'count' => $row->count,
+                    'available_quantity' => $row->total_available,
+                    'value' => $row->total_value,
+                ])
+                ->keyBy('type'),
+            'low_stock_items' => CatalogItem::lowStock()
+                ->visibleToUser($user)
+                ->count(),
+            'out_of_stock_items' => CatalogItem::where('available_quantity', 0)
+                ->visibleToUser($user)
+                ->count(),
+        ];
+
+        return response()->json($summary);
     }
 
     public function index(Request $request)
     {
-        $query = Product::query()->with(['category', 'legacyBatteryModel', 'legacyAccessory']);
+        $query = CatalogItem::query()
+            ->with(['categories', 'variations'])
+            ->visibleToUser(auth()->user());
 
+        // Filter by type
+        if ($request->filled('type')) {
+            $types = is_array($request->type) 
+                ? $request->type 
+                : [$request->type];
+            $query->ofTypes($types);
+        }
+
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->byCategory($request->category);
+        }
+
+        // Search
         if ($request->filled('q')) {
             $term = trim((string) $request->query('q'));
-            $query->where(function ($sub) use ($term) {
-                $sub->where('name', 'like', '%' . $term . '%')
-                    ->orWhere('sku', 'like', '%' . $term . '%')
-                    ->orWhere('description', 'like', '%' . $term . '%');
-            });
+            $query->search($term);
         }
 
-        if ($request->filled('type')) {
-            $query->where('product_type', strtoupper((string) $request->query('type')));
+        // Filter by stock status
+        if ($request->filled('in_stock')) {
+            if ($request->boolean('in_stock')) {
+                $query->inStock();
+            }
         }
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', (int) $request->query('category_id'));
+        // Filter by low stock
+        if ($request->boolean('low_stock')) {
+            $query->lowStock();
         }
 
-        if ($request->filled('is_active')) {
-            $query->where('is_active', filter_var($request->query('is_active'), FILTER_VALIDATE_BOOLEAN));
+        // Filter active only
+        if ($request->boolean('active_only', true)) {
+            $query->active();
         }
 
-        $allowedOrderFields = ['created_at', 'name', 'sku', 'price', 'available_quantity'];
-        $ordering = (string) $request->query('ordering', '-created_at');
-        $direction = str_starts_with($ordering, '-') ? 'desc' : 'asc';
-        $field = ltrim($ordering, '-');
-
-        if (!in_array($field, $allowedOrderFields, true)) {
-            $field = 'created_at';
-            $direction = 'desc';
+        // Sorting
+        $sortBy = $request->input('sort', '-updated_at');
+        $sortParts = explode(',', $sortBy);
+        foreach ($sortParts as $part) {
+            $desc = Str::startsWith($part, '-');
+            $field = ltrim($part, '-');
+            $query->orderBy($field, $desc ? 'desc' : 'asc');
         }
 
-        $perPage = (int) $request->query('per_page', 20);
-        $perPage = max(1, min($perPage, 100));
+        // Pagination
+        $perPage = $request->integer('per_page', 20);
+        $perPage = min($perPage, 100);
+        $page = $request->integer('page', 1);
 
-        $items = $query
-            ->orderBy($field, $direction)
-            ->paginate($perPage);
+        $items = $query->paginate($perPage, ['*'], 'page', $page);
 
-        /** @var \Illuminate\Pagination\LengthAwarePaginator $items */
-        $items->setCollection(
-            $items->getCollection()->map(fn (Product $product) => $this->toCatalogPayload($product))
-        );
+        // Transform items
+        $transformed = $items->map(fn (CatalogItem $item) => $this->transformItem($item));
 
-        return response()->json($items);
+        return response()->json([
+            'data' => $transformed,
+            'pagination' => [
+                'current_page' => $items->currentPage(),
+                'per_page' => $items->perPage(),
+                'total' => $items->total(),
+                'last_page' => $items->lastPage(),
+            ],
+        ]);
     }
 
-    public function show(Product $catalogItem)
+    public function show(CatalogItem $item)
     {
-        $catalogItem->load(['category', 'legacyBatteryModel', 'legacyAccessory', 'serialNumbers', 'warranties']);
-        return response()->json($this->toCatalogPayload($catalogItem, true));
+        $user = auth()->user();
+
+        // Permission check
+        $canView = $user
+            ? CatalogItem::query()->whereKey($item->id)->visibleToUser($user)->exists()
+            : false;
+
+        if (!$canView) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $item->load(['categories', 'variations', 'serialNumbers' => function ($q) {
+            $q->limit(10);
+        }]);
+
+        return response()->json([
+            'data' => $this->transformItemDetailed($item),
+        ]);
+    }
+
+    public function publicShow($id)
+    {
+        $item = CatalogItem::where('id', $id)
+            ->orWhere('slug', $id)
+            ->published()
+            ->active()
+            ->with(['categories'])
+            ->firstOrFail();
+
+        return response()->json([
+            'data' => $this->transformItemPublic($item),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:200',
-            'product_type' => 'required|string|in:BATTERY,ACCESSORY,PART,CONSUMABLE,SERVICE,GENERIC',
-            'sku' => 'required|string|max:100|unique:products,sku',
-            'category_id' => 'nullable|integer|exists:product_categories,id',
-            'description' => 'nullable|string',
-            'image_url' => 'nullable|url|max:500',
-            'price' => 'required|numeric|min:0',
-            'total_quantity' => 'required|integer|min:0',
-            'available_quantity' => 'required|integer|min:0',
-            'low_stock_threshold' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
-            'default_warranty_months' => 'nullable|integer|min:0',
-            'metadata' => 'nullable|array',
-            'status' => 'nullable|string|in:active,inactive',
-        ]);
+        $user = auth()->user();
 
-        if (($validated['available_quantity'] ?? 0) > ($validated['total_quantity'] ?? 0)) {
-            return response()->json(['message' => 'available_quantity cannot be greater than total_quantity.'], 422);
+        // Permission check
+        if (!$user || !$this->accessService->hasPermission($user, 'INVENTORY', 'CREATE')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $prepared = $this->prepareProductPayload($validated, $request->all());
-        $product = Product::create($prepared)->load(['category', 'legacyBatteryModel', 'legacyAccessory']);
+        $validated = $request->validate([
+            'type' => 'required|in:BATTERY,ACCESSORY,PART,CONSUMABLE,SERVICE,GENERIC',
+            'name' => 'required|string|max:255',
+            'sku' => 'required|unique:catalog_items|string|max:100',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'is_active' => 'boolean',
+            'is_serialized' => 'boolean',
+            'is_warranty_eligible' => 'boolean',
+            'is_fitment_eligible' => 'boolean',
+            'default_warranty_months' => 'nullable|integer|min:0',
+            'private_warranty_months' => 'nullable|integer|min:0',
+            'commercial_warranty_months' => 'nullable|integer|min:0',
+            'voltage_nominal' => 'nullable|numeric',
+            'capacity_ah' => 'nullable|numeric',
+            'capacity_wh' => 'nullable|numeric',
+            'chemistry' => 'nullable|string',
+            'cca' => 'nullable|integer',
+            'brand' => 'nullable|string',
+            'series' => 'nullable|string',
+            'model_code' => 'nullable|string',
+            'primary_category_id' => 'nullable|exists:catalog_categories,id',
+        ]);
+
+        // Normalize capabilities
+        $validated = $this->normalizeCapabilities($validated);
+
+        // Create item
+        $item = CatalogItem::create($validated);
+
+        // Assign category
+        if ($request->filled('primary_category_id')) {
+            $item->categories()->attach($request->primary_category_id, ['is_primary' => true]);
+        }
+
+        // Log creation
+        CatalogItemAuditLog::logChange($item, 'CREATE', auth()->user());
 
         return response()->json([
-            'message' => 'Catalog item created successfully',
-            'item' => $this->toCatalogPayload($product, true),
+            'data' => $this->transformItem($item),
+            'message' => 'Item created successfully',
         ], 201);
     }
 
-    public function update(Request $request, Product $catalogItem)
+    public function update(Request $request, CatalogItem $item)
     {
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:200',
-            'product_type' => 'nullable|string|in:BATTERY,ACCESSORY,PART,CONSUMABLE,SERVICE,GENERIC',
-            'sku' => 'nullable|string|max:100|unique:products,sku,' . $catalogItem->id,
-            'category_id' => 'nullable|integer|exists:product_categories,id',
-            'description' => 'nullable|string',
-            'image_url' => 'nullable|url|max:500',
-            'price' => 'nullable|numeric|min:0',
-            'total_quantity' => 'nullable|integer|min:0',
-            'available_quantity' => 'nullable|integer|min:0',
-            'low_stock_threshold' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
-            'default_warranty_months' => 'nullable|integer|min:0',
-            'metadata' => 'nullable|array',
-            'status' => 'nullable|string|in:active,inactive',
-        ]);
+        $user = auth()->user();
 
-        $candidateTotal = $validated['total_quantity'] ?? $catalogItem->total_quantity;
-        $candidateAvailable = $validated['available_quantity'] ?? $catalogItem->available_quantity;
-        if ($candidateAvailable > $candidateTotal) {
-            return response()->json(['message' => 'available_quantity cannot be greater than total_quantity.'], 422);
+        // Permission check
+        if (!$user || !$this->accessService->hasPermission($user, 'INVENTORY', 'UPDATE')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $prepared = $this->prepareProductPayload(array_merge($catalogItem->toArray(), $validated), $request->all(), $catalogItem);
-        $catalogItem->update($prepared);
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'price' => 'sometimes|numeric|min:0',
+            'cost_price' => 'sometimes|nullable|numeric|min:0',
+            'total_quantity' => 'sometimes|integer|min:0',
+            'available_quantity' => 'sometimes|integer|min:0',
+            'low_stock_threshold' => 'sometimes|integer|min:0',
+            'is_active' => 'sometimes|boolean',
+            'is_warranty_eligible' => 'sometimes|boolean',
+            'default_warranty_months' => 'sometimes|nullable|integer|min:0',
+            'voltage_nominal' => 'sometimes|nullable|numeric',
+            'capacity_ah' => 'sometimes|nullable|numeric',
+            'chemistry' => 'sometimes|nullable|string',
+            'primary_category_id' => 'sometimes|nullable|exists:catalog_categories,id',
+        ]);
+
+        $changed = array_keys($validated);
+
+        // Normalize capabilities
+        if (isset($validated['is_active'])) {
+            $validated = $this->normalizeCapabilities($validated, $item);
+        }
+
+        // Update
+        $item->update($validated);
+
+        // Update category
+        if ($request->filled('primary_category_id')) {
+            $item->categories()->detach();
+            $item->categories()->attach($request->primary_category_id, ['is_primary' => true]);
+        }
+
+        // Log changes
+        foreach ($changed as $field) {
+            CatalogItemAuditLog::logChange(
+                $item,
+                'UPDATE',
+                auth()->user(),
+                $field,
+                $item->getOriginal($field),
+                $item->getAttribute($field)
+            );
+        }
 
         return response()->json([
-            'message' => 'Catalog item updated successfully',
-            'item' => $this->toCatalogPayload($catalogItem->fresh()->load(['category', 'legacyBatteryModel', 'legacyAccessory']), true),
+            'data' => $this->transformItem($item),
+            'message' => 'Item updated successfully',
         ]);
     }
 
-    public function destroy(Product $catalogItem)
+    public function destroy(CatalogItem $item)
     {
-        $catalogItem->delete();
-        return response()->json(['message' => 'Catalog item deleted successfully']);
+        $user = auth()->user();
+        if (!$user || !$this->accessService->hasPermission($user, 'INVENTORY', 'DELETE')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Prevent deletion if item has active orders
+        if ($item->orderItems()->whereHas('order', fn ($q) => $q->where('status', '!=', 'cancelled'))->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete item with active orders',
+            ], 422);
+        }
+
+        $item->delete();
+
+        CatalogItemAuditLog::logChange($item, 'DELETE', auth()->user());
+
+        return response()->json(['message' => 'Item deleted successfully']);
     }
 
-    private function prepareProductPayload(array $validated, array $raw, ?Product $existing = null): array
+    public function publish(CatalogItem $item)
     {
-        $type = strtoupper((string) ($validated['product_type'] ?? $existing?->product_type ?? 'GENERIC'));
-        $metadata = is_array($validated['metadata'] ?? null)
-            ? $validated['metadata']
-            : (is_array($existing?->metadata) ? $existing->metadata : []);
+        $user = auth()->user();
+        if (!$user || !$this->accessService->hasPermission($user, 'INVENTORY', 'UPDATE')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-        $extraBatteryFields = [
-            'brand', 'series', 'model_code', 'group_size', 'image_url', 'voltage', 'capacity', 'chemistry',
-            'battery_type', 'cca', 'reserve_capacity', 'capacity_ah', 'length_mm', 'width_mm',
-            'height_mm', 'total_height_mm', 'terminal_type', 'terminal_layout', 'hold_down',
-            'vent_type', 'maintenance_free', 'private_warranty_months', 'commercial_warranty_months',
-            'unit_weight_kg', 'datasheet_url', 'application_segment', 'specs', 'warranty_months',
+        $item->publish();
+
+        CatalogItemAuditLog::logChange($item, 'PUBLISH', auth()->user());
+
+        return response()->json([
+            'data' => $this->transformItem($item),
+            'message' => 'Item published',
+        ]);
+    }
+
+    public function discontinue(CatalogItem $item)
+    {
+        $user = auth()->user();
+        if (!$user || !$this->accessService->hasPermission($user, 'INVENTORY', 'UPDATE')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $item->discontinue();
+
+        CatalogItemAuditLog::logChange($item, 'DISCONTINUE', auth()->user());
+
+        return response()->json([
+            'data' => $this->transformItem($item),
+            'message' => 'Item discontinued',
+        ]);
+    }
+
+    // ========== Transformation Methods ==========
+
+    private function transformItem(CatalogItem $item): array
+    {
+        $base = [
+            'id' => $item->id,
+            'type' => $item->type,
+            'name' => $item->name,
+            'sku' => $item->sku,
+            'slug' => $item->slug,
+            'description' => $item->description,
+            'price' => round($item->price, 2),
+            'cost_price' => round($item->cost_price ?? 0, 2),
+            'availability' => [
+                'total' => $item->total_quantity,
+                'available' => $item->available_quantity,
+                'reserved' => $item->reserved_quantity,
+                'status' => $item->stock_status,
+            ],
+            'capabilities' => $item->capabilities,
+            'warranty' => [
+                'eligible' => $item->is_warranty_eligible,
+                'default_months' => $item->default_warranty_months,
+                'label' => $item->warranty_label,
+            ],
+            'categories' => $item->categories->map(fn ($cat) => [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'is_primary' => $cat->pivot->is_primary ?? false,
+            ]),
+            'brand' => $item->brand,
+            'model_code' => $item->model_code,
+            'image_url' => $item->image_url,
+            'is_active' => $item->is_active,
+            'status' => $item->is_active ? 'active' : 'inactive',
+            'created_at' => $item->created_at?->toIso8601String(),
+            'updated_at' => $item->updated_at?->toIso8601String(),
         ];
 
-        foreach ($extraBatteryFields as $field) {
-            if (array_key_exists($field, $raw)) {
-                $metadata[$field] = $raw[$field];
+        // Add type-specific specifications
+        if ($item->isBattery()) {
+            $base['specifications'] = [
+                'voltage' => $item->voltage_nominal,
+                'capacity_ah' => $item->capacity_ah,
+                'capacity_wh' => $item->capacity_wh,
+                'chemistry' => $item->chemistry,
+                'cca' => $item->cca,
+                'cycle_life' => $item->cycle_life,
+                'bms_included' => $item->bms_included,
+            ];
+        }
+
+        return $base;
+    }
+
+    private function transformItemDetailed(CatalogItem $item): array
+    {
+        $base = $this->transformItem($item);
+
+        $base['details'] = [
+            'published_at' => $item->published_at?->toIso8601String(),
+            'discontinued_at' => $item->discontinued_at?->toIso8601String(),
+            'physical' => [
+                'weight_kg' => $item->unit_weight_kg,
+                'dimensions' => [
+                    'length_mm' => $item->length_mm,
+                    'width_mm' => $item->width_mm,
+                    'height_mm' => $item->height_mm,
+                ],
+            ],
+            'documentation' => [
+                'datasheet_url' => $item->datasheet_url,
+                'user_manual_url' => $item->user_manual_url,
+                'application_segment' => $item->application_segment,
+            ],
+        ];
+
+        if ($item->variations->count() > 0) {
+            $base['variations'] = $item->variations->map(fn (CatalogVariation $v) => [
+                'id' => $v->id,
+                'name' => $v->display_name,
+                'sku' => $v->full_sku,
+                'price' => $v->effective_price,
+                'capacity_ah' => $v->capacity_ah,
+                'available' => $v->available_quantity,
+            ]);
+        }
+
+        return $base;
+    }
+
+    private function transformItemPublic(CatalogItem $item): array
+    {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'sku' => $item->sku,
+            'price' => round($item->price, 2),
+            'image_url' => $item->image_url,
+            'available' => $item->available_quantity > 0,
+            'category' => $item->primaryCategory?->first()?->name,
+            'brand' => $item->brand,
+            'type' => $item->type,
+        ];
+    }
+
+    private function normalizeCapabilities(array $data, ?CatalogItem $existing = null): array
+    {
+        $type = strtoupper($data['type'] ?? $existing?->type ?? 'GENERIC');
+
+        // Define capabilities per type
+        $typeCapabilities = [
+            'BATTERY' => [
+                'is_serialized' => true,
+                'is_warranty_eligible' => true,
+                'is_fitment_eligible' => false,
+            ],
+            'ACCESSORY' => [
+                'is_serialized' => false,
+                'is_warranty_eligible' => false,
+                'is_fitment_eligible' => true,
+            ],
+            'PART' => [
+                'is_serialized' => false,
+                'is_warranty_eligible' => false,
+                'is_fitment_eligible' => true,
+            ],
+            'CONSUMABLE' => [
+                'is_serialized' => false,
+                'is_warranty_eligible' => false,
+                'is_fitment_eligible' => false,
+            ],
+            'SERVICE' => [
+                'is_serialized' => false,
+                'is_warranty_eligible' => false,
+                'is_fitment_eligible' => false,
+            ],
+        ];
+
+        // Apply defaults
+        $defaults = $typeCapabilities[$type] ?? [];
+        foreach ($defaults as $field => $value) {
+            if (!isset($data[$field])) {
+                $data[$field] = $value;
             }
         }
 
-        if (array_key_exists('status', $validated)) {
-            $validated['is_active'] = $validated['status'] === 'active';
-            unset($validated['status']);
-        }
-
-        $capabilityByType = [
-            'BATTERY' => ['is_serialized' => true, 'is_warranty_eligible' => true, 'is_fitment_eligible' => true],
-            'ACCESSORY' => ['is_serialized' => false, 'is_warranty_eligible' => false, 'is_fitment_eligible' => false],
-            'PART' => ['is_serialized' => false, 'is_warranty_eligible' => false, 'is_fitment_eligible' => true],
-            'CONSUMABLE' => ['is_serialized' => false, 'is_warranty_eligible' => false, 'is_fitment_eligible' => false],
-            'SERVICE' => ['is_serialized' => false, 'is_warranty_eligible' => false, 'is_fitment_eligible' => false],
-            'GENERIC' => ['is_serialized' => false, 'is_warranty_eligible' => false, 'is_fitment_eligible' => false],
-        ];
-
-        $prepared = [
-            'name' => $validated['name'],
-            'product_type' => $type,
-            'sku' => $validated['sku'],
-            'category_id' => $validated['category_id'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'image_url' => $validated['image_url'] ?? ($existing?->image_url ?? data_get($metadata, 'image_url')),
-            'price' => $validated['price'] ?? 0,
-            'total_quantity' => $validated['total_quantity'] ?? 0,
-            'available_quantity' => $validated['available_quantity'] ?? 0,
-            'low_stock_threshold' => $validated['low_stock_threshold'] ?? ($existing?->low_stock_threshold ?? 5),
-            'is_active' => $validated['is_active'] ?? ($existing?->is_active ?? true),
-            'default_warranty_months' => $validated['default_warranty_months'] ?? ($metadata['warranty_months'] ?? $existing?->default_warranty_months),
-            'metadata' => $metadata,
-        ];
-
-        foreach ($capabilityByType[$type] as $field => $value) {
-            $prepared[$field] = $value;
-        }
-
-        if ($type !== 'BATTERY') {
-            $prepared['default_warranty_months'] = $validated['default_warranty_months'] ?? $existing?->default_warranty_months;
-        }
-
-        return $prepared;
-    }
-
-    private function toCatalogPayload(Product $product, bool $includeRelations = false): array
-    {
-        $metadata = is_array($product->metadata) ? $product->metadata : [];
-        $legacyBattery = $product->legacyBatteryModel;
-        $legacyAccessory = $product->legacyAccessory;
-
-        $warrantyMonths = $product->default_warranty_months
-            ?? data_get($metadata, 'warranty_months')
-            ?? data_get($metadata, 'private_warranty_months')
-            ?? 0;
-
-        $payload = [
-            'id' => $product->id,
-            'catalog_id' => $product->id,
-            'name' => $product->name,
-            'sku' => $product->sku,
-            'category_name' => $product->category?->name,
-            'description' => $product->description,
-            'image_url' => $product->image_url ?? data_get($metadata, 'image_url'),
-            'price' => $product->price,
-            'total_quantity' => $product->total_quantity,
-            'available_quantity' => $product->available_quantity,
-            'status' => $product->is_active ? 'active' : 'inactive',
-            'is_active' => $product->is_active,
-            'product_type' => $product->product_type,
-            'warranty_months' => (int) $warrantyMonths,
-            'default_warranty_months' => $product->default_warranty_months,
-            'brand' => data_get($metadata, 'brand'),
-            'series' => data_get($metadata, 'series'),
-            'model_code' => data_get($metadata, 'model_code'),
-            'chemistry' => data_get($metadata, 'chemistry'),
-            'battery_type' => data_get($metadata, 'battery_type'),
-            'capacity' => data_get($metadata, 'capacity'),
-            'capacity_ah' => data_get($metadata, 'capacity_ah'),
-            'voltage' => data_get($metadata, 'voltage'),
-            'legacy_battery_model_id' => $product->legacy_battery_model_id,
-            'legacy_accessory_id' => $product->legacy_accessory_id,
-            'legacy_ids' => [
-                'battery_model_id' => $product->legacy_battery_model_id,
-                'accessory_id' => $product->legacy_accessory_id,
-            ],
-            'capabilities' => [
-                'serialized' => (bool) $product->is_serialized,
-                'warranty_eligible' => (bool) $product->is_warranty_eligible,
-                'fitment_eligible' => (bool) $product->is_fitment_eligible,
-            ],
-            'created_at' => $product->created_at,
-            'updated_at' => $product->updated_at,
-        ];
-
-        if ($legacyBattery) {
-            $payload['legacy_battery'] = [
-                'id' => $legacyBattery->id,
-                'sku' => $legacyBattery->sku,
-                'status' => $legacyBattery->status,
-            ];
-        }
-
-        if ($legacyAccessory) {
-            $payload['legacy_accessory'] = [
-                'id' => $legacyAccessory->id,
-                'sku' => $legacyAccessory->sku,
-                'status' => $legacyAccessory->status,
-            ];
-        }
-
-        if ($includeRelations) {
-            $payload['category'] = $product->category;
-            $payload['serials_count'] = $product->serialNumbers->count();
-            $payload['warranties_count'] = $product->warranties->count();
-            $payload['metadata'] = $metadata;
-        }
-
-        return $payload;
+        return $data;
     }
 }

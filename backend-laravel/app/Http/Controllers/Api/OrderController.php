@@ -134,104 +134,91 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->has('items')) {
-            $validated = $request->validate([
-                'notes' => 'nullable|string',
-                'payment_method' => 'nullable|string|in:ONLINE,PAY_LATER,online,pay_later',
-                'items' => 'required|array|min:1',
-                'items.*.product_type' => 'nullable|string|in:BATTERY_MODEL,ACCESSORY,PRODUCT',
-                'items.*.battery_model_id' => 'nullable|integer|exists:battery_models,id',
-                'items.*.accessory_id' => 'nullable|integer|exists:accessories,id',
-                'items.*.product_id' => 'nullable|integer|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1',
-            ]);
-
-            $order = Order::create([
-                'order_number' => 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999),
-                'user_id' => $request->user()->id,
-                'status' => self::STATUS_PENDING,
-                'payment_status' => self::PAYMENT_PENDING,
-                'payment_method' => $this->normalizePaymentMethod((string) ($validated['payment_method'] ?? self::METHOD_PAY_LATER)),
-                'notes' => $validated['notes'] ?? null,
-                'total_amount' => 0,
-            ]);
-
-            $totalAmount = 0;
-            foreach ($validated['items'] as $item) {
-                $quantity = $item['quantity'];
-                $resolved = $this->resolveOrderItem($item);
-                $itemable = $resolved['itemable'];
-                $product = $resolved['product'];
-
-                // Prefer canonical catalog product price when available.
-                $unitPrice = (float) ($product?->price ?? $itemable->price ?? 0);
-                $totalPrice = $unitPrice * $quantity;
-                $totalAmount += $totalPrice;
-
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'itemable_type' => get_class($itemable),
-                    'itemable_id' => $itemable->id,
-                    'product_id' => $product?->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'total_price' => $totalPrice,
-                ]);
-            }
-
-            $order->update(['total_amount' => $totalAmount]);
-
-            $response = [
-                'message' => 'Order created successfully',
-                'order' => $order->load('user', 'items.itemable', 'items.product'),
-            ];
-
-            if ($order->payment_method === self::METHOD_ONLINE) {
-                $sessionData = $this->createStripeCheckoutSession($order);
-                $order->update(['stripe_checkout_session_id' => $sessionData['id']]);
-                $response['checkout_url'] = $sessionData['url'];
-                $response['message'] = 'Order created. Redirect to Stripe to complete payment.';
-            }
-
-            $this->sendOrderLifecycleEmail(
-                $order->fresh()->load('user', 'items.itemable', 'items.product'),
-                'Order Received: ' . $order->order_number,
-                [
-                    'heading' => 'Order Received',
-                    'subheading' => 'Lithovolt wholesale order confirmation',
-                    'greeting' => 'Hi ' . ($order->user?->first_name ?? 'Customer') . ',',
-                    'lines' => [
-                        'We have received your order and our team will process it shortly.',
-                    ],
-                    'meta' => [
-                        ['label' => 'Order Number:', 'value' => $order->order_number],
-                        ['label' => 'Order Status:', 'value' => $order->status],
-                        ['label' => 'Payment Method:', 'value' => $order->payment_method],
-                        ['label' => 'Order Total:', 'value' => number_format((float) $order->total_amount, 2)],
-                    ],
-                    'footnote' => 'You can track status updates in your wholesaler order dashboard.',
-                ]
-            );
-
-            return response()->json($response, 201);
+        if (!$request->has('items')) {
+            return response()->json([
+                'message' => 'Order must contain at least one item.',
+            ], 422);
         }
 
         $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'order_number' => 'required|string|unique:orders',
-            'total_amount' => 'required|numeric|min:0',
-            'status' => 'in:pending,confirmed,shipped,delivered,accepted,rejected,fulfilled,cancelled,PENDING,CONFIRMED,SHIPPED,DELIVERED,ACCEPTED,REJECTED,FULFILLED,CANCELLED',
-            'payment_status' => 'in:pending,paid,failed,PENDING,PAID,FAILED',
-            'payment_method' => 'nullable|string|in:ONLINE,PAY_LATER,online,pay_later',
             'notes' => 'nullable|string',
+            'payment_method' => 'nullable|string|in:ONLINE,PAY_LATER,online,pay_later',
+            'items' => 'required|array|min:1',
+            'items.*.product_type' => 'nullable|string|in:BATTERY_MODEL,ACCESSORY,PRODUCT',
+            'items.*.battery_model_id' => 'nullable|integer|exists:battery_models,id',
+            'items.*.accessory_id' => 'nullable|integer|exists:accessories,id',
+            'items.*.product_id' => 'nullable|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $validated['status'] = $this->normalizeOrderStatus((string) ($validated['status'] ?? self::STATUS_PENDING));
-        $validated['payment_status'] = $this->normalizePaymentStatus((string) ($validated['payment_status'] ?? self::PAYMENT_PENDING));
-        $validated['payment_method'] = $this->normalizePaymentMethod((string) ($validated['payment_method'] ?? self::METHOD_PAY_LATER));
+        $order = Order::create([
+            'order_number' => 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999),
+            'user_id' => $request->user()->id,
+            'status' => self::STATUS_PENDING,
+            'payment_status' => self::PAYMENT_PENDING,
+            'payment_method' => $this->normalizePaymentMethod((string) ($validated['payment_method'] ?? self::METHOD_PAY_LATER)),
+            'notes' => $validated['notes'] ?? null,
+            'total_amount' => 0,
+        ]);
 
-        $order = Order::create($validated);
-        return response()->json(['message' => 'Order created successfully', 'order' => $order], 201);
+        $totalAmount = 0;
+        foreach ($validated['items'] as $item) {
+            $quantity = $item['quantity'];
+            $resolved = $this->resolveOrderItem($item);
+            $itemable = $resolved['itemable'];
+            $product = $resolved['product'];
+
+            // Prefer canonical catalog product price when available.
+            $unitPrice = (float) ($product?->price ?? $itemable->price ?? 0);
+            $totalPrice = $unitPrice * $quantity;
+            $totalAmount += $totalPrice;
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'itemable_type' => get_class($itemable),
+                'itemable_id' => $itemable->id,
+                'product_id' => $product?->id,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'total_price' => $totalPrice,
+            ]);
+        }
+
+        $order->update(['total_amount' => $totalAmount]);
+
+        $response = [
+            'message' => 'Order created successfully',
+            'order' => $order->load('user', 'items.itemable', 'items.product'),
+        ];
+
+        if ($order->payment_method === self::METHOD_ONLINE) {
+            $sessionData = $this->createStripeCheckoutSession($order);
+            $order->update(['stripe_checkout_session_id' => $sessionData['id']]);
+            $response['checkout_url'] = $sessionData['url'];
+            $response['message'] = 'Order created. Redirect to Stripe to complete payment.';
+        }
+
+        $this->sendOrderLifecycleEmail(
+            $order->fresh()->load('user', 'items.itemable', 'items.product'),
+            'Order Received: ' . $order->order_number,
+            [
+                'heading' => 'Order Received',
+                'subheading' => 'Lithovolt wholesale order confirmation',
+                'greeting' => 'Hi ' . ($order->user?->first_name ?? 'Customer') . ',',
+                'lines' => [
+                    'We have received your order and our team will process it shortly.',
+                ],
+                'meta' => [
+                    ['label' => 'Order Number:', 'value' => $order->order_number],
+                    ['label' => 'Order Status:', 'value' => $order->status],
+                    ['label' => 'Payment Method:', 'value' => $order->payment_method],
+                    ['label' => 'Order Total:', 'value' => number_format((float) $order->total_amount, 2)],
+                ],
+                'footnote' => 'You can track status updates in your wholesaler order dashboard.',
+            ]
+        );
+
+        return response()->json($response, 201);
     }
 
     public function show(Request $request, Order $order)
@@ -245,8 +232,20 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
-        if (!$this->canAccessOrder($request->user(), $order)) {
+        $actor = $request->user();
+
+        if (!$this->canAccessOrder($actor, $order)) {
             return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        if (!$this->isPrivileged($actor)) {
+            // End users can only edit notes on orders they can access.
+            $validated = $request->validate([
+                'notes' => 'nullable|string',
+            ]);
+
+            $order->update($validated);
+            return response()->json(['message' => 'Order updated successfully', 'order' => $order]);
         }
 
         $validated = $request->validate([
@@ -586,6 +585,16 @@ class OrderController extends Controller
 
         $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
         return $roleName === 'ADMIN' || (bool) $user->staffUser;
+    }
+
+    private function isAdmin(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $roleName = strtoupper((string) ($user->role?->name ?? $user->role ?? ''));
+        return $roleName === 'ADMIN';
     }
 
     private function canAccessOrder(?User $actor, Order $order): bool

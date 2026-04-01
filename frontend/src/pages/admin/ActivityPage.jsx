@@ -7,6 +7,50 @@ import SearchableSelect from '../../components/common/SearchableSelect'
 
 const EVENT_SCOPE_OPTIONS = ['ALL', 'USER', 'STAFF', 'ROLE', 'PERMISSION']
 
+function formatLabel(value) {
+  return String(value || '')
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function renderValue(value) {
+  if (value === null || typeof value === 'undefined') {
+    return '-'
+  }
+
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+
+  return String(value)
+}
+
+function buildChangeRows(metadata = {}) {
+  const before = metadata?.before || metadata?.old || metadata?.previous || {}
+  const after = metadata?.after || metadata?.new || metadata?.current || {}
+
+  if (before && after && (Object.keys(before).length > 0 || Object.keys(after).length > 0)) {
+    const keys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)]))
+    return keys.map((key) => ({
+      field: key,
+      before: before[key],
+      after: after[key],
+      changed: JSON.stringify(before[key]) !== JSON.stringify(after[key]),
+    }))
+  }
+
+  return Object.entries(metadata || {}).map(([key, value]) => ({
+    field: key,
+    before: null,
+    after: value,
+    changed: true,
+  }))
+}
+
+function getChangedFieldCount(metadata = {}) {
+  return buildChangeRows(metadata).filter((row) => row.changed).length
+}
+
 function formatDate(value) {
   if (!value) {
     return '-'
@@ -25,6 +69,7 @@ export default function ActivityPage() {
   const [eventFilter, setEventFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [selectedEvent, setSelectedEvent] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-activity', scopeFilter, eventFilter, search, page],
@@ -129,7 +174,7 @@ export default function ActivityPage() {
                 <th>Scope</th>
                 <th>Event</th>
                 <th>Summary</th>
-                <th>Metadata</th>
+                <th>Details</th>
               </tr>
             </thead>
             <tbody>
@@ -141,9 +186,18 @@ export default function ActivityPage() {
                   <td>{String(item.event_type || '').toUpperCase()}</td>
                   <td>{item.summary || '-'}</td>
                   <td>
-                    <pre className="m-0 max-w-sm overflow-auto whitespace-pre-wrap break-all text-xs text-[color:var(--muted)]">
-                      {JSON.stringify(item.metadata || {}, null, 2)}
-                    </pre>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="neon-btn-ghost"
+                        onClick={() => setSelectedEvent(item)}
+                        type="button"
+                      >
+                        View Details
+                      </button>
+                      <span className="tag">
+                        {getChangedFieldCount(item.metadata || {})} fields
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -162,6 +216,52 @@ export default function ActivityPage() {
           onPageChange={setPage}
         />
       </div>
+
+      {selectedEvent ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="panel-card max-h-[85vh] w-full max-w-4xl overflow-hidden p-0">
+            <div className="flex items-start justify-between border-b border-white/10 px-6 py-4">
+              <div>
+                <h2 className="text-xl font-semibold">Activity Details</h2>
+                <p className="text-sm text-[color:var(--muted)]">
+                  {formatDate(selectedEvent.occurred_at)} • {formatLabel(selectedEvent.scope)} • {String(selectedEvent.event_type || '').toUpperCase()}
+                </p>
+              </div>
+              <button className="neon-btn-ghost" onClick={() => setSelectedEvent(null)} type="button">
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-4 overflow-auto px-6 py-4">
+              <div className="rounded-lg border border-white/10 p-4">
+                <p className="text-xs uppercase tracking-wide text-[color:var(--muted)]">Summary</p>
+                <p className="mt-1 text-sm">{selectedEvent.summary || '-'}</p>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-white/10">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Before</th>
+                      <th>After</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {buildChangeRows(selectedEvent.metadata || {}).map((row) => (
+                      <tr key={row.field}>
+                        <td className="font-semibold">{formatLabel(row.field)}</td>
+                        <td className="text-xs text-[color:var(--muted)]">{renderValue(row.before)}</td>
+                        <td className={row.changed ? 'text-xs text-[color:var(--success)]' : 'text-xs text-[color:var(--muted)]'}>{renderValue(row.after)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
